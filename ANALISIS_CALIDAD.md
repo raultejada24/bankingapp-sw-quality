@@ -104,7 +104,7 @@ En las capturas superiores se muestra el estado general del proyecto tras el pri
 ![Issue 8](img/capturas/Issue8.png)
 
 **Explicación del mal olor detectado**:
-- Ubicación: `src/main/java/es/codeurjc/service/AccountService.java`, líneas 242 y 243.
+- Ubicación: `src/main/java/es/codeurjc/service/AccountService.java`, líneas 231 y 232.
 - Tipo: Mantenibilidad (Nombres crípticos).
 - Descripción: En el método de transferencia se usan las letras "m" y "o" para referirse a las cuentas de origen y destino.
 - Justificación: Es un problema real. El uso de variables de una sola letra obliga a cualquier programador que lea el código a tener que adivinar qué cuenta es cuál. Lo correcto sería usar nombres como "sourceAccount" y "destinationAccount" para que el código se explique por sí solo sin necesidad de comentarios.
@@ -114,7 +114,7 @@ En las capturas superiores se muestra el estado general del proyecto tras el pri
 ![Issue 9](img/capturas/Issue9.png)
 
 **Explicación del mal olor detectado**:
-- Ubicación: `src/main/java/es/codeurjc/service/AccountService.java`, líneas 77 a 82.
+- Ubicación: `src/main/java/es/codeurjc/service/AccountService.java`, líneas 87 a 89.
 - Tipo: Lógica redundante (Dead Code).
 - Descripción: Se comprueba si el importe es mayor de 10.000 y, justo después, si es mayor de 50.000 para lanzar el mismo error.
 - Justificación: Es un problema de lógica real. Si alguien intenta ingresar 60.000, el programa saltará en el primer "if" (el de 10.000) y nunca llegará a evaluar el segundo. Esto hace que el código sea confuso y parezca que los límites de seguridad no están bien definidos o que se ha copiado y pegado el código sin revisarlo.
@@ -124,7 +124,7 @@ En las capturas superiores se muestra el estado general del proyecto tras el pri
 ![Issue 10](img/capturas/Issue10.png)
 
 **Explicación del mal olor detectado**:
-- Ubicación: `src/main/java/es/codeurjc/service/AccountService.java`, métodos deposit (líneas 66 y 117).
+- Ubicación: `src/main/java/es/codeurjc/service/AccountService.java`, métodos deposit (líneas 76 a 169).
 - Tipo: Violación del principio DRY (Don't Repeat Yourself).
 - Descripción: Existen dos métodos para depositar dinero que repiten exactamente las mismas validaciones y la misma lógica de guardado y notificación.
 - Justificación: Es un problema real de duplicación. Si en el futuro el banco decide cambiar una regla de depósito, el desarrollador tendrá que modificar dos métodos distintos. El método corto (sin descripción) debería simplemente llamar al método largo pasando una descripción por defecto, evitando así tener el código duplicado.
@@ -134,7 +134,7 @@ En las capturas superiores se muestra el estado general del proyecto tras el pri
 ![Issue 11](img/capturas/Issue11.png)
 
 **Explicación del mal olor detectado**:
-- Ubicación: `src/main/java/es/codeurjc/service/AccountService.java`, línea 313.
+- Ubicación: `src/main/java/es/codeurjc/service/AccountService.java`, línea 301.
 - Tipo: Diseño de API / Mantenibilidad.
 - Descripción: El método para eliminar una cuenta se llama simplemente "rm".
 - Justificación: Es un mal olor claro. Aunque "rm" es un comando conocido en sistemas Linux, en el contexto de un servicio Java de una aplicación bancaria se deben usar nombres verbales completos como "deleteAccount". Las abreviaturas crípticas reducen la legibilidad de la arquitectura del sistema.

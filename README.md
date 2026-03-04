@@ -6,7 +6,7 @@
 | Nombre y Apellidos | Correo URJC | Usuario GitHub |
 |:--- |:--- |:--- |
 | Gonzalo Andrés Zurdo Patino | ga.zurdo.2023@alumnos.urjc.es | 51nga |
-| Raúl Tejada Merinero | r.tejada.2023@alumnos.urjc.es | @raultejada24 |
+| Raúl Tejada Merinero | r.tejada.2023@alumnos.urjc.es | raultejada24 |
 | Adrián Varea Fernández | a.varea.2023@alumnos.urjc.es | blodresg |
 | [Nombre 4] | [email4]@alumnos.urjc.es | [User4] |
 | [Nombre 5] | [email5]@alumnos.urjc.es | [User5] |
@@ -17,7 +17,7 @@
 
 ### **Participación de Miembros en la Práctica 1**
 
-#### **Alumno 1 - [Nombre Completo]**
+#### **Alumno 1 - Gonzalo Andrés Zurdo Patino**
 
 [Descripción de las tareas y responsabilidades principales del alumno en el proyecto]
 
@@ -45,7 +45,7 @@
 
 ---
 
-#### **Alumno 3 - [Nombre Completo]**
+#### **Alumno 3 - Adrián Varea Fernández**
 
 [Descripción de las tareas y responsabilidades principales del alumno en el proyecto]
 

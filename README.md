@@ -7,7 +7,7 @@
 |:--- |:--- |:--- |
 | Gonzalo Andrés Zurdo Patino | ga.zurdo.2023@alumnos.urjc.es | 51nga |
 | Raúl Tejada Merinero | r.tejada.2023@alumnos.urjc.es | @raultejada24 |
-| [Nombre 3] | [email3]@alumnos.urjc.es | [User3] |
+| Adrián Varea Fernández | a.varea.2023@alumnos.urjc.es | blodresg |
 | [Nombre 4] | [email4]@alumnos.urjc.es | [User4] |
 | [Nombre 5] | [email5]@alumnos.urjc.es | [User5] |
 | [Nombre 6] | [email6]@alumnos.urjc.es | [User6] |

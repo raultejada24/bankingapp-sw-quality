@@ -139,6 +139,31 @@ En las capturas superiores se muestra el estado general del proyecto tras el pri
 - Descripción: El método para eliminar una cuenta se llama simplemente "rm".
 - Justificación: Es un mal olor claro. Aunque "rm" es un comando conocido en sistemas Linux, en el contexto de un servicio Java de una aplicación bancaria se deben usar nombres verbales completos como "deleteAccount". Las abreviaturas crípticas reducen la legibilidad de la arquitectura del sistema.
 
+### Issue 12: Código repetido en plantillas HTML
+**Reporte de la issue**:
+![Issue 12](img/capturas/Issue12.png)
+
+**Explicación del mal olor detectado**:
+- Ubicación: `src\main\resources\templates\dashboard.html`, línea 4.
+- Tipo: Code Smell (Critical).
+- Descripción: En gran parte de las plantilla HTML utilizadas se repite el mismo bloque de código para mostrar alertas de error o éxito, con la misma estructura y solo cambiando el mensaje.
+- Justificación: El uso de plantillas, en este caso, mustache, es precisamente para evitar código repetido innecesariamente. Al tener el mismo bloque de código copiado en varias plantillas, se dificulta
+el mantenimiento y la evolución del sistema, ya que cualquier cambio en la estructura de las alertas tendría que ser replicado en todas las plantillas, aumentando el riesgo de errores y la carga de trabajo.
+Es un claro ejemplo de violación del principio DRY (Don't Repeat Yourself), por lo que es un code smell real. Se puede solucionar facilmente convirtiendo este bloque de alertas en un fragmento reutilizable, siendo que
+ya admite dinamismo por medio de las variables mustache.
+
+
+### Issue 13: Parámetro de método no utilizado
+**Reporte de la issue**:
+![Issue 13](img/capturas/Issue13.png)
+
+**Explicación del mal olor detectado**:
+- Ubicación: `src/main/java/es/codeurjc/service/loan/LoanApprovalAlgorithm.java`, línea 7.
+- Tipo: Mantenibilidad (código muerto y generalidad especulativa)
+- Descripción: Se incluye como parámetro en un método una variable que no se llega a utilizar en ningún punto dentro del ámbito de este.
+- Justificación: Independientemente de si la causa es la pasada presencia de su uso o la falsa futura especulación de su necesidad, se trata de un mal olor porque
+ocupa un espacio innecesario que además puede llevar a confusiones sobre su propósito por parte de otros desarrolladores.
+
 ---
 
 **Refactorización**

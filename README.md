@@ -5,7 +5,7 @@
 ## Miembros del Equipo
 | Nombre y Apellidos | Correo URJC | Usuario GitHub |
 |:--- |:--- |:--- |
-| [Nombre 1] | [email1]@alumnos.urjc.es | [User1] |
+| Gonzalo Andrés Zurdo Patino | ga.zurdo.2023@alumnos.urjc.es | 51nga |
 | Raúl Tejada Merinero | r.tejada.2023@alumnos.urjc.es | @raultejada24 |
 | [Nombre 3] | [email3]@alumnos.urjc.es | [User3] |
 | [Nombre 4] | [email4]@alumnos.urjc.es | [User4] |

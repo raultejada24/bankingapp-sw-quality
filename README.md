@@ -8,7 +8,7 @@
 | Gonzalo Andrés Zurdo Patino | ga.zurdo.2023@alumnos.urjc.es | 51nga |
 | Raúl Tejada Merinero | r.tejada.2023@alumnos.urjc.es | raultejada24 |
 | Adrián Varea Fernández | a.varea.2023@alumnos.urjc.es | blodresg |
-| [Nombre 4] | [email4]@alumnos.urjc.es | [User4] |
+| Blas Vita Ramos | b.vita.2020@alumnos.urjc.es | Blasetvrtumi |
 | [Nombre 5] | [email5]@alumnos.urjc.es | [User5] |
 | [Nombre 6] | [email6]@alumnos.urjc.es | [User6] |
 
@@ -59,7 +59,7 @@
 
 ---
 
-#### **Alumno 4 - [Nombre Completo]**
+#### **Alumno 4 - Blas Vita Ramos**
 
 [Descripción de las tareas y responsabilidades principales del alumno en el proyecto]
 

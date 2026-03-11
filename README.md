@@ -10,7 +10,7 @@
 | Adrián Varea Fernández | a.varea.2023@alumnos.urjc.es | blodresg |
 | Blas Vita Ramos | b.vita.2020@alumnos.urjc.es | Blasetvrtumi |
 | Adrián Villalba Cuello de Oro | a.villalba.2023@alumnos.urjc.es | AdrianVillalba26 |
-| [Nombre 6] | [email6]@alumnos.urjc.es | [User6] |
+| Arturo VInuesa Domínguez | a.vinuesad.2023@alumnos.urjc.es | arturoovinuesaa |
 
 
 ---

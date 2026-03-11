@@ -62,6 +62,7 @@ En las capturas superiores se muestra el estado general del proyecto tras el pri
 ### Issue 4: Variable "seccondAccount" sin uso en AccountService
 **Reporte de la issue**:
 ![Issue 4](img/capturas/Issue4.png)
+![Issue 4](img/capturas/duplicate-variable.png)
 
 **Explicación del mal olor detectado**:
 - Ubicación: `src/main/java/es/codeurjc/service/AccountService.java`, línea 185.

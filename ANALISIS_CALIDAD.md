@@ -31,9 +31,9 @@ En las capturas superiores se muestra el estado general del proyecto tras el pri
 
 ### Issue 1: Duplicación del literal "Deposit Confirmation"
 **Reporte de la issue**:
-![Issue 1](img/capturas/deposit-confirmation-varible-1.png)
-![Issue 1](img/capturas/deposit-confirmation-varible-2.png)
-![Issue 1](img/capturas/deposit-confirmation-varible-3.png)
+![Issue 1](img/capturas/deposit-confirmation-variable-1.png)
+![Issue 1](img/capturas/deposit-confirmation-variable-2.png)
+![Issue 1](img/capturas/deposit-confirmation-variable-3.png)
 
 **Explicación del mal olor detectado**:
 - Ubicación: `src/main/java/es/codeurjc/service/AccountService.java`, líneas 107, 114, 156, 163.

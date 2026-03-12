@@ -52,7 +52,7 @@ En las capturas superiores se muestra el estado general del proyecto tras el pri
 - Descripción: Se ha dejado declarada una variable llamada seccondAccount que no hace nada en el método de retiro.
 - Justificación: Es un problema real aunque de baja prioridad. Es simplemente código muerto que sobra. Al leer el código, da la sensación de que falta algo por programar o que se ha quedado ahí después de un borrador previo, por lo que debería eliminarse para no confundir.
 
-### Issue 3: Las cadenas de texto no se comparan usando equals()"
+### Issue 3: Las cadenas de texto no se comparan usando "equals()"
 **Reporte de la issue**:
 ![Issue 3](img/capturas/equals-problem-1.png)
 ![Issue 3](img/capturas/equals-problem-2.png)

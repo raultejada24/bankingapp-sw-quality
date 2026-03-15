@@ -103,6 +103,17 @@ En las capturas superiores se muestra el estado general del proyecto tras el pri
 - Descripción: El método para eliminar una cuenta se llama simplemente "rm".
 - Justificación: Es un mal olor claro. Aunque "rm" es un comando conocido en sistemas Linux, en el contexto de un servicio Java de una aplicación bancaria se deben usar nombres verbales completos como "deleteAccount". Las abreviaturas crípticas reducen la legibilidad de la arquitectura del sistema.
 
+### Issue 8: Números mágicos/hardcodeados
+**Reporte de la issue**:
+![Issue 8](img/capturas/Issue8_1.png)
+![Issue 8](img/capturas/Issue8_2.png)
+
+**Explicación del mal olor detectado**:
+- Ubicación: `src/main/java/es/codeurjc/service/AccountService.java`, líneas 67-78, 114-125.
+- Tipo: Diseño de API / Mantenibilidad.
+- Descripción: Se utilizan números hardcodeados como los límites de depósito repetidos en más de una instancia
+- Justificación: Debido a que se repiten en más de una ocasión y cambiarlos resultaría complicado y propenso a errores,
+  se trata de un mal olor real. Se deben emplear constantes para estos valores para facilitar la mantenibilidad.
 ---
 
 **Refactorización**

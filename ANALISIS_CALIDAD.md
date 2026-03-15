@@ -31,9 +31,9 @@ En las capturas superiores se muestra el estado general del proyecto tras el pri
 
 ### Issue 1: Duplicación del literal "Deposit Confirmation"
 **Reporte de la issue**:
-![Issue 1](img/capturas/deposit-confirmation-variable-1.png)
-![Issue 1](img/capturas/deposit-confirmation-variable-2.png)
-![Issue 1](img/capturas/deposit-confirmation-variable-3.png)
+![Issue 1](img/capturas/Issue1_1.png)
+![Issue 1](img/capturas/Issue1_2.png)
+![Issue 1](img/capturas/Issue1_3.png)
 
 **Explicación del mal olor detectado**:
 - Ubicación: `src/main/java/es/codeurjc/service/AccountService.java`, líneas 107, 114, 156, 163.
@@ -43,8 +43,8 @@ En las capturas superiores se muestra el estado general del proyecto tras el pri
 
 ### Issue 2: Variable "seccondAccount" sin uso en AccountService
 **Reporte de la issue**:
-![Issue 2](img/capturas/Issue4.png)
-![Issue 2](img/capturas/duplicate-variable.png)
+![Issue 2](img/capturas/Issue2_1.png)
+![Issue 2](img/capturas/Issue2_2.png)
 
 **Explicación del mal olor detectado**:
 - Ubicación: `src/main/java/es/codeurjc/service/AccountService.java`, línea 185.
@@ -54,8 +54,8 @@ En las capturas superiores se muestra el estado general del proyecto tras el pri
 
 ### Issue 3: Las cadenas de texto no se comparan usando "equals()"
 **Reporte de la issue**:
-![Issue 3](img/capturas/equals-problem-1.png)
-![Issue 3](img/capturas/equals-problem-2.png)
+![Issue 3](img/capturas/Issue3_1.png)
+![Issue 3](img/capturas/Issue3_2.png)
 
 **Explicación del mal olor detectado**:
 - Ubicación: `src/main/java/es/codeurjc/service/AccountService.java`, línea 235.
@@ -65,7 +65,7 @@ En las capturas superiores se muestra el estado general del proyecto tras el pri
 
 ### Issue 4: Nombres de variables no descriptivos en AccountService
 **Reporte de la issue**:
-![Issue 4](img/capturas/Issue8.png)
+![Issue 4](img/capturas/Issue4.png)
 
 **Explicación del mal olor detectado**:
 - Ubicación: `src/main/java/es/codeurjc/service/AccountService.java`, líneas 231 y 232.
@@ -75,7 +75,7 @@ En las capturas superiores se muestra el estado general del proyecto tras el pri
 
 ### Issue 5: Validaciones de negocio redundantes e inalcanzables
 **Reporte de la issue**:
-![Issue 5](img/capturas/Issue9.png)
+![Issue 5](img/capturas/Issue5.png)
 
 **Explicación del mal olor detectado**:
 - Ubicación: `src/main/java/es/codeurjc/service/AccountService.java`, líneas 87 a 89.
@@ -85,7 +85,7 @@ En las capturas superiores se muestra el estado general del proyecto tras el pri
 
 ### Issue 6: Duplicación de lógica en los métodos de depósito
 **Reporte de la issue**:
-![Issue 6](img/capturas/Issue10.png)
+![Issue 6](img/capturas/Issue6.png)
 
 **Explicación del mal olor detectado**:
 - Ubicación: `src/main/java/es/codeurjc/service/AccountService.java`, métodos deposit (líneas 76 a 169).
@@ -95,7 +95,7 @@ En las capturas superiores se muestra el estado general del proyecto tras el pri
 
 ### Issue 7: Nomenclatura inadecuada en métodos de borrado
 **Reporte de la issue**:
-![Issue 11](img/capturas/Issue11.png)
+![Issue 7](img/capturas/Issue7.png)
 
 **Explicación del mal olor detectado**:
 - Ubicación: `src/main/java/es/codeurjc/service/AccountService.java`, línea 301.

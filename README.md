@@ -39,9 +39,9 @@ He añadido las capturas del Overview y Dashboard además de añadir varios Issu
 |:------------: |:------------:|
 |1| [Adding New Issues](https://github.com/AdrianVillalba26/cs-2026-grupo-7/commit/d7f1d42ea27cae76a6fc924228275925a3835440)  |
 |2| [Adding 7 new Issues](https://github.com/AdrianVillalba26/cs-2026-grupo-7/commit/7a3dd0d173d99d42bb770785dd64fa291fa46aca)  |
-|3| [Update README.md](https://github.com/AdrianVillalba26/cs-2026-grupo-7/commit/d873cda2e0fdce92914cdd500bea14a0f7223264)  |
+|3| [Update ANALISIS_CALIDAD.md](https://github.com/AdrianVillalba26/cs-2026-grupo-7/commit/ad68b11dd02a12861043afcfc70a0b3a7bdfb98c)  |
 |4| [Update ANALISIS_CALIDAD.md with issues and refactoring notes](https://github.com/AdrianVillalba26/cs-2026-grupo-7/commit/538eb7685fcdd92ae53bc8c4ff8b6fb5be95c769)  |
-|5| [add image OverView](https://github.com/AdrianVillalba26/cs-2026-grupo-7/commit/b3ba126415ccbadd2f66416efed349846ca3a2fb)  |
+|5| [Adding new images](https://github.com/AdrianVillalba26/cs-2026-grupo-7/commit/e2674e155150a8599cb089aa3cdcafa004d04aaa)  |
 
 ---
 

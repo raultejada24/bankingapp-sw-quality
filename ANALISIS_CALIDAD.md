@@ -119,15 +119,14 @@ En las capturas superiores se muestra el estado general del proyecto tras el pri
 
 ### Issue 8: Números mágicos/hardcodeados
 **Reporte de la issue**:
-![Issue 8](img/capturas/Issue8_1.png)
-![Issue 8](img/capturas/Issue8_2.png)
+![Issue 8_1](img/capturas/Issue8_1.png)
+![Issue 8_2](img/capturas/Issue8_2.png)
 
 **Explicación del mal olor detectado**:
-- Ubicación: `src/main/java/es/codeurjc/service/AccountService.java`, líneas 67-78, 114-125.
-- Tipo: Diseño de API / Mantenibilidad.
-- Descripción: Se utilizan números hardcodeados como los límites de depósito repetidos en más de una instancia
-- Justificación: Debido a que se repiten en más de una ocasión y cambiarlos resultaría complicado y propenso a errores,
-  se trata de un mal olor real. Se deben emplear constantes para estos valores para facilitar la mantenibilidad.
+- Ubicación: `src/main/java/es/codeurjc/service/AccountService.java`. Líneas 67-78 y 114-125 (en `deposit`), línea 179 (en `withdraw`) y línea 226 (en `transfer`).
+- Tipo: Diseño de API / Mantenibilidad (Code Smell).
+- Descripción: Se utilizan números "mágicos" (hardcodeados) directamente en las condiciones lógicas para definir los límites de negocio del banco: 10.000 y 50.000 para depósitos, 5.000 para retiros y 20.000 para transferencias.
+- Justificación: Es un mal olor real. Las reglas de negocio cambian con el tiempo y tenerlas sueltas como números crudos por todo el código hace que el mantenimiento sea complicado y propenso a errores. Si el banco cambia un límite, hay que buscar y modificar el número exacto línea por línea. Lo correcto sería definir estos valores como constantes (por ejemplo, `MAX_WITHDRAWAL_LIMIT = 5000`) al inicio de la clase.
 
 ---
 

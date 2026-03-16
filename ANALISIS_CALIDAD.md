@@ -165,6 +165,38 @@ ya admite dinamismo por medio de las variables mustache.
 - Justificación: Independientemente de si la causa es la pasada presencia de su uso o la falsa futura especulación de su necesidad, se trata de un mal olor porque
 ocupa un espacio innecesario que además puede llevar a confusiones sobre su propósito por parte de otros desarrolladores.
 
+### Issue 14: Bloque de notificación duplicado en AccountService y LoanService
+
+**Explicación del mal olor detectado**:
+- Ubicación: `src/main/java/es/codeurjc/service/AccountService.java` (métodos `deposit`, `withdraw`, `transfer`) y `src/main/java/es/codeurjc/service/loan/LoanService.java` (métodos `approveLoan`, `rejectLoan`, `payLoanInstallment`).
+- Tipo: Violación del principio DRY (Código duplicado).
+- Descripción: El mismo bloque `if (notifType == EMAIL) { emailService... } else if (notifType == SMS) { smsService... }` se repite aproximadamente 8 veces repartido entre ambos servicios.
+- Justificación: Es un problema real y relevante. Lo más llamativo es que ya existe la interfaz `NotificationService` en el proyecto, cuyo propósito es precisamente permitir despachar notificaciones de forma polimórfica, pero no se aprovecha. Cada vez que se añada un nuevo canal de notificación (por ejemplo, push notifications), habrá que tocar manualmente todos y cada uno de estos bloques, multiplicando el riesgo de errores y el coste de mantenimiento.
+
+### Issue 15: Comparación de Strings con == en lugar de .equals()
+
+**Explicación del mal olor detectado**:
+- Ubicación: `src/main/java/es/codeurjc/service/AccountService.java`, línea 235.
+- Tipo: Bug latente / Fiabilidad.
+- Descripción: En el método `transfer`, la validación que impide transferir dinero a la propia cuenta usa el operador `==` para comparar dos objetos `String`: `m.getAccountNumber() == o.getAccountNumber()`.
+- Justificación: En Java, `==` compara referencias de objeto, no contenido. Si las dos cadenas tienen el mismo valor pero son instancias distintas (lo cual ocurre con frecuencia al recuperar datos de la base de datos), la comparación devolverá `false` aunque sean el mismo número de cuenta, haciendo que la validación de seguridad falle silenciosamente. La comparación correcta es `.equals()`. Se trata de un bug real, no un falso positivo.
+
+### Issue 16: Validación de saldo duplicada entre capas
+
+**Explicación del mal olor detectado**:
+- Ubicación: `src/main/java/es/codeurjc/service/AccountService.java`, método `withdraw` (líneas 188-190) y `src/main/java/es/codeurjc/model/Account.java`, método `withdraw` (líneas 128-130).
+- Tipo: Código duplicado / Diseño de capas.
+- Descripción: La comprobación de fondos insuficientes (`if (balance < amount)`) existe tanto en el servicio como dentro del propio modelo. Además, la clase `Account` expone el método `hasSufficientBalance(amount)` que no se usa en ningún punto del código.
+- Justificación: Es un problema real de diseño. La duplicación de validaciones entre capas genera inconsistencias: si las reglas cambian (por ejemplo, se permite un pequeño descubierto), hay que recordar modificar dos sitios a la vez. La responsabilidad de la validación de estado interno de la cuenta debería residir únicamente en el modelo, y el servicio debería confiar en ella.
+
+### Issue 17: Uso de System.out.println en servicios de producción
+
+**Explicación del mal olor detectado**:
+- Ubicación: `src/main/java/es/codeurjc/service/notifications/EmailNotificationService.java` (líneas 36-38) y `src/main/java/es/codeurjc/service/notifications/SmsNotificationService.java` (líneas 36-37).
+- Tipo: Mantenibilidad / Seguridad.
+- Descripción: Ambos servicios de notificación usan `System.out.println` para registrar que se ha enviado una notificación, imprimiendo directamente el email y el teléfono del usuario.
+- Justificación: Es un problema real con dos vertientes. Por un lado, `System.out.println` no permite controlar el nivel de log (debug, info, error), no se puede desactivar en producción sin tocar el código, y no se integra con las herramientas estándar de monitorización. Por otro lado, imprimir datos personales del usuario (email, teléfono) directamente en la salida estándar puede suponer un riesgo para la privacidad. Lo correcto sería usar un framework de logging como SLF4J.
+
 ---
 
 **Refactorización**

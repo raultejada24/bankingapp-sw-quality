@@ -1,4 +1,4 @@
-# Praćtica 1 - Control de calidad de una aplicación web 
+# Praćtica 2 - Control de calidad de una aplicación web 
 
 **Grupo 7**
 
@@ -15,7 +15,7 @@
 
 ---
 
-### **Participación de Miembros en la Práctica 1**
+### **Participación de Miembros en la Práctica 2**
 
 #### **Alumno 1 - Gonzalo Andrés Zurdo Patino**
 

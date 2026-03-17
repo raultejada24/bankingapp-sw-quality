@@ -75,7 +75,10 @@ He corregido y arreglado errores iniciales que teníamos de los issues detectado
 
 | Nº    | Commits      |
 |:------------: |:------------:|
-|1| [Add files via upload](https://github.com/AdrianVillalba26/cs-2026-grupo-7/commit/bf60220ce3f2a49f11a2961f82c2cd3c2f32c92c)   [Add files via upload](https://github.com/AdrianVillalba26/cs-2026-grupo-7/commit/06b9ec11fbce441d2b9d24c90a2b24782785658f) [Add files via upload](https://github.com/AdrianVillalba26/cs-2026-grupo-7/commit/b0060a8ffbbf1f6031e115a884e0ef5a26548b42) [Add files via upload](https://github.com/AdrianVillalba26/cs-2026-grupo-7/commit/dfab0a0d1176f95ee6c171bbcf7c27ad895cc458)|
+|1.1| [Add files via upload](https://github.com/AdrianVillalba26/cs-2026-grupo-7/commit/bf60220ce3f2a49f11a2961f82c2cd3c2f32c92c)   
+|1.2| [Add files via upload](https://github.com/AdrianVillalba26/cs-2026-grupo-7/commit/06b9ec11fbce441d2b9d24c90a2b24782785658f) 
+|1.3| [Add files via upload](https://github.com/AdrianVillalba26/cs-2026-grupo-7/commit/b0060a8ffbbf1f6031e115a884e0ef5a26548b42) 
+|1.4| [Add files via upload](https://github.com/AdrianVillalba26/cs-2026-grupo-7/commit/dfab0a0d1176f95ee6c171bbcf7c27ad895cc458)|
 |2| [Addition of image](https://github.com/AdrianVillalba26/cs-2026-grupo-7/commit/c821826e9989924cafa0eb695bb52d21bff3305f)  |
 |3| [Update ANALISIS_CALIDAD.md](https://github.com/AdrianVillalba26/cs-2026-grupo-7/commit/2491d292ae0ef007e1d89a24ad9f9dbb09e392f3)  |
 |4| [Resolve problem images issue 1](https://github.com/AdrianVillalba26/cs-2026-grupo-7/commit/5d0d06c5bbe0993b7e629109c6f51fd58d09563b)  |

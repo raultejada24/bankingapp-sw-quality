@@ -47,15 +47,13 @@ He añadido las capturas del Overview y Dashboard además de añadir varios Issu
 
 #### **Alumno 3 - Adrián Varea Fernández**
 
-[Descripción de las tareas y responsabilidades principales del alumno en el proyecto]
+[He añadido varios issues al proyecto, con sus respectivas descripciones e imágenes]
 
 | Nº    | Commits      |
 |:------------: |:------------:|
-|1| [Issue detectada](URL_commit_1)  |
-|2| [Prueba unitaria implementada](URL_commit_2)  |
-|3| [Refactorización implementada](URL_commit_3)  |
-|4| [Caso de TDD implementado](URL_commit_4)  |
-|5| [Prueba de sistema implementada](URL_commit_5)  |
+|1| [Issue 16: Data Clumps](https://github.com/AdrianVillalba26/cs-2026-grupo-7/commit/19033f910784fa4bfcdabb9cfe44a908ebb576f9)  |
+|2| [Issue 21: Falta de validación](https://github.com/AdrianVillalba26/cs-2026-grupo-7/commit/80b2f292909fd6d00aed118a70a13955b1c0f150)  |
+|3| [Issue 22: Tipos primitivos](https://github.com/AdrianVillalba26/cs-2026-grupo-7/commit/561f4791b17b36eb05c2ed32191b0f692a987617)  |
 
 ---
 

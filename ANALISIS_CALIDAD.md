@@ -65,7 +65,7 @@ En las capturas superiores se muestra el estado general del proyecto tras el pri
 - Ubicación: `src/main/java/es/codeurjc/service/AccountService.java`, línea 235.
 - Tipo: Bug (Major).
 - Descripción: Se está utilizando el operador de igualdad referencial "==" para comparar dos números de cuenta que son de tipo String.
-- Justificación: Es un problema real y grave. El operador "==" comprueba si ambos objetos son la misma instanciaen memoria, no si tienen el mismo contenido, por lo que en este caso la comparación podría devolver false aunque los números sena idénticos. Lo que habría que hacer es cambiar esta línea por "m.getAccountNumber().equals(o.getAccountNumber())".
+- Justificación: Es un problema real y grave. El operador "==" comprueba si ambos objetos son la misma instancia en memoria, no si tienen el mismo contenido, por lo que en este caso la comparación podría devolver false aunque los números sean idénticos. Lo que habría que hacer es cambiar esta línea por "m.getAccountNumber().equals(o.getAccountNumber())".
 
 ---
 
@@ -275,7 +275,7 @@ En las capturas superiores se muestra el estado general del proyecto tras el pri
 
 
 **Explicación del mal olor detectado**:
-- Ubicación: src/main/java/es/codeurjc/service/LoanService.java, líneas 64 y 106.
+- Ubicación: `src/main/java/es/codeurjc/service/LoanService.java`, líneas 64 y 106.
 - Tipo: Bug Lógico latente / Mantenibilidad (Inspección manual).
 - Descripción: Al procesar un préstamo, el código recupera la lista de cuentas del usuario y asume sistemáticamente que la cuenta relevante es la primera de la lista mediante accounts.get(0).
 - Justificación: Es un problema real de negocio. Si un usuario tiene múltiples cuentas (por ejemplo, una de ahorros y otra corriente), el sistema siempre vinculará el préstamo a la primera que devuelva la base de datos, lo cual es impredecible y silenciosamente incorrecto. El método debería requerir explícitamente el accountId de destino para aplicar el préstamo de forma determinista y segura.
@@ -289,7 +289,7 @@ En las capturas superiores se muestra el estado general del proyecto tras el pri
 
 
 **Explicación del mal olor detectado**:
-- Ubicación: src/main/java/es/codeurjc/service/EmailNotificationService.java (Líneas 36-38).
+- Ubicación: `src/main/java/es/codeurjc/service/EmailNotificationService.java` (Líneas 36-38).
 - Tipo: Code Smell / Mala práctica de Logging (Inspección manual).
 - Descripción: Se utiliza System.out.println("Sending EMAIL to: " + user.getEmail()); para registrar eventos del sistema.
 - Justificación: Es un problema real. En aplicaciones empresariales, el uso de la salida estándar de consola no permite configurar niveles de severidad (INFO, DEBUG, ERROR), ni guardar el historial en archivos o servicios de monitoreo. Además, expone datos personales del usuario (email, teléfono) sin control, lo que podría ser un problema de seguridad. Debería utilizarse un framework de logging como SLF4J o Logback.
@@ -301,10 +301,10 @@ En las capturas superiores se muestra el estado general del proyecto tras el pri
 ![Issue 21](img/capturas/Issue21.png)
 
 **Explicación del mal olor detectado**:
-- Ubicación: `src/main/java/es/codeurjc/service/AccountService.java`, métodos `createAccount`,`generateAccountNumber`, `getAccount`(líneas 41-64).
+- Ubicación: `src/main/java/es/codeurjc/service/AccountService.java`, métodos `createAccount`, `generateAccountNumber`, `getAccount` (líneas 41-64).
 - Tipo: Bug potencial / Violación de reglas de negocio.
 - Descripción: El método genera un número de cuenta mediante `generateAccountNumber()` y lo guarda directamente sin comprobar si ya existe en la base de datos. Además, añade este número de cuenta a la cuenta y luego lo usa para buscar cuentas, lo que nos dice que es un identificador, por lo cual debe ser único.
-- Justificación: Es un problema real porque no se garantiza la unicidad del número de cuenta, lo cual es un requisito crítico en un sistema bancario. Aunque la probabilidad de colisión sea muy baja, el impacto sería grave (dos cuentas con el mismo identificador). Se debería validar contra el repositorio o delegar en la base de datos con una restricción única. No se deben correr riesgos así simplemente porque sea díficil que suceda.
+- Justificación: Es un problema real porque no se garantiza la unicidad del número de cuenta, lo cual es un requisito crítico en un sistema bancario. Aunque la probabilidad de colisión sea muy baja, el impacto sería grave (dos cuentas con el mismo identificador). Se debería validar contra el repositorio o delegar en la base de datos con una restricción única. No se deben correr riesgos así simplemente porque sea difícil que suceda.
 
 ---
 

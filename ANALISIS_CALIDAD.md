@@ -205,6 +205,8 @@ En las capturas superiores se muestra el estado general del proyecto tras el pri
 - Descripción: Se observa el uso repetido de la cadena de llamadas `account.getUser().getNotificationType()` para determinar el canal de notificación.
 - Justificación: Es un problema real de acoplamiento. Esta estructura, conocida como "choque de trenes", obliga a `AccountService` a conocer detalles íntimos de la relación entre `Account` y `User`. Si la forma en que un usuario gestiona sus notificaciones cambia, este servicio se verá afectado innecesariamente. Siguiendo la Ley de Demeter, el servicio solo debería hablar con sus "amigos inmediatos" (la cuenta), delegando en ella la obtención del tipo de notificación mediante un método como `account.getPreferredNotificationType()`.
 
+---
+
 ### Issue 15: Validación de saldo duplicada entre capas
 **Reporte de la issue**:
 ![Issue 15_1](img/capturas/Issue15_1.png)
@@ -215,6 +217,22 @@ En las capturas superiores se muestra el estado general del proyecto tras el pri
 - Tipo: Código duplicado / Diseño de capas.
 - Descripción: La comprobación de fondos insuficientes (`if (balance < amount)`) existe tanto en el servicio como dentro del propio modelo. Además, la clase `Account` expone el método `hasSufficientBalance(amount)` que no se usa en ningún punto del código.
 - Justificación: Es un problema real de diseño. La duplicación de validaciones entre capas genera inconsistencias: si las reglas cambian (por ejemplo, se permite un pequeño descubierto), hay que recordar modificar dos sitios a la vez. La responsabilidad de la validación de estado interno de la cuenta debería residir únicamente en el modelo, y el servicio debería confiar en ella.
+  
+---
+
+
+### Issue 16: Agrupación de datos repetidos en notificaciones (Data Clumps)
+**Reporte de la issue**:
+![Issue 16](img/capturas/Issue16_1.png)
+![Issue 16](img/capturas/Issue16_2.png)
+![Issue 16](img/capturas/Issue16_3.png)
+![Issue 16](img/capturas/Issue16_4.png)
+
+**Explicación del mal olor detectado**:
+- Ubicación: `src/main/java/es/codeurjc/service/AccountService.java`, líneas 102-118, 151-166, 201-213, 266-278, 281-294.
+- Tipo: Data Clumps.
+- Descripción: Los métodos de notificación siempre reciben los mismos parámetros: usuario, tipo, título y mensaje.
+- Justificación: Es un problema porque estos datos siempre viajan juntos, lo que indica que debería existir un objeto que los encapsule. Esto mejora la claridad y reduce errores.
 
 
 ---

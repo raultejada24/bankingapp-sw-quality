@@ -59,15 +59,13 @@ He añadido varios issues al proyecto, con sus respectivas descripciones e imág
 
 #### **Alumno 4 - Blas Vita Ramos**
 
-[Descripción de las tareas y responsabilidades principales del alumno en el proyecto]
+He creado algún issue extra de detección manual, además de garantizar un correcto formato de estos en el readme
 
 | Nº    | Commits      |
 |:------------: |:------------:|
-|1| [Issue detectada](URL_commit_1)  |
-|2| [Prueba unitaria implementada](URL_commit_2)  |
-|3| [Refactorización implementada](URL_commit_3)  |
-|4| [Caso de TDD implementado](URL_commit_4)  |
-|5| [Prueba de sistema implementada](URL_commit_5)  |
+|1| [2 new issues added](https://github.com/AdrianVillalba26/cs-2026-grupo-7/commit/99cc9ac84e66f89a1af48a416d8e05b5e23915b3)  |
+|2| [Refactorización del readme](https://github.com/AdrianVillalba26/cs-2026-grupo-7/commit/12ccc92da272659b932838e414662f818939b4fa)  |
+|3| [Issue 8: magic number añadido](https://github.com/AdrianVillalba26/cs-2026-grupo-7/commit/936c663f380bb45baf4c380841630dd76d581cab)  |
 
 ---
 

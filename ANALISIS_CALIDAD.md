@@ -265,5 +265,17 @@ En las capturas superiores se muestra el estado general del proyecto tras el pri
 
 ---
 
+### Issue 19: Falta de validación de existencia previa del número de cuenta
+**Reporte de la issue**:
+![Issue 21](img/capturas/Issue21.png)
+
+**Explicación del mal olor detectado**:
+- Ubicación: `src/main/java/es/codeurjc/service/AccountService.java`, métodos `createAccount`,`generateAccountNumber`, `getAccount`(líneas 41-64).
+- Tipo: Bug potencial / Violación de reglas de negocio.
+- Descripción: El método genera un número de cuenta mediante `generateAccountNumber()` y lo guarda directamente sin comprobar si ya existe en la base de datos. Además, añade este número de cuenta a la cuenta y luego lo usa para buscar cuentas, lo que nos dice que es un identificador, por lo cual debe ser único.
+- Justificación: Es un problema real porque no se garantiza la unicidad del número de cuenta, lo cual es un requisito crítico en un sistema bancario. Aunque la probabilidad de colisión sea muy baja, el impacto sería grave (dos cuentas con el mismo identificador). Se debería validar contra el repositorio o delegar en la base de datos con una restricción única. No se deben correr riesgos así simplemente porque sea díficil que suceda.
+
+---
+
 **Refactorización**
 (Se realizará en la Tarea 3)

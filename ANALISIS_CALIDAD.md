@@ -209,7 +209,7 @@ En las capturas superiores se muestra el estado general del proyecto tras el pri
 
 ### Issue 15: Validación de saldo duplicada entre capas
 **Reporte de la issue**:
-![Issue 15_1](img/capturas/Issue15_1.png)
+
 ![Issue 15_1](img/capturas/Issue15_1.png)
 
 **Explicación del mal olor detectado**:
@@ -223,6 +223,7 @@ En las capturas superiores se muestra el estado general del proyecto tras el pri
 
 ### Issue 16: Agrupación de datos repetidos en notificaciones (Data Clumps)
 **Reporte de la issue**:
+
 ![Issue 16](img/capturas/Issue16_1.png)
 ![Issue 16](img/capturas/Issue16_2.png)
 ![Issue 16](img/capturas/Issue16_3.png)
@@ -233,6 +234,33 @@ En las capturas superiores se muestra el estado general del proyecto tras el pri
 - Tipo: Data Clumps.
 - Descripción: Los métodos de notificación siempre reciben los mismos parámetros: usuario, tipo, título y mensaje.
 - Justificación: Es un problema porque estos datos siempre viajan juntos, lo que indica que debería existir un objeto que los encapsule. Esto mejora la claridad y reduce errores.
+
+
+### Issue 17: Instanciación directa de dependencia (Violación de DIP)
+**Reporte de la issue**:
+
+![Issue 17_1](img/capturas/Issue_17_1.png)
+
+
+**Explicación del mal olor detectado**:
+- Ubicación: `src/main/java/es/codeurjc/service/Loan/LoanService.java`, línea 42.
+- Tipo: Fuerte Acoplamiento / Violación del Principio de Inversión de Dependencias (SOLID - DIP).
+- Descripción: En el constructor del servicio se instancia manualmente una dependencia mediante la instrucción `this.loanApprovalAlgorithm = new LoanApprovalAlgorithm();`.
+- Justificación: Es un problema de diseño real. El Principio de Inversión de Dependencias de SOLID (DIP) indica que las clases de alto nivel no deben depender de implementaciones concretas de bajo nivel. Al usar `new` dentro del constructor, `LoanService` queda fuertemente acoplado a esa implementación específica, haciendo imposible inyectar un algoritmo distinto (por ejemplo, para pruebas unitarias con un *Mock* o si el banco cambia su lógica de préstamos en el futuro). 
+
+---
+
+### Issue 18: Métodos redundantes y duplicación injustificada
+**Reporte de la issue**:
+
+![Issue 18_1](img/capturas/Issue_18_1.png)
+
+
+**Explicación del mal olor detectado**:
+- Ubicación: `src/main/java/es/codeurjc/model/Loan.java`, líneas 141 a 148.
+- Tipo: Code Smell / Dead Code.
+- Descripción: Existen dos métodos casi idénticos: `getStatusName()` y `getStatusText()`. El segundo se limita única y exclusivamente a llamar al primero. Además, en esta misma clase, se sobrescribe el método `toString()` del *Enum* `LoanStatus` solo para devolver `this.name()`, comportamiento que Java ya hace por defecto.
+- Justificación: Es un mal olor de código. Según los comentarios, `getStatusText()` se creó "por ensayo y error" para que el motor de plantillas Mustache funcionara, lo que indica un parche rápido en lugar de una solución real al problema de diseño. Este código redundante aumenta la complejidad y la cantidad de líneas de código (LOC) sin aportar ningún valor, reduciendo la mantenibilidad.
 
 
 ---

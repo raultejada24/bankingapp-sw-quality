@@ -85,16 +85,13 @@ He corregido y arreglado errores iniciales que teníamos de los issues detectado
 
 ---
 
-#### **Alumno 6 - [Nombre Completo]**
+#### **Alumno 6 - Arturo Vinuesa Domínguez**
 
-[Descripción de las tareas y responsabilidades principales del alumno en el proyecto]
+Mi aportación ha consistido en buscar "bad smells" fuera del archivo obligatorio de la práctica (`AccountService.java`). He inspeccionado el resto del código del proyecto y he detectado y documentado 4 issues en otras clases para que tuviéramos más ejemplos y un análisis más completo.
 
 | Nº    | Commits      |
 |:------------: |:------------:|
-|1| [Issue detectada](URL_commit_1)  |
-|2| [Prueba unitaria implementada](URL_commit_2)  |
-|3| [Refactorización implementada](URL_commit_3)  |
-|4| [Caso de TDD implementado](URL_commit_4)  |
-|5| [Prueba de sistema implementada](URL_commit_5)  |
+|1| [2 new issues added (19 y 20)](https://github.com/AdrianVillalba26/cs-2026-grupo-7/commit/c9a6c597c919aaf7c42684634a017eef2a5331ef)  |
+|2| [2 new issues added (17 y 18)](https://github.com/AdrianVillalba26/cs-2026-grupo-7/commit/4c37f9aad5f2b28f5a9b2d0996361bc1993b6774)  |
 
 ---

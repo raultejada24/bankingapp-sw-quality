@@ -265,7 +265,7 @@ En las capturas superiores se muestra el estado general del proyecto tras el pri
 
 ---
 
-### Issue 21: Falta de validación de existencia previa del número de cuenta
+### Issue 19: Falta de validación de existencia previa del número de cuenta
 **Reporte de la issue**:
 ![Issue 21](img/capturas/Issue21.png)
 

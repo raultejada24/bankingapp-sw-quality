@@ -29,40 +29,24 @@ En las capturas superiores se muestra el estado general del proyecto tras el pri
 
 ## Análisis de Calidad - Issues detectados
 
-### Issue 1: Cadenas de texto duplicadas en LoanController
+### Issue 1: Duplicación del literal "Deposit Confirmation"
 **Reporte de la issue**:
-![Issue 1](img/capturas/Issue1.png)
+![Issue 1](img/capturas/Issue1_1.png)
+![Issue 1](img/capturas/Issue1_2.png)
+![Issue 1](img/capturas/Issue1_3.png)
 
 **Explicación del mal olor detectado**:
-- Ubicación: `src/main/java/es/codeurjc/controller/LoanController.java`, desde la línea 43.
+- Ubicación: `src/main/java/es/codeurjc/service/AccountService.java`, líneas 107, 114, 156, 163.
 - Tipo: Code Smell (Critical).
-- Descripción: La palabra "error" aparece escrita a mano 9 veces en el controlador.
-- Justificación: Consideramos que es un problema real. Usar cadenas de texto repetidas (Magic Strings) hace que el código sea difícil de mantener. Si quisiéramos cambiar el nombre de la vista de error, tendríamos que buscar por todo el archivo y cambiarlo en 9 sitios, lo cual facilita que cometamos errores tipográficos. Lo ideal sería usar una constante.
+- Descripción: El literal "Deposit Confirmation" se repite cuatro veces en el código para definir el asunto de las notificaciones, tanto para el canal de Email como para el de SMS.
+- Justificación: Es un problema real de mantenibilidad. Al tener el mismo texto "hardcodeado" en varios puntos, cualquier cambio futuro en el mensaje obligaría a modificar el código en muchos lugares, aumentando el riesgo de olvidar alguno y generar algún tipo de inconsistencia. Lo adecuado sería extraer este valor a una constante única para poder centralizar el mensaje y facilitar su gestión.
 
-### Issue 2: Repetición del literal "success" en LoanController
+---
+
+### Issue 2: Variable "seccondAccount" sin uso en AccountService
 **Reporte de la issue**:
-![Issue 2](img/capturas/Issue2.png)
-
-**Explicación del mal olor detectado**:
-- Ubicación: `src/main/java/es/codeurjc/controller/LoanController.java`, líneas 57, 91 y 110.
-- Tipo: Code Smell (Critical).
-- Descripción: Se usa el texto "success" tres veces para gestionar los mensajes de éxito.
-- Justificación: Es un problema real de limpieza de código. Al ser una clave que se envía a la interfaz, si nos equivocamos al escribirla en uno de los métodos, el mensaje de éxito no se mostraría al usuario. Centralizar esto en una sola variable evitaría confusiones.
-
-### Issue 3: Rutas de redirección repetidas
-**Reporte de la issue**:
-![Issue 3](img/capturas/Issue3.png)
-
-**Explicación del mal olor detectado**:
-- Ubicación: `src/main/java/es/codeurjc/controller/LoanController.java`, líneas 96, 100, 114 y 118.
-- Tipo: Code Smell (Critical).
-- Descripción: La ruta "redirect:/loan/manage" está escrita literalmente 4 veces.
-- Justificación: Creemos que es un fallo de diseño. Si la estructura de navegación de la aplicación cambia en el futuro, es muy probable que nos olvidemos de actualizar alguna de estas rutas escritas a mano, rompiendo los enlaces del banco. Es un claro ejemplo de acoplamiento rígido con cadenas de texto.
-
-### Issue 4: Variable "seccondAccount" sin uso en AccountService
-**Reporte de la issue**:
-![Issue 4](img/capturas/Issue4.png)
-![Issue 4](img/capturas/duplicate-variable.png)
+![Issue 2](img/capturas/Issue2_1.png)
+![Issue 2](img/capturas/Issue2_2.png)
 
 **Explicación del mal olor detectado**:
 - Ubicación: `src/main/java/es/codeurjc/service/AccountService.java`, línea 185.
@@ -70,39 +54,24 @@ En las capturas superiores se muestra el estado general del proyecto tras el pri
 - Descripción: Se ha dejado declarada una variable llamada seccondAccount que no hace nada en el método de retiro.
 - Justificación: Es un problema real aunque de baja prioridad. Es simplemente código muerto que sobra. Al leer el código, da la sensación de que falta algo por programar o que se ha quedado ahí después de un borrador previo, por lo que debería eliminarse para no confundir.
 
-### Issue 5: Salto de transaccionalidad en LoanService
+---
+
+### Issue 3: Las cadenas de texto no se comparan usando "equals()"
 **Reporte de la issue**:
-![Issue 5](img/capturas/Issue5.png)
+![Issue 3](img/capturas/Issue3_1.png)
+![Issue 3](img/capturas/Issue3_2.png)
 
 **Explicación del mal olor detectado**:
-- Ubicación: `src/main/java/es/codeurjc/service/loan/LoanService.java`, línea 104.
-- Tipo: Code Smell (Critical).
-- Descripción: El método approveLoan llama directamente a rejectLoan usando la referencia interna.
-- Justificación: Es un problema técnico real e importante relacionado con Spring. Al llamar al método directamente, nos saltamos el proxy de seguridad y la transacción no se gestiona correctamente. Esto significa que si el rechazo falla a mitad de proceso, la base de datos podría quedarse en un estado inconsistente.
+- Ubicación: `src/main/java/es/codeurjc/service/AccountService.java`, línea 235.
+- Tipo: Bug (Major).
+- Descripción: Se está utilizando el operador de igualdad referencial "==" para comparar dos números de cuenta que son de tipo String.
+- Justificación: Es un problema real y grave. El operador "==" comprueba si ambos objetos son la misma instanciaen memoria, no si tienen el mismo contenido, por lo que en este caso la comparación podría devolver false aunque los números sena idénticos. Lo que habría que hacer es cambiar esta línea por "m.getAccountNumber().equals(o.getAccountNumber())".
 
-### Issue 6: Mensaje de error duplicado en el servicio de préstamos
+---
+
+### Issue 4: Nombres de variables no descriptivos en AccountService
 **Reporte de la issue**:
-![Issue 6](img/capturas/Issue6.png)
-
-**Explicación del mal olor detectado**:
-- Ubicación: `src/main/java/es/codeurjc/service/loan/LoanService.java`, líneas 90, 151, 187 y 274.
-- Tipo: Code Smell (Critical).
-- Descripción: El texto "Loan not found" se repite 4 veces para lanzar excepciones.
-- Justificación: Es un problema real de mantenibilidad. Si el sistema necesita ser traducido o el mensaje debe ser más específico, hay que tocar demasiados puntos del código. Una constante compartida sería la solución correcta.
-
-### Issue 7: Demasiados parámetros en el constructor de User
-**Reporte de la issue**:
-![Issue 7](img/capturas/Issue7.png)
-
-**Explicación del mal olor detectado**:
-- Ubicación: `src/main/java/es/codeurjc/model/User.java`, línea 59.
-- Tipo: Code Smell (Major).
-- Descripción: El constructor de la clase User recibe 10 argumentos de golpe.
-- Justificación: Consideramos que es un problema de diseño claro. Con tantos parámetros es muy fácil equivocarse al crear un usuario y poner, por ejemplo, el teléfono donde va el DNI. Supera el límite recomendado de parámetros (7) y hace que el código sea mucho más denso y difícil de leer.
-
-### Issue 8: Nombres de variables no descriptivos en AccountService
-**Reporte de la issue**:
-![Issue 8](img/capturas/Issue8.png)
+![Issue 4](img/capturas/Issue4.png)
 
 **Explicación del mal olor detectado**:
 - Ubicación: `src/main/java/es/codeurjc/service/AccountService.java`, líneas 231 y 232.
@@ -110,9 +79,11 @@ En las capturas superiores se muestra el estado general del proyecto tras el pri
 - Descripción: En el método de transferencia se usan las letras "m" y "o" para referirse a las cuentas de origen y destino.
 - Justificación: Es un problema real. El uso de variables de una sola letra obliga a cualquier programador que lea el código a tener que adivinar qué cuenta es cuál. Lo correcto sería usar nombres como "sourceAccount" y "destinationAccount" para que el código se explique por sí solo sin necesidad de comentarios.
 
-### Issue 9: Validaciones de negocio redundantes e inalcanzables
+---
+
+### Issue 5: Validaciones de negocio redundantes e inalcanzables
 **Reporte de la issue**:
-![Issue 9](img/capturas/Issue9.png)
+![Issue 5](img/capturas/Issue5.png)
 
 **Explicación del mal olor detectado**:
 - Ubicación: `src/main/java/es/codeurjc/service/AccountService.java`, líneas 87 a 89.
@@ -120,9 +91,11 @@ En las capturas superiores se muestra el estado general del proyecto tras el pri
 - Descripción: Se comprueba si el importe es mayor de 10.000 y, justo después, si es mayor de 50.000 para lanzar el mismo error.
 - Justificación: Es un problema de lógica real. Si alguien intenta ingresar 60.000, el programa saltará en el primer "if" (el de 10.000) y nunca llegará a evaluar el segundo. Esto hace que el código sea confuso y parezca que los límites de seguridad no están bien definidos o que se ha copiado y pegado el código sin revisarlo.
 
-### Issue 10: Duplicación de lógica en los métodos de depósito
+---
+
+### Issue 6: Duplicación de lógica en los métodos de depósito
 **Reporte de la issue**:
-![Issue 10](img/capturas/Issue10.png)
+![Issue 6](img/capturas/Issue6.png)
 
 **Explicación del mal olor detectado**:
 - Ubicación: `src/main/java/es/codeurjc/service/AccountService.java`, métodos deposit (líneas 76 a 169).
@@ -130,9 +103,11 @@ En las capturas superiores se muestra el estado general del proyecto tras el pri
 - Descripción: Existen dos métodos para depositar dinero que repiten exactamente las mismas validaciones y la misma lógica de guardado y notificación.
 - Justificación: Es un problema real de duplicación. Si en el futuro el banco decide cambiar una regla de depósito, el desarrollador tendrá que modificar dos métodos distintos. El método corto (sin descripción) debería simplemente llamar al método largo pasando una descripción por defecto, evitando así tener el código duplicado.
 
-### Issue 11: Nomenclatura inadecuada en métodos de borrado
+---
+
+### Issue 7: Nomenclatura inadecuada en métodos de borrado
 **Reporte de la issue**:
-![Issue 11](img/capturas/Issue11.png)
+![Issue 7](img/capturas/Issue7.png)
 
 **Explicación del mal olor detectado**:
 - Ubicación: `src/main/java/es/codeurjc/service/AccountService.java`, línea 301.
@@ -140,30 +115,95 @@ En las capturas superiores se muestra el estado general del proyecto tras el pri
 - Descripción: El método para eliminar una cuenta se llama simplemente "rm".
 - Justificación: Es un mal olor claro. Aunque "rm" es un comando conocido en sistemas Linux, en el contexto de un servicio Java de una aplicación bancaria se deben usar nombres verbales completos como "deleteAccount". Las abreviaturas crípticas reducen la legibilidad de la arquitectura del sistema.
 
-### Issue 12: Código repetido en plantillas HTML
+---
+
+### Issue 8: Números mágicos/hardcodeados
 **Reporte de la issue**:
-![Issue 12](img/capturas/Issue12.png)
+![Issue 8_1](img/capturas/Issue8_1.png)
+![Issue 8_2](img/capturas/Issue8_2.png)
 
 **Explicación del mal olor detectado**:
-- Ubicación: `src\main\resources\templates\dashboard.html`, línea 4.
-- Tipo: Code Smell (Critical).
-- Descripción: En gran parte de las plantilla HTML utilizadas se repite el mismo bloque de código para mostrar alertas de error o éxito, con la misma estructura y solo cambiando el mensaje.
-- Justificación: El uso de plantillas, en este caso, mustache, es precisamente para evitar código repetido innecesariamente. Al tener el mismo bloque de código copiado en varias plantillas, se dificulta
-el mantenimiento y la evolución del sistema, ya que cualquier cambio en la estructura de las alertas tendría que ser replicado en todas las plantillas, aumentando el riesgo de errores y la carga de trabajo.
-Es un claro ejemplo de violación del principio DRY (Don't Repeat Yourself), por lo que es un code smell real. Se puede solucionar facilmente convirtiendo este bloque de alertas en un fragmento reutilizable, siendo que
-ya admite dinamismo por medio de las variables mustache.
+- Ubicación: `src/main/java/es/codeurjc/service/AccountService.java`. Líneas 67-78 y 114-125 (en `deposit`), línea 179 (en `withdraw`) y línea 226 (en `transfer`).
+- Tipo: Diseño de API / Mantenibilidad (Code Smell).
+- Descripción: Se utilizan números "mágicos" (hardcodeados) directamente en las condiciones lógicas para definir los límites de negocio del banco: 10.000 y 50.000 para depósitos, 5.000 para retiros y 20.000 para transferencias.
+- Justificación: Es un mal olor real. Las reglas de negocio cambian con el tiempo y tenerlas sueltas como números crudos por todo el código hace que el mantenimiento sea complicado y propenso a errores. Si el banco cambia un límite, hay que buscar y modificar el número exacto línea por línea. Lo correcto sería definir estos valores como constantes (por ejemplo, `MAX_WITHDRAWAL_LIMIT = 5000`) al inicio de la clase.
 
+---
 
-### Issue 13: Parámetro de método no utilizado
+### Issue 9: Condicionales redundantes y separadas
+**Reporte de la issue**:
+![Issue 9_1](img/capturas/Issue9_1.png)
+![Issue 9_2](img/capturas/Issue9_2.png)
+
+**Explicación del mal olor detectado**:
+- Ubicación: `src/main/java/es/codeurjc/service/AccountService.java`, líneas 77-89 y 126-138 (en ambos métodos `deposit`).
+- Tipo: Lógica redundante / Code Smell (Inspección manual).
+- Descripción: Se están utilizando dos bloques `if` separados para comprobar si el importe es igual a cero (`amount == 0`) y, a continuación, otro para comprobar si es menor que cero (`amount < 0`), lanzando exactamente la misma excepción en ambos casos.
+- Justificación: Es un problema real de calidad de código. Resulta innecesariamente verboso y repite la misma lógica de error. Esto se puede simplificar fácilmente en una única condición `if (amount <= 0)`, mejorando la legibilidad.
+
+---
+
+### Issue 10: Duplicación masiva de la lógica de notificaciones
+**Reporte de la issue**:
+![Issue 10_1](img/capturas/Issue10_1.png)
+![Issue 10_2](img/capturas/Issue10_2.png)
+![Issue 10_3](img/capturas/Issue10_3.png)
+![Issue 10_4](img/capturas/Issue10_4.png)
+
+**Explicación del mal olor detectado**:
+- Ubicación: `src/main/java/es/codeurjc/service/AccountService.java`. El bloque se repite 5 veces (líneas 102-118, 151-166, 201-213, 266-278 y 281-294).
+- Tipo: Violación del principio DRY (Don't Repeat Yourself) / Code Smell (Inspección manual).
+- Descripción: La lógica para comprobar qué tipo de notificación tiene configurada el usuario (`EMAIL` o `SMS`) y realizar el envío a través del servicio correspondiente está copiada y pegada a lo largo de todos los métodos de operaciones bancarias.
+- Justificación: Es un problema real y grave de mantenibilidad. Si en el futuro se añade un nuevo canal de notificación, habrá que modificar el código en 5 lugares distintos, aumentando el riesgo de errores. La solución ideal sería extraer esta lógica a un método privado genérico.
+
+---
+
+### Issue 11: Método con exceso de responsabilidades (Long Method)
+**Reporte de la issue**:
+![Issue 11](img/capturas/Issue11.png)
+
+**Explicación del mal olor detectado**:
+- Ubicación: `src/main/java/es/codeurjc/service/AccountService.java`, método `transfer` (líneas 223 a 296).
+- Tipo: Long Method / Violación de Single Responsibility Principle (Inspección manual).
+- Descripción: El método `transfer` es demasiado largo y asume demasiadas responsabilidades: valida límites, comprueba saldos, realiza retiros e ingresos, crea transacciones, guarda en base de datos y envía notificaciones.
+- Justificación: Es un problema real de diseño. Al acumular tantas operaciones, el método tiene una carga cognitiva muy alta, es difícil de testear y propenso a errores. Debería refactorizarse dividiéndolo en submétodos más pequeños y específicos.
+
+---
+
+### Issue 12: Literales de texto duplicados en Excepciones
+**Reporte de la issue**:
+![Issue 12_1](img/capturas/Issue12_1.png)
+![Issue 12_2](img/capturas/Issue12_2.png)
+
+**Explicación del mal olor detectado**:
+- Ubicación: `src/main/java/es/codeurjc/service/AccountService.java`. Mensaje `"Amount must be positive"` en líneas 79, 82, 128, 131, 177 y 225. Mensaje `"Amount exceeds maximum deposit limit"` en líneas 85, 88, 134 y 137.
+- Tipo: Violación del principio DRY / Code Smell (Inspección manual).
+- Descripción: Los mensajes de error de las validaciones están escritos como cadenas de texto ("Strings") literales repetidas múltiples veces a lo largo de los métodos `deposit`, `withdraw` y `transfer`.
+- Justificación: Es un problema real de mantenibilidad. Tener mensajes "hardcodeados" y duplicados dificulta la consistencia del sistema. Si se desea internacionalizar la aplicación o simplemente corregir una errata en el mensaje, el desarrollador debe buscar y modificar cada instancia individualmente, aumentando el riesgo de inconsistencias. Lo adecuado es centralizar estos textos en constantes de clase.
+
+---
+
+### Issue 13: Uso excesivo de Excepciones Genéricas
 **Reporte de la issue**:
 ![Issue 13](img/capturas/Issue13.png)
 
 **Explicación del mal olor detectado**:
-- Ubicación: `src/main/java/es/codeurjc/service/loan/LoanApprovalAlgorithm.java`, línea 7.
-- Tipo: Mantenibilidad (código muerto y generalidad especulativa)
-- Descripción: Se incluye como parámetro en un método una variable que no se llega a utilizar en ningún punto dentro del ámbito de este.
-- Justificación: Independientemente de si la causa es la pasada presencia de su uso o la falsa futura especulación de su necesidad, se trata de un mal olor porque
-ocupa un espacio innecesario que además puede llevar a confusiones sobre su propósito por parte de otros desarrolladores.
+- Ubicación: `src/main/java/es/codeurjc/service/AccountService.java`. Líneas 63, 79, 82, 85, 88, 128, 131, 134, 137, 177, 181, 225, 228, 236, 241 y 305.
+- Tipo: Anti-patrón de manejo de errores / Code Smell (Inspección manual).
+- Descripción: Se utiliza sistemáticamente la excepción genérica `IllegalArgumentException` para reportar errores de naturaleza muy distinta: fallos de validación, cuenta no encontrada, fondos insuficientes o errores de borrado.
+- Justificación: Es un problema real que afecta la testabilidad y la extensibilidad. Al lanzar siempre la misma excepción genérica, es imposible para las capas superiores (como un controlador de API) capturar fallos específicos para dar respuestas personalizadas al usuario (ej. diferenciar un error de "Límite excedido" de uno de "Cuenta no encontrada"). Se deberían emplear excepciones de negocio personalizadas.
+
+---
+
+### Issue 14: Violación de la Ley de Demeter (Cadenas de mensajes)
+**Reporte de la issue**:
+![Issue 14](img/capturas/Issue14.png)
+
+**Explicación del mal olor detectado**:
+- Ubicación: `src/main/java/es/codeurjc/service/AccountService.java`. Líneas 102, 151, 201, 266 y 281.
+- Tipo: Fuerte acoplamiento / Code Smell (Inspección manual).
+- Descripción: Se observa el uso repetido de la cadena de llamadas `account.getUser().getNotificationType()` para determinar el canal de notificación.
+- Justificación: Es un problema real de acoplamiento. Esta estructura, conocida como "choque de trenes", obliga a `AccountService` a conocer detalles íntimos de la relación entre `Account` y `User`. Si la forma en que un usuario gestiona sus notificaciones cambia, este servicio se verá afectado innecesariamente. Siguiendo la Ley de Demeter, el servicio solo debería hablar con sus "amigos inmediatos" (la cuenta), delegando en ella la obtención del tipo de notificación mediante un método como `account.getPreferredNotificationType()`.
 
 ### Issue 14: Bloque de notificación duplicado en AccountService y LoanService
 

@@ -1,4 +1,4 @@
-# Praćtica 1 - Control de calidad de una aplicación web 
+# Praćtica 2 - Control de calidad de una aplicación web 
 
 **Grupo 7**
 
@@ -15,7 +15,7 @@
 
 ---
 
-### **Participación de Miembros en la Práctica 1**
+### **Participación de Miembros en la Práctica 2**
 
 #### **Alumno 1 - Gonzalo Andrés Zurdo Patino**
 
@@ -33,15 +33,15 @@
 
 #### **Alumno 2 - Raúl Tejada Merinero**
 
-[Descripción de las tareas y responsabilidades principales del alumno en el proyecto]
+He añadido las capturas del Overview y Dashboard además de añadir varios Issues al proyecto.
 
 | Nº    | Commits      |
 |:------------: |:------------:|
-|1| [Issue detectada](URL_commit_1)  |
-|2| [Prueba unitaria implementada](URL_commit_2)  |
-|3| [Refactorización implementada](URL_commit_3)  |
-|4| [Caso de TDD implementado](URL_commit_4)  |
-|5| [Prueba de sistema implementada](URL_commit_5)  |
+|1| [Adding New Issues](https://github.com/AdrianVillalba26/cs-2026-grupo-7/commit/d7f1d42ea27cae76a6fc924228275925a3835440)  |
+|2| [Adding 7 new Issues](https://github.com/AdrianVillalba26/cs-2026-grupo-7/commit/7a3dd0d173d99d42bb770785dd64fa291fa46aca)  |
+|3| [Update ANALISIS_CALIDAD.md](https://github.com/AdrianVillalba26/cs-2026-grupo-7/commit/ad68b11dd02a12861043afcfc70a0b3a7bdfb98c)  |
+|4| [Update ANALISIS_CALIDAD.md with issues and refactoring notes](https://github.com/AdrianVillalba26/cs-2026-grupo-7/commit/538eb7685fcdd92ae53bc8c4ff8b6fb5be95c769)  |
+|5| [Adding new images](https://github.com/AdrianVillalba26/cs-2026-grupo-7/commit/e2674e155150a8599cb089aa3cdcafa004d04aaa)  |
 
 ---
 

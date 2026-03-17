@@ -47,7 +47,7 @@ He añadido las capturas del Overview y Dashboard además de añadir varios Issu
 
 #### **Alumno 3 - Adrián Varea Fernández**
 
-[He añadido varios issues al proyecto, con sus respectivas descripciones e imágenes]
+He añadido varios issues al proyecto, con sus respectivas descripciones e imágenes.
 
 | Nº    | Commits      |
 |:------------: |:------------:|

@@ -361,7 +361,7 @@ En las capturas superiores se muestra el estado general del proyecto tras el pri
 **Explicación del mal olor detectado**:
 - Ubicación: `src/main/java/es/codeurjc/service/LoanService.java`, líneas 64 y 106.
 - Tipo: Bug Lógico latente / Mantenibilidad (Inspección manual).
-- Descripción: Al procesar un préstamo, el código recupera la lista de cuentas del usuario y asume sistemáticamente que la cuenta relevante es la primera de la lista mediante accounts.get(0).
+- Descripción: Al procesar un préstamo, el código recupera la lista de cuentas del usuario y asume sistemáticamente que la cuenta relevante es la primera de la lista mediante `accounts.get(0)`.
 - Justificación: Es un problema real de negocio. Si un usuario tiene múltiples cuentas (por ejemplo, una de ahorros y otra corriente), el sistema siempre vinculará el préstamo a la primera que devuelva la base de datos, lo cual es impredecible y silenciosamente incorrecto. El método debería requerir explícitamente el accountId de destino para aplicar el préstamo de forma determinista y segura.
 
 #### Refactorización *(NO REALIZAR HASTA TAREA 3)*
@@ -378,7 +378,7 @@ En las capturas superiores se muestra el estado general del proyecto tras el pri
 **Explicación del mal olor detectado**:
 - Ubicación: `src/main/java/es/codeurjc/service/EmailNotificationService.java` (Líneas 36-38).
 - Tipo: Code Smell / Mala práctica de Logging (Inspección manual).
-- Descripción: Se utiliza System.out.println("Sending EMAIL to: " + user.getEmail()); para registrar eventos del sistema.
+- Descripción: Se utiliza `System.out.println("Sending EMAIL to: " + user.getEmail());` para registrar eventos del sistema.
 - Justificación: Es un problema real. En aplicaciones empresariales, el uso de la salida estándar de consola no permite configurar niveles de severidad (INFO, DEBUG, ERROR), ni guardar el historial en archivos o servicios de monitoreo. Además, expone datos personales del usuario (email, teléfono) sin control, lo que podría ser un problema de seguridad. Debería utilizarse un framework de logging como SLF4J o Logback.
 
 #### Refactorización *(NO REALIZAR HASTA TAREA 3)*

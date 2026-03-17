@@ -1,36 +1,19 @@
 # Grupo 7
-Integrantes: Adrián Varea Fernández, Adrián Villalba Cuello de Oro, Arturo Vinuesa Domínguez, Blas Vita Ramos, Gonzalo Andrés Zurdo Patiño, Raúl Tejada Merinero
+Adrián Varea Fernández, Adrián Villalba Cuello de Oro, Arturo Vinuesa Domínguez, Blas Vita Ramos, Gonzalo Andrés Zurdo Patiño, Raúl Tejada Merinero
 
 # Tarea 1: Análisis de Calidad del Código
-
-## Captura de Pantalla del Overview de SonarQube
+Captura de Pantalla del Overview de SonarQube
 
 ![Overview SonarQube](img/capturas/OverView.png)
 ![Overview SonarQube](img/capturas/OverView2.png)
 
 En las capturas superiores se muestra el estado general del proyecto tras el primer escaneo. Se pueden observar las métricas de mantenibilidad (Code Smells), fiabilidad y seguridad antes de aplicar cualquier corrección.
 
----
-
-## Estructura de Ejemplo para nuevos Issues
-(Copiar y pegar este bloque para añadir más detecciones)
-
-### Issue X: Título del problema
-**Reporte de la issue**:
-![Issue X](img/capturas/IssueX.png)
-
-**Explicación del mal olor detectado**:
-- Ubicación: archivo y línea.
-- Tipo de problema: categoría de Sonar o inspección manual.
-- Descripción: qué está pasando en el código.
-- Justificación: razonamiento de por qué se considera un fallo y si es un falso positivo o no.
-
----
-
 ## Análisis de Calidad - Issues detectados
 
 ### Issue 1: Duplicación del literal "Deposit Confirmation"
 **Reporte de la issue**:
+
 ![Issue 1](img/capturas/Issue1_1.png)
 ![Issue 1](img/capturas/Issue1_2.png)
 ![Issue 1](img/capturas/Issue1_3.png)
@@ -45,6 +28,7 @@ En las capturas superiores se muestra el estado general del proyecto tras el pri
 
 ### Issue 2: Variable "seccondAccount" sin uso en AccountService
 **Reporte de la issue**:
+
 ![Issue 2](img/capturas/Issue2_1.png)
 ![Issue 2](img/capturas/Issue2_2.png)
 
@@ -58,6 +42,7 @@ En las capturas superiores se muestra el estado general del proyecto tras el pri
 
 ### Issue 3: Las cadenas de texto no se comparan usando "equals()"
 **Reporte de la issue**:
+
 ![Issue 3](img/capturas/Issue3_1.png)
 ![Issue 3](img/capturas/Issue3_2.png)
 
@@ -71,6 +56,7 @@ En las capturas superiores se muestra el estado general del proyecto tras el pri
 
 ### Issue 4: Nombres de variables no descriptivos en AccountService
 **Reporte de la issue**:
+
 ![Issue 4](img/capturas/Issue4.png)
 
 **Explicación del mal olor detectado**:
@@ -83,6 +69,7 @@ En las capturas superiores se muestra el estado general del proyecto tras el pri
 
 ### Issue 5: Validaciones de negocio redundantes e inalcanzables
 **Reporte de la issue**:
+
 ![Issue 5](img/capturas/Issue5.png)
 
 **Explicación del mal olor detectado**:
@@ -95,6 +82,7 @@ En las capturas superiores se muestra el estado general del proyecto tras el pri
 
 ### Issue 6: Duplicación de lógica en los métodos de depósito
 **Reporte de la issue**:
+
 ![Issue 6](img/capturas/Issue6.png)
 
 **Explicación del mal olor detectado**:
@@ -107,6 +95,7 @@ En las capturas superiores se muestra el estado general del proyecto tras el pri
 
 ### Issue 7: Nomenclatura inadecuada en métodos de borrado
 **Reporte de la issue**:
+
 ![Issue 7](img/capturas/Issue7.png)
 
 **Explicación del mal olor detectado**:
@@ -119,6 +108,7 @@ En las capturas superiores se muestra el estado general del proyecto tras el pri
 
 ### Issue 8: Números mágicos/hardcodeados
 **Reporte de la issue**:
+
 ![Issue 8_1](img/capturas/Issue8_1.png)
 ![Issue 8_2](img/capturas/Issue8_2.png)
 
@@ -132,6 +122,7 @@ En las capturas superiores se muestra el estado general del proyecto tras el pri
 
 ### Issue 9: Condicionales redundantes y separadas
 **Reporte de la issue**:
+
 ![Issue 9_1](img/capturas/Issue9_1.png)
 ![Issue 9_2](img/capturas/Issue9_2.png)
 
@@ -145,6 +136,7 @@ En las capturas superiores se muestra el estado general del proyecto tras el pri
 
 ### Issue 10: Duplicación masiva de la lógica de notificaciones
 **Reporte de la issue**:
+
 ![Issue 10_1](img/capturas/Issue10_1.png)
 ![Issue 10_2](img/capturas/Issue10_2.png)
 ![Issue 10_3](img/capturas/Issue10_3.png)
@@ -160,6 +152,7 @@ En las capturas superiores se muestra el estado general del proyecto tras el pri
 
 ### Issue 11: Método con exceso de responsabilidades (Long Method)
 **Reporte de la issue**:
+
 ![Issue 11](img/capturas/Issue11.png)
 
 **Explicación del mal olor detectado**:
@@ -172,6 +165,7 @@ En las capturas superiores se muestra el estado general del proyecto tras el pri
 
 ### Issue 12: Literales de texto duplicados en Excepciones
 **Reporte de la issue**:
+
 ![Issue 12_1](img/capturas/Issue12_1.png)
 ![Issue 12_2](img/capturas/Issue12_2.png)
 
@@ -185,6 +179,7 @@ En las capturas superiores se muestra el estado general del proyecto tras el pri
 
 ### Issue 13: Uso excesivo de Excepciones Genéricas
 **Reporte de la issue**:
+
 ![Issue 13](img/capturas/Issue13.png)
 
 **Explicación del mal olor detectado**:
@@ -197,6 +192,7 @@ En las capturas superiores se muestra el estado general del proyecto tras el pri
 
 ### Issue 14: Violación de la Ley de Demeter (Cadenas de mensajes)
 **Reporte de la issue**:
+
 ![Issue 14](img/capturas/Issue14.png)
 
 **Explicación del mal olor detectado**:
@@ -269,7 +265,6 @@ En las capturas superiores se muestra el estado general del proyecto tras el pri
 **Reporte de la issue**:
 
 ![Issue19_1](img/capturas/Issue19_1.png)
-
 ![Issue19_2](img/capturas/Issue19_2.png)
 
 
@@ -298,6 +293,7 @@ En las capturas superiores se muestra el estado general del proyecto tras el pri
 
 ### Issue 21: Falta de validación de existencia previa del número de cuenta
 **Reporte de la issue**:
+
 ![Issue 21](img/capturas/Issue21.png)
 
 **Explicación del mal olor detectado**:
@@ -310,6 +306,7 @@ En las capturas superiores se muestra el estado general del proyecto tras el pri
 
 ### Issue 22: Uso de tipos primitivos para representar dinero (Primitive Obsession)
 **Reporte de la issue**:
+
 ![Issue 22](img/capturas/Issue22.png)
 
 **Explicación del mal olor detectado**:

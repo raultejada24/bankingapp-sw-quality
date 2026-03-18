@@ -318,16 +318,16 @@ En las capturas superiores se muestra el estado general del proyecto tras el pri
 
 ---
 
-### Issue 17: Instanciación directa de dependencia (Violación de DIP)
+### Issue 17: Feature Envy en validación de saldo
 **Reporte de la issue**:
-
-![Issue 17_1](img/capturas/Issue_17_1.png)
+ 
+![Issue 17](img/capturas/Issue17_1.png)
 
 **Explicación del mal olor detectado**:
-- Ubicación: `src/main/java/es/codeurjc/service/Loan/LoanService.java`, línea 42.
-- Tipo: Fuerte Acoplamiento / Violación del Principio de Inversión de Dependencias (SOLID - DIP).
-- Descripción: En el constructor del servicio se instancia manualmente una dependencia mediante la instrucción `this.loanApprovalAlgorithm = new LoanApprovalAlgorithm();`.
-- Justificación: Es un problema de diseño real. El Principio de Inversión de Dependencias de SOLID (DIP) indica que las clases de alto nivel no deben depender de implementaciones concretas de bajo nivel. Al usar `new` dentro del constructor, `LoanService` queda fuertemente acoplado a esa implementación específica, haciendo imposible inyectar un algoritmo distinto (por ejemplo, para pruebas unitarias con un *Mock* o si el banco cambia su lógica de préstamos en el futuro). 
+- Ubicación: `src/main/java/es/codeurjc/service/AccountService.java`, método `transfer`.
+- Tipo: Feature Envy (Fuerte Acoplamiento).
+- Descripción: El servicio le pide los datos internos a la cuenta (`m.getBalance() < amount`) para tomar la decisión de lanzar la excepción, y luego le ordena retirar (`m.withdraw(amount)`).
+- Justificación: Tal y como se indica en la teoría de la asignatura, este método usa más datos ajenos (de la cuenta) que propios. La lógica de verificar si hay fondos pertenece exclusivamente a la clase `Account`. Al sacar esta lógica fuera de la entidad, generamos un alto acoplamiento y violamos la encapsulación (principio "Tell, Don't Ask").
 
 #### Refactorización *(NO REALIZAR HASTA TAREA 3)*
 - Espacio para captura del código corregido o fragmento resaltado.
@@ -335,16 +335,19 @@ En las capturas superiores se muestra el estado general del proyecto tras el pri
 
 ---
 
-### Issue 18: Métodos redundantes y duplicación injustificada
+### Issue 18: Fuerte acoplamiento con detalles técnicos (Violación de Clean Architecture)
 **Reporte de la issue**:
 
-![Issue 18_1](img/capturas/Issue_18_1.png)
+![Issue 18](img/capturas/Issue18_1.png)
+![Issue 18](img/capturas/Issue18_2.png)
+![Issue 18](img/capturas/Issue18_3.png)
+
 
 **Explicación del mal olor detectado**:
-- Ubicación: `src/main/java/es/codeurjc/model/Loan.java`, líneas 141 a 148.
-- Tipo: Code Smell / Dead Code.
-- Descripción: Existen dos métodos casi idénticos: `getStatusName()` y `getStatusText()`. El segundo se limita única y exclusivamente a llamar al primero. Además, en esta misma clase, se sobrescribe el método `toString()` del *Enum* `LoanStatus` solo para devolver `this.name()`, comportamiento que Java ya hace por defecto.
-- Justificación: Es un mal olor de código. Según los comentarios, `getStatusText()` se creó "por ensayo y error" para que el motor de plantillas Mustache funcionara, lo que indica un parche rápido en lugar de una solución real al problema de diseño. Este código redundante aumenta la complejidad y la cantidad de líneas de código (LOC) sin aportar ningún valor, reduciendo la mantenibilidad.
+- Ubicación: `src/main/java/es/codeurjc/service/AccountService.java`, métodos `deposit`, `withdraw` y `transfer`.
+- Tipo: Violación de Clean Architecture / Acoplamiento a infraestructura.
+- Descripción: Se mezcla la gestión de transacciones de base de datos (`@Transactional`) con el envío de notificaciones externas mediante red (`emailService.sendNotification`).
+- Justificación: Siguiendo los principios de Clean Architecture, las reglas de negocio no deben depender de los detalles técnicos. Al enviar un email (que es una operación de red lenta y propensa a fallos) dentro de una transacción de base de datos abierta, acoplamos fuertemente el rendimiento de la base de datos a la velocidad del servidor de correo, lo que penaliza enormemente la escalabilidad del sistema.
 
 #### Refactorización *(NO REALIZAR HASTA TAREA 3)*
 - Espacio para captura del código corregido o fragmento resaltado.
@@ -352,17 +355,17 @@ En las capturas superiores se muestra el estado general del proyecto tras el pri
 
 ---
 
-### Issue 19: Asunción de cuenta hardcodeada (Riesgo de Shotgun Surgery)
+### Issue 19: Consulta masiva a base de datos sin paginación (Rendimiento)
 **Reporte de la issue**:
 
-![Issue19_1](img/capturas/Issue19_1.png)
-![Issue19_2](img/capturas/Issue19_2.png)
+![Issue 19](img/capturas/Issue19_1.png)
+
 
 **Explicación del mal olor detectado**:
-- Ubicación: `src/main/java/es/codeurjc/service/LoanService.java`, líneas 64 y 106.
-- Tipo: Bug Lógico latente / Mantenibilidad (Inspección manual).
-- Descripción: Al procesar un préstamo, el código recupera la lista de cuentas del usuario y asume sistemáticamente que la cuenta relevante es la primera de la lista mediante `accounts.get(0)`.
-- Justificación: Es un problema real de negocio. Si un usuario tiene múltiples cuentas (por ejemplo, una de ahorros y otra corriente), el sistema siempre vinculará el préstamo a la primera que devuelva la base de datos, lo cual es impredecible y silenciosamente incorrecto. El método debería requerir explícitamente el accountId de destino para aplicar el préstamo de forma determinista y segura.
+- Ubicación: `src/main/java/es/codeurjc/service/AccountService.java`, método `getTransactions`.
+- Tipo: Falta de Cohesión / Rendimiento.
+- Descripción: El método `transactionRepository.findByAccountOrderByTimestampDesc(account)` devuelve la lista completa de todas las transacciones de una cuenta de golpe en un objeto `List<Transaction>`.
+- Justificación: En un sistema real, una cuenta bancaria acumula miles de transacciones con el tiempo. Traer todos esos registros de golpe a la memoria penaliza el rendimiento y dificulta la mantenibilidad a largo plazo, pudiendo causar caídas por falta de memoria (Out Of Memory). Debería aplicarse paginación desde el repositorio para traer los datos en lotes pequeños.
 
 #### Refactorización *(NO REALIZAR HASTA TAREA 3)*
 - Espacio para captura del código corregido o fragmento resaltado.
@@ -370,16 +373,16 @@ En las capturas superiores se muestra el estado general del proyecto tras el pri
 
 ---
 
-### Issue 20: Uso de System.out.println en código de producción
+### Issue 20: Falta de control de flujo por defecto (Fallo silencioso)
 **Reporte de la issue**:
 
-![Issue20_1](img/capturas/Issue20_1.png)
+![Issue 20](img/capturas/Issue20_1.png)
 
 **Explicación del mal olor detectado**:
-- Ubicación: `src/main/java/es/codeurjc/service/EmailNotificationService.java` (Líneas 36-38).
-- Tipo: Code Smell / Mala práctica de Logging (Inspección manual).
-- Descripción: Se utiliza `System.out.println("Sending EMAIL to: " + user.getEmail());` para registrar eventos del sistema.
-- Justificación: Es un problema real. En aplicaciones empresariales, el uso de la salida estándar de consola no permite configurar niveles de severidad (INFO, DEBUG, ERROR), ni guardar el historial en archivos o servicios de monitoreo. Además, expone datos personales del usuario (email, teléfono) sin control, lo que podría ser un problema de seguridad. Debería utilizarse un framework de logging como SLF4J o Logback.
+- Ubicación: `src/main/java/es/codeurjc/service/AccountService.java`, bloques de notificación en todos los métodos operativos.
+- Tipo: Complejidad Ciclomática / Lógica incompleta.
+- Descripción: El código evalúa `if (notifType == EMAIL)` y luego usa `else if (notifType == SMS)`, pero carece de un bloque `else` final.
+- Justificación: Al dejar "caminos" lógicos sin cubrir, la complejidad de las pruebas aumenta porque ese camino invisible no tiene un comportamiento definido. Si en el futuro se añade un nuevo valor al Enum `NotificationType` (por ejemplo, `PUSH`) y se olvida modificar este bloque, el sistema pasará por alto el envío de forma silenciosa sin lanzar ninguna alerta o excepción, dificultando mucho el debugging.
 
 #### Refactorización *(NO REALIZAR HASTA TAREA 3)*
 - Espacio para captura del código corregido o fragmento resaltado.

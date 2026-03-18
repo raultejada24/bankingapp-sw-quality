@@ -436,4 +436,5 @@ En definitiva, este análisis evidencia la importancia de aplicar principios de 
 *(Espacio reservado para anexos, enlaces adicionales o documentación extra que el grupo considere oportuna para la defensa o comprensión de la práctica):*
 
 [CS - Tema 2.1 – Bad Smells.docx.pdf](https://github.com/user-attachments/files/26079919/CS.-.Tema.2.1.Bad.Smells.docx.pdf)
+
 [Herramienta SonarQube Cloud](https://www.sonarsource.com/products/sonarqube/?s_campaign=SQ-APJ-1-Japan-Brand&s_content=Languages&s_term=sonarcloud&s_category=Paid&s_source=Paid%20Search&s_origin=Google&cq_src=google_ads&cq_cmp=23600038948&cq_con=200395503824&cq_term=sonarcloud&cq_med=&cq_plac=&cq_net=g&cq_pos=&cq_plt=gp&gad_source=1&gad_campaignid=23600038948&gbraid=0AAAAAC0fKmoueJlSX5zp_yyaBo4bekNSW&gclid=Cj0KCQjwmunNBhDbARIsAOndKpk0FsvHNiaBPCESgxmWNTwthCKwfppVPAmYKkqmSOCt1ZCuoKNGCb0aAgbUEALw_wcB)

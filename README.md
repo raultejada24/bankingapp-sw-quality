@@ -23,11 +23,9 @@
 
 | Nº    | Commits      |
 |:------------: |:------------:|
-|1| [Issue detectada](URL_commit_1)  |
-|2| [Prueba unitaria implementada](URL_commit_2)  |
-|3| [Refactorización implementada](URL_commit_3)  |
-|4| [Caso de TDD implementado](URL_commit_4)  |
-|5| [Prueba de sistema implementada](URL_commit_5)  |
+|1| [Corrección de errores tipográficos y actualización de las referencias estéticas](https://github.com/arturoovinuesaa/cs-2026-grupo-7/commit/618b0c5) |
+|2| [Detección y documentación técnica de 4 nuevos Code Smells (Issues 14 al 17)](https://github.com/arturoovinuesaa/cs-2026-grupo-7/commit/4e3336a) |
+|3| [Adición de las capturas de pantalla de evidencia (imágenes) para el Issue 15](https://github.com/arturoovinuesaa/cs-2026-grupo-7/commit/9955bb6) |
 
 ---
 

@@ -87,11 +87,10 @@ He corregido y arreglado errores iniciales que teníamos de los issues detectado
 
 #### **Alumno 6 - Arturo Vinuesa Domínguez**
 
-Mi aportación ha consistido en buscar "bad smells" fuera del archivo obligatorio de la práctica (`AccountService.java`). He inspeccionado el resto del código del proyecto y he detectado y documentado 4 issues en otras clases para que tuviéramos más ejemplos y un análisis más completo.
+Mi aportación ha consistido en realizar una inspección manual profunda de la clase `AccountService.java`. He detectado y documentado 4 issues (del 17 al 20) relacionados con el alto acoplamiento, "Feature Envy" y violaciones de Clean Architecture que las herramientas automáticas no pueden detectar.
 
 | Nº    | Commits      |
 |:------------: |:------------:|
-|1| [2 new issues added (19 y 20)](https://github.com/AdrianVillalba26/cs-2026-grupo-7/commit/c9a6c597c919aaf7c42684634a017eef2a5331ef)  |
-|2| [2 new issues added (17 y 18)](https://github.com/AdrianVillalba26/cs-2026-grupo-7/commit/4c37f9aad5f2b28f5a9b2d0996361bc1993b6774)  |
+|1| [4 new issues added from 17 to 20](https://github.com/AdrianVillalba26/cs-2026-grupo-7/commit/8ad5aa6e73a5517b2916f0f8b10309dd61b60cea)  |
 
 ---

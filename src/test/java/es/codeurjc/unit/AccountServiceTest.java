@@ -1,5 +1,519 @@
 package es.codeurjc.unit;
 
+import es.codeurjc.repository.AccountRepository;
+import es.codeurjc.repository.TransactionRepository;
+import es.codeurjc.service.AccountService;
+import es.codeurjc.service.RandomService;
+import es.codeurjc.service.notifications.EmailNotificationService;
+import es.codeurjc.service.notifications.SmsNotificationService;
+
+import org.junit.jupiter.api.DisplayName;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
+import org.mockito.InjectMocks;
+import org.mockito.Mock;
+import org.mockito.junit.jupiter.MockitoExtension;
+
+import static org.mockito.Mockito.*;
+
+/* PLAN DE PRUEBAS - AccountService
+ * --- Métodos Básicos ---
+ * 1. createAccount: Prueba que se genera un número, se asigna el usuario y se guarda.
+ * 2. getAccount_Success: Prueba que devuelve la cuenta si existe.
+ * 3. getAccount_NotFound: Prueba que lanza IllegalArgumentException si no existe.
+ * 4. getUserAccounts: Prueba que devuelve la lista de cuentas del usuario.
+ * 5. getBalance: Prueba que devuelve el saldo correcto.
+ * 6. getTransactions: Prueba que devuelve la lista de transacciones ordenada.
+ * 7. rm_Success: Prueba que elimina la cuenta si el saldo es 0.
+ * 8. rm_HasBalance: Prueba que lanza IllegalArgumentException si el saldo != 0.
+ * --- Deposit (Con descripción) ---
+ * 9. deposit_ZeroAmount: Lanza excepción si amount == 0.
+ * 10. deposit_NegativeAmount: Lanza excepción si amount < 0.
+ * 11. deposit_Exceeds10k: Lanza excepción si amount > 10000.
+ * 12. deposit_Exceeds50k: [INACCESSIBLE] Documentado. Nunca se llega aquí porque salta en > 10000.
+ * 13. deposit_Success_Email: Ingreso válido y notificación por EMAIL.
+ * 14. deposit_Success_Sms: Ingreso válido y notificación por SMS.
+ * 15. deposit_Success_NoNotif: Ingreso válido donde no entra ni en EMAIL ni en SMS.
+ * --- Quick Deposit (Sin descripción) ---
+ * 16. quickDeposit_ZeroAmount: Lanza excepción si amount == 0.
+ * 17. quickDeposit_NegativeAmount: Lanza excepción si amount < 0.
+ * 18. quickDeposit_Exceeds10k: Lanza excepción si amount > 10000.
+ * 19. quickDeposit_Exceeds50k: [INACCESSIBLE] Documentado. Mismo caso que el anterior.
+ * 20. quickDeposit_Success_Email: Ingreso válido y notificación por EMAIL.
+ * 21. quickDeposit_Success_Sms: Ingreso válido y notificación por SMS.
+ * 22. quickDeposit_Success_NoNotif: Ingreso válido sin notificación.
+ * --- Withdraw ---
+ * 23. withdraw_NegativeOrZero: Lanza excepción si amount <= 0.
+ * 24. withdraw_Exceeds5k: Lanza excepción si amount > 5000.
+ * 25. withdraw_InsufficientFunds: Lanza excepción si saldo < amount.
+ * 26. withdraw_Success_Email: Retiro válido y notificación EMAIL.
+ * 27. withdraw_Success_Sms: Retiro válido y notificación SMS.
+ * 28. withdraw_Success_NoNotif: Retiro válido sin notificación.
+ * --- Transfer ---
+ * 29. transfer_NegativeOrZero: Lanza excepción si amount <= 0.
+ * 30. transfer_Exceeds20k: Lanza excepción si amount > 20000.
+ * 31. transfer_SameAccount: Lanza excepción si origen y destino son la misma cuenta (Referencia ==).
+ * 32. transfer_InsufficientFunds: Lanza excepción si saldo origen < amount.
+ * 33. transfer_Success_Emails: Transferencia válida. Remitente EMAIL, Destinatario EMAIL.
+ * 34. transfer_Success_Sms: Transferencia válida. Remitente SMS, Destinatario SMS.
+ * 35. transfer_Success_NoNotifs: Transferencia válida sin notificaciones configuradas.
+ */
+
+@ExtendWith(MockitoExtension.class)
 public class AccountServiceTest {
-    
+
+    // ==========================================
+    // MOCKS DE DEPENDENCIAS EXTERNAS
+    // ==========================================
+    @Mock
+    private AccountRepository accountRepository;
+    @Mock
+    private TransactionRepository transactionRepository;
+    @Mock
+    private EmailNotificationService emailService;
+    @Mock
+    private SmsNotificationService smsService;
+    @Mock
+    private RandomService randomService;
+
+    // INYECCIÓN DE MOCKS EN EL SERVICIO A PROBAR
+    @InjectMocks
+    private AccountService accountService;
+
+
+    // CRUD y CONSULTAS
+
+    // Hecho por: [Nombre del Alumno]
+    @Test
+    @DisplayName("1. createAccount: Prueba que se genera un número, se asigna el usuario y se guarda")
+    void createAccountTest() {
+        // Given (Preparar datos del User, configurar el mock de randomService y accountRepository.save)
+
+        // When (Llamar a accountService.createAccount)
+
+        // Then (Hacer asserts para comprobar la cuenta devuelta y usar verify para ver que se guardó)
+
+    }
+
+    // Hecho por: [Nombre del Alumno]
+    @Test
+    @DisplayName("2. getAccount_Success: Prueba que devuelve la cuenta si existe")
+    void getAccount_SuccessTest() {
+        // Given (Configurar accountRepository.findByAccountNumber para que devuelva un Optional con cuenta)
+
+        // When (Llamar a accountService.getAccount)
+
+        // Then (Comprobar con assertNotNull o assertEquals que devuelve la cuenta correcta)
+
+    }
+
+    // Hecho por: [Nombre del Alumno]
+    @Test
+    @DisplayName("3. getAccount_NotFound: Prueba que lanza IllegalArgumentException si no existe")
+    void getAccount_NotFoundTest() {
+        // Given (Configurar accountRepository.findByAccountNumber para que devuelva Optional.empty())
+
+        // When (Llamar a accountService.getAccount usando assertThrows para capturar la excepción)
+
+        // Then (Comprobar que el mensaje de la excepción es "Account not found")
+
+    }
+
+    // Hecho por: [Nombre del Alumno]
+    @Test
+    @DisplayName("4. getUserAccounts: Prueba que devuelve la lista de cuentas del usuario")
+    void getUserAccountsTest() {
+        // Given (Preparar un User y configurar accountRepository.findByUser para devolver una lista)
+
+        // When (Llamar a accountService.getUserAccounts)
+
+        // Then (Comprobar que la lista devuelta no está vacía y tiene el tamaño esperado)
+
+    }
+
+    // Hecho por: [Nombre del Alumno]
+    @Test
+    @DisplayName("5. getBalance: Prueba que devuelve el saldo correcto")
+    void getBalanceTest() {
+        // Given (Configurar accountRepository.findByAccountNumber para devolver una cuenta con saldo X)
+
+        // When (Llamar a accountService.getBalance)
+
+        // Then (Comprobar con assertEquals que el saldo devuelto es X)
+
+    }
+
+    // Hecho por: [Nombre del Alumno]
+    @Test
+    @DisplayName("6. getTransactions: Prueba que devuelve la lista de transacciones ordenada")
+    void getTransactionsTest() {
+        // Given (Preparar cuenta y configurar transactionRepository.findByAccountOrderByTimestampDesc)
+
+        // When (Llamar a accountService.getTransactions)
+
+        // Then (Verificar que devuelve la lista de transacciones esperada)
+
+    }
+
+    // Hecho por: [Nombre del Alumno]
+    @Test
+    @DisplayName("7. rm_Success: Prueba que elimina la cuenta si el saldo es 0")
+    void rm_SuccessTest() {
+        // Given (Configurar cuenta con saldo 0 y accountRepository.findByAccountNumber)
+
+        // When (Llamar a accountService.rm)
+
+        // Then (Verificar con verify que se llamó a accountRepository.delete)
+
+    }
+
+    // Hecho por: [Nombre del Alumno]
+    @Test
+    @DisplayName("8. rm_HasBalance: Prueba que lanza IllegalArgumentException si el saldo != 0")
+    void rm_HasBalanceTest() {
+        // Given (Configurar cuenta con saldo mayor a 0 y accountRepository.findByAccountNumber)
+
+        // When (Llamar a accountService.rm usando assertThrows)
+
+        // Then (Comprobar el mensaje "Cannot delete account with non-zero balance")
+
+    }
+
+
+    // FALLOS DEPOSIT
+
+    // Hecho por: [Nombre del Alumno]
+    @Test
+    @DisplayName("9. deposit_ZeroAmount: Lanza excepción si amount == 0")
+    void deposit_ZeroAmountTest() {
+        // Given (No hacen falta mocks aquí, solo preparar variables: amount = 0)
+
+        // When (Llamar a accountService.deposit usando assertThrows)
+
+        // Then (Comprobar el mensaje de excepción correspondiente)
+
+    }
+
+    // Hecho por: [Nombre del Alumno]
+    @Test
+    @DisplayName("10. deposit_NegativeAmount: Lanza excepción si amount < 0")
+    void deposit_NegativeAmountTest() {
+        // Given (No hacen falta mocks, preparar variables: amount = -50)
+
+        // When (Llamar a accountService.deposit usando assertThrows)
+
+        // Then (Comprobar el mensaje de excepción correspondiente)
+
+    }
+
+    // Hecho por: [Nombre del Alumno]
+    @Test
+    @DisplayName("11. deposit_Exceeds10k: Lanza excepción si amount > 10000")
+    void deposit_Exceeds10kTest() {
+        // Given (No hacen falta mocks, preparar variables: amount = 15000)
+
+        // When (Llamar a accountService.deposit usando assertThrows)
+
+        // Then (Comprobar el mensaje de excepción correspondiente)
+
+    }
+
+    // Hecho por: [Nombre del Alumno]
+    @Test
+    @DisplayName("12. deposit_Exceeds50k: [INACCESSIBLE] La rama de > 50000 nunca se alcanza porque salta en 10000")
+    void deposit_Exceeds50kTest() {
+        // Given (Comentar que esta rama es inalcanzable, preparar amount = 60000)
+
+        // When (Llamar a accountService.deposit usando assertThrows)
+
+        // Then (Comprobar que falla por el límite de 10k, documentando el bad smell)
+
+    }
+
+    // Hecho por: [Nombre del Alumno]
+    @Test
+    @DisplayName("16. quickDeposit_ZeroAmount: Lanza excepción si amount == 0")
+    void quickDeposit_ZeroAmountTest() {
+        // Given (Preparar variables: amount = 0, sin descripción)
+
+        // When (Llamar al deposit rápido de accountService usando assertThrows)
+
+        // Then (Comprobar el mensaje de excepción)
+
+    }
+
+    // Hecho por: [Nombre del Alumno]
+    @Test
+    @DisplayName("17. quickDeposit_NegativeAmount: Lanza excepción si amount < 0")
+    void quickDeposit_NegativeAmountTest() {
+        // Given (Preparar variables: amount = -10, sin descripción)
+
+        // When (Llamar al deposit rápido de accountService usando assertThrows)
+
+        // Then (Comprobar el mensaje de excepción)
+
+    }
+
+    // Hecho por: [Nombre del Alumno]
+    @Test
+    @DisplayName("18. quickDeposit_Exceeds10k: Lanza excepción si amount > 10000")
+    void quickDeposit_Exceeds10kTest() {
+        // Given (Preparar variables: amount = 20000, sin descripción)
+
+        // When (Llamar al deposit rápido de accountService usando assertThrows)
+
+        // Then (Comprobar el mensaje de excepción)
+
+    }
+
+    // Hecho por: [Nombre del Alumno]
+    @Test
+    @DisplayName("19. quickDeposit_Exceeds50k: [INACCESSIBLE] Rama inalcanzable")
+    void quickDeposit_Exceeds50kTest() {
+        // Given (Comentar que esta rama es inalcanzable igual que la 12)
+
+        // When (Llamar al deposit rápido)
+
+        // Then (Comprobar que falla por el límite de 10k)
+
+    }
+
+
+    // ÉXITOS DEPOSIT
+
+    // Hecho por: [Nombre del Alumno]
+    @Test
+    @DisplayName("13. deposit_Success_Email: Ingreso válido y notificación por EMAIL")
+    void deposit_Success_EmailTest() {
+        // Given (Configurar User con NotificationType.EMAIL, configurar Mocks de BD)
+
+        // When (Llamar a accountService.deposit con cantidad válida)
+
+        // Then (Verificar guardado en BD y verificar que se llamó a emailService.sendNotification)
+
+    }
+
+    // Hecho por: [Nombre del Alumno]
+    @Test
+    @DisplayName("14. deposit_Success_Sms: Ingreso válido y notificación por SMS")
+    void deposit_Success_SmsTest() {
+        // Given (Configurar User con NotificationType.SMS, configurar Mocks de BD)
+
+        // When (Llamar a accountService.deposit con cantidad válida)
+
+        // Then (Verificar guardado en BD y verificar que se llamó a smsService.sendNotification)
+
+    }
+
+    // Hecho por: [Nombre del Alumno]
+    @Test
+    @DisplayName("15. deposit_Success_NoNotif: Ingreso válido donde no entra ni en EMAIL ni en SMS")
+    void deposit_Success_NoNotifTest() {
+        // Given (Configurar User con NotificationType nulo o distinto, configurar Mocks de BD)
+
+        // When (Llamar a accountService.deposit con cantidad válida)
+
+        // Then (Verificar guardado y usar verifyNoInteractions() con emailService y smsService)
+
+    }
+
+    // Hecho por: [Nombre del Alumno]
+    @Test
+    @DisplayName("20. quickDeposit_Success_Email: Ingreso rápido y notificación por EMAIL")
+    void quickDeposit_Success_EmailTest() {
+        // Given (Configurar User con EMAIL, configurar Mocks de BD)
+
+        // When (Llamar al deposit rápido con cantidad válida)
+
+        // Then (Verificar guardado en BD y llamada a emailService)
+
+    }
+
+    // Hecho por: [Nombre del Alumno]
+    @Test
+    @DisplayName("21. quickDeposit_Success_Sms: Ingreso rápido y notificación por SMS")
+    void quickDeposit_Success_SmsTest() {
+        // Given (Configurar User con SMS, configurar Mocks de BD)
+
+        // When (Llamar al deposit rápido con cantidad válida)
+
+        // Then (Verificar guardado en BD y llamada a smsService)
+
+    }
+
+    // Hecho por: [Nombre del Alumno]
+    @Test
+    @DisplayName("22. quickDeposit_Success_NoNotif: Ingreso rápido sin notificación")
+    void quickDeposit_Success_NoNotifTest() {
+        // Given (Configurar User sin notificaciones configuradas, configurar Mocks de BD)
+
+        // When (Llamar al deposit rápido con cantidad válida)
+
+        // Then (Verificar guardado y verificar que no se llamaron servicios de notificación)
+
+    }
+
+
+    // RETIROS / WITHDRAW)
+
+    // Hecho por: [Nombre del Alumno]
+    @Test
+    @DisplayName("23. withdraw_NegativeOrZero: Lanza excepción si amount <= 0")
+    void withdraw_NegativeOrZeroTest() {
+        // Given (Preparar cantidad inválida <= 0)
+
+        // When (Llamar a accountService.withdraw usando assertThrows)
+
+        // Then (Comprobar mensaje de excepción)
+
+    }
+
+    // Hecho por: [Nombre del Alumno]
+    @Test
+    @DisplayName("24. withdraw_Exceeds5k: Lanza excepción si amount > 5000")
+    void withdraw_Exceeds5kTest() {
+        // Given (Preparar cantidad inválida > 5000)
+
+        // When (Llamar a accountService.withdraw usando assertThrows)
+
+        // Then (Comprobar mensaje de excepción)
+
+    }
+
+    // Hecho por: [Nombre del Alumno]
+    @Test
+    @DisplayName("25. withdraw_InsufficientFunds: Lanza excepción si saldo < amount")
+    void withdraw_InsufficientFundsTest() {
+        // Given (Configurar Mock de BD para devolver cuenta con saldo menor que el retiro solicitado)
+
+        // When (Llamar a accountService.withdraw usando assertThrows)
+
+        // Then (Comprobar mensaje de "Insufficient funds")
+
+    }
+
+    // Hecho por: [Nombre del Alumno]
+    @Test
+    @DisplayName("26. withdraw_Success_Email: Retiro válido y notificación EMAIL")
+    void withdraw_Success_EmailTest() {
+        // Given (Configurar cuenta con fondos, User con EMAIL, Mocks de BD)
+
+        // When (Llamar a accountService.withdraw)
+
+        // Then (Verificar resta de saldo, guardado en BD y llamada a emailService)
+
+    }
+
+    // Hecho por: [Nombre del Alumno]
+    @Test
+    @DisplayName("27. withdraw_Success_Sms: Retiro válido y notificación SMS")
+    void withdraw_Success_SmsTest() {
+        // Given (Configurar cuenta con fondos, User con SMS, Mocks de BD)
+
+        // When (Llamar a accountService.withdraw)
+
+        // Then (Verificar resta de saldo, guardado en BD y llamada a smsService)
+
+    }
+
+    // Hecho por: [Nombre del Alumno]
+    @Test
+    @DisplayName("28. withdraw_Success_NoNotif: Retiro válido sin notificación")
+    void withdraw_Success_NoNotifTest() {
+        // Given (Configurar cuenta con fondos, User sin notificación, Mocks de BD)
+
+        // When (Llamar a accountService.withdraw)
+
+        // Then (Verificar resta de saldo, guardado y cerciorarse de no llamar a notificaciones)
+
+    }
+
+
+    // FALLOS TRANSFER
+
+    // Hecho por: [Nombre del Alumno]
+    @Test
+    @DisplayName("29. transfer_NegativeOrZero: Lanza excepción si amount <= 0")
+    void transfer_NegativeOrZeroTest() {
+        // Given (Preparar amount <= 0)
+
+        // When (Llamar a accountService.transfer usando assertThrows)
+
+        // Then (Comprobar mensaje de excepción)
+
+    }
+
+    // Hecho por: [Nombre del Alumno]
+    @Test
+    @DisplayName("30. transfer_Exceeds20k: Lanza excepción si amount > 20000")
+    void transfer_Exceeds20kTest() {
+        // Given (Preparar amount > 20000)
+
+        // When (Llamar a accountService.transfer usando assertThrows)
+
+        // Then (Comprobar mensaje de excepción)
+
+    }
+
+    // Hecho por: [Nombre del Alumno]
+    @Test
+    @DisplayName("31. transfer_SameAccount: Lanza excepción si origen y destino son la misma cuenta")
+    void transfer_SameAccountTest() {
+        // Given (Mock BD devuelve la misma instancia de cuenta para origen y destino)
+
+        // When (Llamar a accountService.transfer usando assertThrows)
+
+        // Then (Comprobar mensaje "Cannot transfer to same account")
+
+    }
+
+    // Hecho por: [Nombre del Alumno]
+    @Test
+    @DisplayName("32. transfer_InsufficientFunds: Lanza excepción si saldo origen < amount")
+    void transfer_InsufficientFundsTest() {
+        // Given (Mock BD devuelve cuenta origen sin fondos y cuenta destino normal)
+
+        // When (Llamar a accountService.transfer usando assertThrows)
+
+        // Then (Comprobar mensaje "Insufficient funds")
+
+    }
+
+    // ÉXITOS TRANSFER
+
+    // Hecho por: [Nombre del Alumno]
+    @Test
+    @DisplayName("33. transfer_Success_Emails: Transferencia válida. Remitente EMAIL, Destinatario EMAIL")
+    void transfer_Success_EmailsTest() {
+        // Given (Mock BD devuelve cuentas válidas con User en EMAIL)
+
+        // When (Llamar a accountService.transfer)
+
+        // Then (Verificar intercambio de saldos, guardado de transacciones y llamadas a emailService)
+
+    }
+
+    // Hecho por: [Nombre del Alumno]
+    @Test
+    @DisplayName("34. transfer_Success_Sms: Transferencia válida. Remitente SMS, Destinatario SMS")
+    void transfer_Success_SmsTest() {
+        // Given (Mock BD devuelve cuentas válidas con User en SMS)
+
+        // When (Llamar a accountService.transfer)
+
+        // Then (Verificar intercambio de saldos, guardado de transacciones y llamadas a smsService)
+    }
+
+    // Hecho por: [Nombre del Alumno]
+    @Test
+    @DisplayName("35. transfer_Success_NoNotifs: Transferencia válida sin notificaciones configuradas")
+    void transfer_Success_NoNotifsTest() {
+        // Given (Mock BD devuelve cuentas válidas con User sin notificaciones)
+
+        // When (Llamar a accountService.transfer)
+
+        // Then (Verificar transferencia completa usando verifyNoInteractions() en notificaciones)
+
+    }
+
 }

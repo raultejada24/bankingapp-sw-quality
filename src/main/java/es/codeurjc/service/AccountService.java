@@ -272,8 +272,8 @@ public class AccountService {
                     String.format("Transfer of %.2f EUR to %s. New balance: %.2f EUR", amount, toAccountNumber, m.getBalance()));
         } else if (notifType == User.NotificationType.SMS) {
             smsService.sendNotification(
-                    m.getUser(), 
-                    Notification.NotificationType.TRANSFER, 
+                    m.getUser(),
+                    Notification.NotificationType.TRANSFER,
                     "Transfer Sent",
                     String.format("Transfer of %.2f EUR to %s. New balance: %.2f EUR", amount, toAccountNumber, m.getBalance()));
         }
@@ -288,8 +288,8 @@ public class AccountService {
                         amount, fromAccountNumber, o.getBalance()));
         } else if (notifTypeTo == User.NotificationType.SMS) {
             smsService.sendNotification(
-                o.getUser(), 
-                Notification.NotificationType.TRANSFER, 
+                o.getUser(),
+                Notification.NotificationType.TRANSFER,
                 "Transfer Received",
                 String.format("Transfer of %.2f EUR from %s. New balance: %.2f EUR", amount, fromAccountNumber, o.getBalance()));
         }

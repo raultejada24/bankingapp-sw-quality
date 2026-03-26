@@ -1,5 +1,8 @@
 package es.codeurjc.unit;
 
+import es.codeurjc.model.Account;
+import es.codeurjc.model.Transaction;
+import es.codeurjc.model.User;
 import es.codeurjc.repository.AccountRepository;
 import es.codeurjc.repository.TransactionRepository;
 import es.codeurjc.service.AccountService;
@@ -14,6 +17,9 @@ import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 
+import java.util.Optional;
+
+import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.Mockito.*;
 
 /* PLAN DE PRUEBAS - AccountService
@@ -95,28 +101,36 @@ public class AccountServiceTest {
 
     }
 
-    // Hecho por: [Nombre del Alumno]
+    // Hecho por: Raúl Tejada Merinero
     @Test
     @DisplayName("2. getAccount_Success: Prueba que devuelve la cuenta si existe")
     void getAccount_SuccessTest() {
         // Given (Configurar accountRepository.findByAccountNumber para que devuelva un Optional con cuenta)
+        Account mockAccount = new Account("ES12345", Account.AccountType.SAVINGS, 100);
+        when(accountRepository.findByAccountNumber("ES12345")).thenReturn(Optional.of(mockAccount));
 
         // When (Llamar a accountService.getAccount)
+        Account result = accountService.getAccount("ES12345");
 
         // Then (Comprobar con assertNotNull o assertEquals que devuelve la cuenta correcta)
-
+        assertNotNull(result);
+        assertEquals("ES12345", result.getAccountNumber());
+        verify(accountRepository, times(1)).findByAccountNumber("ES12345");
     }
 
-    // Hecho por: [Nombre del Alumno]
+    // Hecho por: Raúl Tejada Merinero
     @Test
     @DisplayName("3. getAccount_NotFound: Prueba que lanza IllegalArgumentException si no existe")
     void getAccount_NotFoundTest() {
         // Given (Configurar accountRepository.findByAccountNumber para que devuelva Optional.empty())
+        when(accountRepository.findByAccountNumber("ES99999")).thenReturn(Optional.empty());
 
         // When (Llamar a accountService.getAccount usando assertThrows para capturar la excepción)
-
         // Then (Comprobar que el mensaje de la excepción es "Account not found")
-
+        IllegalArgumentException exception = assertThrows(IllegalArgumentException.class, () -> {
+            accountService.getAccount("ES99999");
+        });
+        assertEquals("Account not found", exception.getMessage());
     }
 
     // Hecho por: [Nombre del Alumno]
@@ -194,15 +208,18 @@ public class AccountServiceTest {
 
     }
 
-    // Hecho por: [Nombre del Alumno]
+    // Hecho por: Raúl Tejada Merinero
     @Test
     @DisplayName("10. deposit_NegativeAmount: Lanza excepción si amount < 0")
     void deposit_NegativeAmountTest() {
         // Given (No hacen falta mocks, preparar variables: amount = -50)
 
         // When (Llamar a accountService.deposit usando assertThrows)
-
         // Then (Comprobar el mensaje de excepción correspondiente)
+        IllegalArgumentException exception = assertThrows(IllegalArgumentException.class, () -> {
+            accountService.deposit("ES12345", -50.0, "Ingreso nómina");
+        });
+        assertEquals("Amount must be positive", exception.getMessage());
 
     }
 
@@ -305,16 +322,27 @@ public class AccountServiceTest {
 
     }
 
-    // Hecho por: [Nombre del Alumno]
+    // Hecho por: Raúl Tejada Merinero
     @Test
     @DisplayName("15. deposit_Success_NoNotif: Ingreso válido donde no entra ni en EMAIL ni en SMS")
     void deposit_Success_NoNotifTest() {
         // Given (Configurar User con NotificationType nulo o distinto, configurar Mocks de BD)
+        User user = new User();
+        user.setNotificationType(null); // Sin notificaciones configuradas
+        Account account = new Account("ES123", Account.AccountType.CHECKING, 100);
+        account.setUser(user);
+
+        when(accountRepository.findByAccountNumber("ES123")).thenReturn(Optional.of(account));
+        when(accountRepository.save(any(Account.class))).thenReturn(account);
 
         // When (Llamar a accountService.deposit con cantidad válida)
+        accountService.deposit("ES123", 50, "Regalo");
 
         // Then (Verificar guardado y usar verifyNoInteractions() con emailService y smsService)
-
+        assertEquals(150, account.getBalance()); // 100 + 50
+        verify(transactionRepository, times(1)).save(any(Transaction.class));
+        verifyNoInteractions(emailService); // <-- Verifica que NO se mandó email
+        verifyNoInteractions(smsService);   // <-- Verifica que NO se mandó SMS
     }
 
     // Hecho por: [Nombre del Alumno]
@@ -380,15 +408,20 @@ public class AccountServiceTest {
 
     }
 
-    // Hecho por: [Nombre del Alumno]
+    // Hecho por: Raúl Tejada Merinero
     @Test
     @DisplayName("25. withdraw_InsufficientFunds: Lanza excepción si saldo < amount")
     void withdraw_InsufficientFundsTest() {
         // Given (Configurar Mock de BD para devolver cuenta con saldo menor que el retiro solicitado)
+        Account account = new Account("ES123", Account.AccountType.CHECKING, 50); // Solo tiene 50€
+        when(accountRepository.findByAccountNumber("ES123")).thenReturn(Optional.of(account));
 
         // When (Llamar a accountService.withdraw usando assertThrows)
-
         // Then (Comprobar mensaje de "Insufficient funds")
+        IllegalArgumentException exception = assertThrows(IllegalArgumentException.class, () -> {
+            accountService.withdraw("ES123", 100, "Compra cara"); // Intenta sacar 100€
+        });
+        assertEquals("Insufficient funds", exception.getMessage());
 
     }
 
@@ -455,15 +488,21 @@ public class AccountServiceTest {
 
     }
 
-    // Hecho por: [Nombre del Alumno]
+    // Hecho por: Raúl Tejada Merinero
     @Test
     @DisplayName("31. transfer_SameAccount: Lanza excepción si origen y destino son la misma cuenta")
     void transfer_SameAccountTest() {
         // Given (Mock BD devuelve la misma instancia de cuenta para origen y destino)
+        Account account = new Account("ES123", Account.AccountType.CHECKING, 500);
+        // Cuando busque el origen y el destino, devolvemos la MISMA cuenta
+        when(accountRepository.findByAccountNumber("ES123")).thenReturn(Optional.of(account));
 
         // When (Llamar a accountService.transfer usando assertThrows)
-
         // Then (Comprobar mensaje "Cannot transfer to same account")
+        IllegalArgumentException exception = assertThrows(IllegalArgumentException.class, () -> {
+            accountService.transfer("ES123", "ES123", 50);
+        });
+        assertEquals("Cannot transfer to same account", exception.getMessage());
 
     }
 
@@ -504,16 +543,29 @@ public class AccountServiceTest {
         // Then (Verificar intercambio de saldos, guardado de transacciones y llamadas a smsService)
     }
 
-    // Hecho por: [Nombre del Alumno]
+    // Hecho por: Raúl Tejada Merinero
     @Test
     @DisplayName("35. transfer_Success_NoNotifs: Transferencia válida sin notificaciones configuradas")
     void transfer_Success_NoNotifsTest() {
         // Given (Mock BD devuelve cuentas válidas con User sin notificaciones)
+        User user = new User();
+        user.setNotificationType(null); // Sin notificaciones
+        Account origen = new Account("ES1", Account.AccountType.CHECKING, 500);
+        Account destino = new Account("ES2", Account.AccountType.SAVINGS, 100);
+        origen.setUser(user);
+        destino.setUser(user);
+
+        when(accountRepository.findByAccountNumber("ES1")).thenReturn(Optional.of(origen));
+        when(accountRepository.findByAccountNumber("ES2")).thenReturn(Optional.of(destino));
 
         // When (Llamar a accountService.transfer)
+        accountService.transfer("ES1", "ES2", 200);
 
         // Then (Verificar transferencia completa usando verifyNoInteractions() en notificaciones)
-
+        assertEquals(300, origen.getBalance());
+        assertEquals(300, destino.getBalance());
+        verify(transactionRepository, times(2)).save(any(Transaction.class)); // 2 transacciones creadas
+        verifyNoInteractions(emailService, smsService);
     }
 
 }

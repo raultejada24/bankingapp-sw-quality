@@ -126,10 +126,11 @@ public class AccountServiceTest {
         when(accountRepository.findByAccountNumber("ES99999")).thenReturn(Optional.empty());
 
         // When (Llamar a accountService.getAccount usando assertThrows para capturar la excepción)
-        // Then (Comprobar que el mensaje de la excepción es "Account not found")
         IllegalArgumentException exception = assertThrows(IllegalArgumentException.class, () -> {
             accountService.getAccount("ES99999");
         });
+        
+        // Then (Comprobar que el mensaje de la excepción es "Account not found")
         assertEquals("Account not found", exception.getMessage());
     }
 
@@ -215,10 +216,11 @@ public class AccountServiceTest {
         // Given (No hacen falta mocks, preparar variables: amount = -50)
 
         // When (Llamar a accountService.deposit usando assertThrows)
-        // Then (Comprobar el mensaje de excepción correspondiente)
         IllegalArgumentException exception = assertThrows(IllegalArgumentException.class, () -> {
             accountService.deposit("ES12345", -50.0, "Ingreso nómina");
         });
+        
+        // Then (Comprobar el mensaje de excepción correspondiente)
         assertEquals("Amount must be positive", exception.getMessage());
 
     }
@@ -341,8 +343,8 @@ public class AccountServiceTest {
         // Then (Verificar guardado y usar verifyNoInteractions() con emailService y smsService)
         assertEquals(150, account.getBalance()); // 100 + 50
         verify(transactionRepository, times(1)).save(any(Transaction.class));
-        verifyNoInteractions(emailService); // <-- Verifica que NO se mandó email
-        verifyNoInteractions(smsService);   // <-- Verifica que NO se mandó SMS
+        verifyNoInteractions(emailService); // Verifica que NO se mandó email
+        verifyNoInteractions(smsService);   // Verifica que NO se mandó SMS
     }
 
     // Hecho por: [Nombre del Alumno]
@@ -417,10 +419,11 @@ public class AccountServiceTest {
         when(accountRepository.findByAccountNumber("ES123")).thenReturn(Optional.of(account));
 
         // When (Llamar a accountService.withdraw usando assertThrows)
-        // Then (Comprobar mensaje de "Insufficient funds")
         IllegalArgumentException exception = assertThrows(IllegalArgumentException.class, () -> {
             accountService.withdraw("ES123", 100, "Compra cara"); // Intenta sacar 100€
         });
+        
+        // Then (Comprobar mensaje de "Insufficient funds")
         assertEquals("Insufficient funds", exception.getMessage());
 
     }
@@ -498,10 +501,11 @@ public class AccountServiceTest {
         when(accountRepository.findByAccountNumber("ES123")).thenReturn(Optional.of(account));
 
         // When (Llamar a accountService.transfer usando assertThrows)
-        // Then (Comprobar mensaje "Cannot transfer to same account")
         IllegalArgumentException exception = assertThrows(IllegalArgumentException.class, () -> {
             accountService.transfer("ES123", "ES123", 50);
         });
+
+        // Then (Comprobar mensaje "Cannot transfer to same account")
         assertEquals("Cannot transfer to same account", exception.getMessage());
 
     }

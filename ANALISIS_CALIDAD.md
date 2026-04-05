@@ -82,7 +82,7 @@ Explicación de la solución: Se ha extraído el literal de texto a una constant
 Insertar captura o código corregido aquí
 ```
 
-Explicación de la solución: Se elimina la variable seccondAccount del método de retiro, ya que no se utiliza en ninguna parte de la lógica. Esto permite limpiar el código, mejorando su legibilidad y evitar confusiones futuras sobre funcionalidades inexistentes o incompletas.
+Explicación de la solución: Se elimina la variable seccondAccount del método de retiro, ya que no se utiliza en ninguna parte de la lógica. Esto permite limpiar el código, mejorando su legibilidad y evitando confusiones futuras sobre funcionalidades inexistentes o incompletas.
 
 ---
 

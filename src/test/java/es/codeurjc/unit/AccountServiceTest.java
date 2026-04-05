@@ -1,6 +1,7 @@
 package es.codeurjc.unit;
 
 import es.codeurjc.model.Account;
+import es.codeurjc.model.Notification;
 import es.codeurjc.model.Transaction;
 import es.codeurjc.model.User;
 import es.codeurjc.repository.AccountRepository;
@@ -318,42 +319,93 @@ public class AccountServiceTest {
         assertEquals("Amount exceeds maximum deposit limit", exception.getMessage());
     }
 
-    // Hecho por: [Nombre del Alumno]
+    // Hecho por: Blas
     @Test
     @DisplayName("19. quickDeposit_Exceeds50k: [INACCESSIBLE] Rama inalcanzable")
     void quickDeposit_Exceeds50kTest() {
         // Given (Comentar que esta rama es inalcanzable igual que la 12)
+        double depositAmount = 50001.0;
 
         // When (Llamar al deposit rápido)
+        IllegalArgumentException exception = assertThrows(IllegalArgumentException.class, () -> {
+            accountService.deposit("ES12345", depositAmount);
+        });
 
         // Then (Comprobar que falla por el límite de 10k)
+        // Dead code
+        assertEquals("Amount exceeds maximum deposit limit", exception.getMessage());
 
     }
 
 
     // ÉXITOS DEPOSIT
 
-    // Hecho por: [Nombre del Alumno]
+    // Hecho por: Blas
     @Test
     @DisplayName("13. deposit_Success_Email: Ingreso válido y notificación por EMAIL")
     void deposit_Success_EmailTest() {
         // Given (Configurar User con NotificationType.EMAIL, configurar Mocks de BD)
+        User user = new User();
+
+        user.setNotificationType(User.NotificationType.EMAIL);
+        Account userAccount = new Account("ES123", Account.AccountType.CHECKING, 100);
+        userAccount.setUser(user);
 
         // When (Llamar a accountService.deposit con cantidad válida)
+        when(accountRepository.findByAccountNumber("ES123")).thenReturn(Optional.of(userAccount));
+        when(accountRepository.save(any(Account.class))).thenReturn(userAccount);
+
+        // Deposit
+        accountService.deposit("ES123", 50, "Ingreso nómina");
 
         // Then (Verificar guardado en BD y verificar que se llamó a emailService.sendNotification)
+        assertEquals(150, userAccount.getBalance());
 
+        verify(accountRepository, times(1)).findByAccountNumber("ES123");
+        verify(accountRepository, times(1)).findByAccountNumber("ES123");
+        verify(transactionRepository, times(1)).save(any(Transaction.class));
+        verify(accountRepository, times(1)).save(userAccount);
+        verify(emailService, times(1)).sendNotification(
+            eq(user),
+            eq(Notification.NotificationType.DEPOSIT),
+            anyString(),
+            anyString()
+        );
+
+        verifyNoInteractions(smsService);
     }
 
-    // Hecho por: [Nombre del Alumno]
+    // Hecho por: Blas
     @Test
     @DisplayName("14. deposit_Success_Sms: Ingreso válido y notificación por SMS")
     void deposit_Success_SmsTest() {
         // Given (Configurar User con NotificationType.SMS, configurar Mocks de BD)
+        User user = new User();
+        user.setNotificationType(User.NotificationType.SMS);
+        Account userAccount = new Account("ES123", Account.AccountType.SAVINGS, 200);
+        userAccount.setUser(user);
 
         // When (Llamar a accountService.deposit con cantidad válida)
+        when(accountRepository.findByAccountNumber("ES123")).thenReturn(Optional.of(userAccount));
+        when(accountRepository.save(any(Account.class))).thenReturn(userAccount);
+
+        // Deposiro
+        accountService.deposit("ES123", 75, "Ingreso de cliente");
 
         // Then (Verificar guardado en BD y verificar que se llamó a smsService.sendNotification)
+        assertEquals(275, userAccount.getBalance());
+
+        verify(accountRepository, times(1)).findByAccountNumber("ES124");
+        verify(transactionRepository, times(1)).save(any(Transaction.class));
+        verify(accountRepository, times(1)).save(userAccount);
+        verify(smsService, times(1)).sendNotification(
+                eq(user),
+                eq(Notification.NotificationType.DEPOSIT),
+                anyString(),
+                anyString()
+        );
+
+        verifyNoInteractions(emailService);
 
     }
 
@@ -380,15 +432,36 @@ public class AccountServiceTest {
         verifyNoInteractions(smsService);   // Verifica que NO se mandó SMS
     }
 
-    // Hecho por: [Nombre del Alumno]
+    // Hecho por: Blas
     @Test
     @DisplayName("20. quickDeposit_Success_Email: Ingreso rápido y notificación por EMAIL")
     void quickDeposit_Success_EmailTest() {
         // Given (Configurar User con EMAIL, configurar Mocks de BD)
+        User user = new User();
+
+        user.setNotificationType(User.NotificationType.EMAIL);
+        Account userAccount = new Account("ES125", Account.AccountType.CHECKING, 300);
+        userAccount.setUser(user);
+
+        when(accountRepository.findByAccountNumber("ES125")).thenReturn(Optional.of(userAccount));
+        when(accountRepository.save(any(Account.class))).thenReturn(userAccount);
 
         // When (Llamar al deposit rápido con cantidad válida)
+        accountService.deposit("ES125", 100);
 
         // Then (Verificar guardado en BD y llamada a emailService)
+        assertEquals(400, userAccount.getBalance());
+        verify(accountRepository, times(1)).findByAccountNumber("ES125");
+        verify(transactionRepository, times(1)).save(any(Transaction.class));
+        verify(accountRepository, times(1)).save(userAccount);
+        verify(emailService, times(1)).sendNotification(
+            eq(user),
+            eq(Notification.NotificationType.DEPOSIT),
+            anyString(),
+            anyString()
+        );
+
+        verifyNoInteractions(smsService);
 
     }
 

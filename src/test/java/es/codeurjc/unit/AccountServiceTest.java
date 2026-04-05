@@ -158,28 +158,40 @@ public class AccountServiceTest {
 
     }
 
-    // Hecho por: [Nombre del Alumno]
+    // Hecho por: Gonzalo
     @Test
     @DisplayName("6. getTransactions: Prueba que devuelve la lista de transacciones ordenada")
     void getTransactionsTest() {
         // Given (Preparar cuenta y configurar transactionRepository.findByAccountOrderByTimestampDesc)
+        Account account = new Account("ES12345", Account.AccountType.SAVINGS, 100);
+        when(accountRepository.findByAccountNumber("ES12345")).thenReturn(Optional.of(account));
+        Transaction t1 = new Transaction(account, Transaction.TransactionType.DEPOSIT, 100, "Deposit");
+        java.util.List<Transaction> transactions = java.util.List.of(t1);
+        when(transactionRepository.findByAccountOrderByTimestampDesc(account)).thenReturn(transactions);
 
         // When (Llamar a accountService.getTransactions)
+        java.util.List<Transaction> result = accountService.getTransactions("ES12345");
 
         // Then (Verificar que devuelve la lista de transacciones esperada)
-
+        assertEquals(transactions, result);
+        verify(accountRepository, times(1)).findByAccountNumber("ES12345");
+        verify(transactionRepository, times(1)).findByAccountOrderByTimestampDesc(account);
     }
 
-    // Hecho por: [Nombre del Alumno]
+    // Hecho por: Gonzalo
     @Test
     @DisplayName("7. rm_Success: Prueba que elimina la cuenta si el saldo es 0")
     void rm_SuccessTest() {
         // Given (Configurar cuenta con saldo 0 y accountRepository.findByAccountNumber)
+        Account account = new Account("ES12345", Account.AccountType.SAVINGS, 0);
+        when(accountRepository.findByAccountNumber("ES12345")).thenReturn(Optional.of(account));
 
         // When (Llamar a accountService.rm)
+        accountService.rm("ES12345");
 
         // Then (Verificar con verify que se llamó a accountRepository.delete)
-
+        verify(accountRepository, times(1)).findByAccountNumber("ES12345");
+        verify(accountRepository, times(1)).delete(account);
     }
 
     // Hecho por: [Nombre del Alumno]
@@ -225,64 +237,85 @@ public class AccountServiceTest {
 
     }
 
-    // Hecho por: [Nombre del Alumno]
+    // Hecho por: Gonzalo
     @Test
     @DisplayName("11. deposit_Exceeds10k: Lanza excepción si amount > 10000")
     void deposit_Exceeds10kTest() {
         // Given (No hacen falta mocks, preparar variables: amount = 15000)
+        double amount = 15000.0;
 
         // When (Llamar a accountService.deposit usando assertThrows)
+        IllegalArgumentException exception = assertThrows(IllegalArgumentException.class, () -> {
+            accountService.deposit("ES12345", amount, "Deposito grande");
+        });
 
         // Then (Comprobar el mensaje de excepción correspondiente)
-
+        assertEquals("Amount exceeds maximum deposit limit", exception.getMessage());
     }
 
-    // Hecho por: [Nombre del Alumno]
+    // Hecho por: Gonzalo
     @Test
     @DisplayName("12. deposit_Exceeds50k: [INACCESSIBLE] La rama de > 50000 nunca se alcanza porque salta en 10000")
     void deposit_Exceeds50kTest() {
         // Given (Comentar que esta rama es inalcanzable, preparar amount = 60000)
+        double amount = 60000.0;
 
         // When (Llamar a accountService.deposit usando assertThrows)
+        IllegalArgumentException exception = assertThrows(IllegalArgumentException.class, () -> {
+            accountService.deposit("ES12345", amount, "Deposito enorme");
+        });
 
         // Then (Comprobar que falla por el límite de 10k, documentando el bad smell)
-
+        // Documentamos el bad smell: la condicion > 50000 es inalcanzable (dead code) ya que todo > 10000 lanza la excepción previa.
+        assertEquals("Amount exceeds maximum deposit limit", exception.getMessage());
     }
 
-    // Hecho por: [Nombre del Alumno]
+    // Hecho por: Gonzalo
     @Test
     @DisplayName("16. quickDeposit_ZeroAmount: Lanza excepción si amount == 0")
     void quickDeposit_ZeroAmountTest() {
         // Given (Preparar variables: amount = 0, sin descripción)
+        double amount = 0.0;
 
         // When (Llamar al deposit rápido de accountService usando assertThrows)
+        IllegalArgumentException exception = assertThrows(IllegalArgumentException.class, () -> {
+            accountService.deposit("ES12345", amount);
+        });
 
         // Then (Comprobar el mensaje de excepción)
-
+        assertEquals("Amount must be positive", exception.getMessage());
     }
 
-    // Hecho por: [Nombre del Alumno]
+    // Hecho por: Gonzalo
     @Test
     @DisplayName("17. quickDeposit_NegativeAmount: Lanza excepción si amount < 0")
     void quickDeposit_NegativeAmountTest() {
         // Given (Preparar variables: amount = -10, sin descripción)
+        double amount = -10.0;
 
         // When (Llamar al deposit rápido de accountService usando assertThrows)
+        IllegalArgumentException exception = assertThrows(IllegalArgumentException.class, () -> {
+            accountService.deposit("ES12345", amount);
+        });
 
         // Then (Comprobar el mensaje de excepción)
-
+        assertEquals("Amount must be positive", exception.getMessage());
     }
 
-    // Hecho por: [Nombre del Alumno]
+    // Hecho por: Gonzalo
     @Test
     @DisplayName("18. quickDeposit_Exceeds10k: Lanza excepción si amount > 10000")
     void quickDeposit_Exceeds10kTest() {
         // Given (Preparar variables: amount = 20000, sin descripción)
+        double amount = 20000.0;
 
         // When (Llamar al deposit rápido de accountService usando assertThrows)
+        IllegalArgumentException exception = assertThrows(IllegalArgumentException.class, () -> {
+            accountService.deposit("ES12345", amount);
+        });
 
         // Then (Comprobar el mensaje de excepción)
-
+        assertEquals("Amount exceeds maximum deposit limit", exception.getMessage());
     }
 
     // Hecho por: [Nombre del Alumno]

@@ -465,27 +465,63 @@ public class AccountServiceTest {
 
     }
 
-    // Hecho por: [Nombre del Alumno]
+    // Hecho por: Blas
     @Test
     @DisplayName("21. quickDeposit_Success_Sms: Ingreso rápido y notificación por SMS")
     void quickDeposit_Success_SmsTest() {
         // Given (Configurar User con SMS, configurar Mocks de BD)
+        User user = new User();
+        user.setNotificationType(User.NotificationType.SMS);
+        Account userAccount = new Account("ES126", Account.AccountType.SAVINGS, 250);
+        userAccount.setUser(user);
+
+        when(accountRepository.findByAccountNumber("ES126")).thenReturn(Optional.of(userAccount));
+        when(accountRepository.save(any(Account.class))).thenReturn(userAccount);
 
         // When (Llamar al deposit rápido con cantidad válida)
+        accountService.deposit("ES126", 150);
 
         // Then (Verificar guardado en BD y llamada a smsService)
+        assertEquals(400, userAccount.getBalance());
+
+        verify(accountRepository, times(1)).findByAccountNumber("ES126");
+        verify(transactionRepository, times(1)).save(any(Transaction.class));
+        verify(accountRepository, times(1)).save(userAccount);
+        verify(smsService, times(1)).sendNotification(
+            eq(user),
+            eq(Notification.NotificationType.DEPOSIT),
+            anyString(),
+            anyString()
+        );
+
+        verifyNoInteractions(emailService);
 
     }
 
-    // Hecho por: [Nombre del Alumno]
+    // Hecho por: Blas
     @Test
     @DisplayName("22. quickDeposit_Success_NoNotif: Ingreso rápido sin notificación")
     void quickDeposit_Success_NoNotifTest() {
         // Given (Configurar User sin notificaciones configuradas, configurar Mocks de BD)
+        User user = new User();
+        user.setNotificationType(null); // Sin notificaciones
+        Account userAccount = new Account("ES127", Account.AccountType.SAVINGS, 150);
+        userAccount.setUser(user);
+
+        when(accountRepository.findByAccountNumber("ES127")).thenReturn(Optional.of(userAccount));
+        when(accountRepository.save(any(Account.class))).thenReturn(userAccount);
 
         // When (Llamar al deposit rápido con cantidad válida)
+        accountService.deposit("ES127", 50);
 
         // Then (Verificar guardado y verificar que no se llamaron servicios de notificación)
+        assertEquals(200, userAccount.getBalance());
+
+        verify(accountRepository, times(1)).findByAccountNumber("ES127");
+        verify(transactionRepository, times(1)).save(any(Transaction.class));
+        verify(accountRepository, times(1)).save(userAccount);
+
+        verifyNoInteractions(emailService, smsService);
 
     }
 
@@ -546,15 +582,36 @@ public class AccountServiceTest {
 
     }
 
-    // Hecho por: [Nombre del Alumno]
+    // Hecho por: Blas
     @Test
     @DisplayName("27. withdraw_Success_Sms: Retiro válido y notificación SMS")
     void withdraw_Success_SmsTest() {
         // Given (Configurar cuenta con fondos, User con SMS, Mocks de BD)
+        User user = new User();
+        user.setNotificationType(User.NotificationType.SMS);
+        Account userAccount = new Account("ES128", Account.AccountType.CHECKING, 500);
+        userAccount.setUser(user);
+
+        when(accountRepository.findByAccountNumber("ES128")).thenReturn(Optional.of(userAccount));
+        when(accountRepository.save(any(Account.class))).thenReturn(userAccount);
 
         // When (Llamar a accountService.withdraw)
+        accountService.withdraw("ES128", 150, "Compra tienda");
 
         // Then (Verificar resta de saldo, guardado en BD y llamada a smsService)
+        assertEquals(350, userAccount.getBalance());
+
+        verify(accountRepository, times(1)).findByAccountNumber("ES128");
+        verify(transactionRepository, times(1)).save(any(Transaction.class));
+        verify(accountRepository, times(1)).save(userAccount);
+        verify(smsService, times(1)).sendNotification(
+                eq(user),
+                eq(Notification.NotificationType.WITHDRAWAL),
+                anyString(),
+                anyString()
+        );
+
+        verifyNoInteractions(emailService);
 
     }
 

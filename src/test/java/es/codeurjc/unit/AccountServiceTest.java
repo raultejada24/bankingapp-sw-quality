@@ -395,7 +395,7 @@ public class AccountServiceTest {
         // Then (Verificar guardado en BD y verificar que se llamó a smsService.sendNotification)
         assertEquals(275, userAccount.getBalance());
 
-        verify(accountRepository, times(1)).findByAccountNumber("ES124");
+        verify(accountRepository, times(1)).findByAccountNumber("ES123");
         verify(transactionRepository, times(1)).save(any(Transaction.class));
         verify(accountRepository, times(1)).save(userAccount);
         verify(smsService, times(1)).sendNotification(

@@ -31,66 +31,6 @@ En las capturas superiores se muestra el estado general del proyecto tras el pri
 
 ---
 
-## 2.5. Estrategia de Refactorización - Distribución de Issues
-
-### Ubicación de Refactorizaciones por Archivo
-
-Se han implementado **22 issues de refactorización** distribuidas en los siguientes archivos:
-
-#### **AccountServiceRefactored.java** (12 issues - Implementadas directamente)
-Archivo: `src/main/java/es/codeurjc/service/AccountServiceRefactored.java` (294 líneas)
-
-- ✅ **Issue 1**: Constantes para literales duplicados (DEPOSIT_CONFIRMATION_SUBJECT, etc.)
-- ✅ **Issue 3**: Uso de `.equals()` en lugar de `==` para comparación de strings
-- ✅ **Issue 4**: Variables descriptivas (sourceAccount, destinationAccount en lugar de m, o)
-- ✅ **Issue 5**: Eliminada condición inalcanzable (amount > 50000)
-- ✅ **Issue 6**: Métodos deposit refactorizados con sobrecarga
-- ✅ **Issue 7**: Renombrado `rm()` a `deleteAccount()`
-- ✅ **Issue 8**: Magic numbers extraídos como constantes (MAX_DEPOSIT_LIMIT, etc.)
-- ✅ **Issue 9**: Condicionales consolidados (amount <= 0)
-- ✅ **Issue 10**: Centralización de notificaciones en método `sendNotification()`
-- ✅ **Issue 11**: Método `transfer()` dividido en submétodos helpers
-- ✅ **Issue 12**: Mensajes de error centralizados en constantes
-- ✅ **Issue 20**: Switch con default case para control de flujo completo
-
-#### **Clases de Soporte Creadas** (10 issues - Requieren clases adicionales)
-
-##### **Excepciones Personalizadas** (Issue 13)
-Paquete: `src/main/java/es/codeurjc/service/exceptions/`
-
-En lugar de usar `IllegalArgumentException` genérica, se crean excepciones específicas de negocio:
-- `InvalidAmountException` - Montos inválidos
-- `LimitExceededException` - Límites de transacción excedidos  
-- `InsufficientFundsException` - Fondos insuficientes
-- `AccountNotFoundException` - Cuentas no encontradas
-- `InvalidOperationException` - Operaciones inválidas (ej. transferir a misma cuenta)
-
-Esto permite a capas superiores (Controllers) capturar excepciones específicas y dar respuestas personalizadas.
-
-##### **Método Delegado en Account.java** (Issue 14 - Ley de Demeter)
-Clase: `src/main/java/es/codeurjc/model/Account.java`
-
-Se agrega método `getPreferredNotificationType()` que encapsula acceso a `User.getNotificationType()`, reduciendo acoplamiento entre AccountService ↔ User.
-
-##### **Value Object Money** (Issue 22 - Primitive Obsession)
-Clase: `src/main/java/es/codeurjc/model/Money.java` (112 líneas)
-
-Reemplaza uso de `double` primitivo por clase Money que:
-- Encapsula cantidad y moneda
-- Previene mezcla accidental de monedas (EUR vs USD)
-- Proporciona operaciones type-safe (add, subtract, isAtLeast)
-
-#### **Issues que dependen de lo anterior** (Issues 15-19, 21)
-Estas issues se resuelven como consecuencia de las refactorizaciones anteriores:
-- **Issue 15**: Validación de saldo centralizada en Account.hasSufficientBalance()
-- **Issue 16**: Agrupación de datos de notificación (mejora en Issue 10)
-- **Issue 17**: Feature Envy eliminado usando método delegado de Issue 14
-- **Issue 18**: Clean Architecture mejorada por centralización en Issue 10
-- **Issue 19**: Paginación implementable en repository
-- **Issue 21**: Validación de número de cuenta único en createAccount()
-
----
-
 ## 3. Resultados del análisis automático y manual
 
 ### Issue 1: Duplicación del literal "Deposit Confirmation"
@@ -746,7 +686,7 @@ Se crean excepciones personalizadas en `es.codeurjc.service.exceptions` en lugar
 Estas excepciones **encapsulan los mensajes de error específicos**, reemplazando el uso de constantes genéricas:
 
 ```java
-// Uso en AccountServiceRefactored.java:
+// Uso en AccountService.java:
 public Account getAccount(String accountNumber) {
     return accountRepository.findByAccountNumber(accountNumber)
             .orElseThrow(() -> new AccountNotFoundException(accountNumber));
@@ -1179,6 +1119,8 @@ public interface AccountRepository extends JpaRepository<Account, Long> {
 Explicación de la solución: Se agrega validación `existsByAccountNumber()` para verificar que el número de cuenta sea único antes de crear una nueva. Ventajas: (1) Garantiza unicidad de cuentas, (2) Evita corrupción de datos, (3) Claridad de intención, (4) Previene bugs silenciosos.
 
 ---
+
+### Issue 22: Uso de tipos primitivos para representar dinero (Primitive Obsession)
 **Reporte de la issue**:
 
 ![Issue 22](img/capturas/Issue22.png)
@@ -1273,32 +1215,32 @@ A continuación, se adjuntan evidencias del estado de la cobertura de código (C
 
 | # | Nombre Issue | Ubicación | Líneas | Estado |
 |---|---|---|---|---|
-| 1 | Literales duplicados | AccountServiceRefactored.java | 34-38 | ✅ Implementado |
+| 1 | Literales duplicados | AccountService.java | 34-38 | Implementado |
 | 2 | Variable sin uso | AccountService.java (orig) | - | Documentado |
-| 3 | Comparación strings | AccountServiceRefactored.java | 285 | ✅ Implementado |
-| 4 | Nombres vars descriptivos | AccountServiceRefactored.java | 201-203 | ✅ Implementado |
-| 5 | Condición inalcanzable | Eliminada (Issue 13) | - | ✅ Implementado |
-| 6 | Duplicación deposit | AccountServiceRefactored.java | 101-146 | ✅ Implementado |
-| 7 | Nomenclatura borrado | AccountServiceRefactored.java | 216-228 | ✅ Implementado |
-| 8 | Magic numbers | AccountServiceRefactored.java | 24-26 | ✅ Implementado |
-| 9 | Condicionales redundantes | AccountServiceRefactored.java | 121 | ✅ Implementado |
-| 10 | Duplicación notificaciones | AccountServiceRefactored.java | 254-271 | ✅ Implementado |
-| 11 | Long method | AccountServiceRefactored.java | 190-343 | ✅ Implementado |
-| 12 | Literales excepciones | AccountServiceRefactored.java | 40-43 | ✅ Implementado (2 constantes) |
-| 13 | Excepciones genéricas | exceptions/*.java | 5 clases, 95 líneas | ✅ Creadas |
-| 14 | Ley de Demeter | Account.java | 106-109 | ✅ Agregado |
-| 15 | Validación saldo duplicada | Account.java (hasSufficientBalance) | 148-150 | ✅ Implementado |
-| 16 | Data Clumps | Issue 10 (centralización) | - | ✅ Resuelto |
-| 17 | Feature Envy | Issue 14 + 15 (delegación) | - | ✅ Resuelto |
-| 18 | Clean Architecture | Issue 10 (abstracción) | - | ✅ Resuelto |
+| 3 | Comparación strings | AccountService.java | 285 | Implementado |
+| 4 | Nombres vars descriptivos | AccountService.java | 201-203 | Implementado |
+| 5 | Condición inalcanzable | Eliminada (Issue 13) | - | Implementado |
+| 6 | Duplicación deposit | AccountService.java | 101-146 | Implementado |
+| 7 | Nomenclatura borrado | AccountService.java | 216-228 | Implementado |
+| 8 | Magic numbers | AccountService.java | 24-26 | Implementado |
+| 9 | Condicionales redundantes | AccountService.java | 121 | Implementado |
+| 10 | Duplicación notificaciones | AccountService.java | 254-271 | Implementado |
+| 11 | Long method | AccountService.java | 190-343 | Implementado |
+| 12 | Literales excepciones | AccountService.java | 40-43 | Implementado (2 constantes) |
+| 13 | Excepciones genéricas | exceptions/*.java | 5 clases, 95 líneas | Creadas |
+| 14 | Ley de Demeter | Account.java | 106-109 | Agregado |
+| 15 | Validación saldo duplicada | Account.java (hasSufficientBalance) | 148-150 | Implementado |
+| 16 | Data Clumps | Issue 10 (centralización) | - | Resuelto |
+| 17 | Feature Envy | Issue 14 + 15 (delegación) | - | Resuelto |
+| 18 | Clean Architecture | Issue 10 (abstracción) | - | Resuelto |
 | 19 | Paginación | transactionRepository | - | Implementable |
-| 20 | Default case | AccountServiceRefactored.java | 259-271 | ✅ Implementado |
-| 21 | Validación unicidad | createAccount() | 68-82 | ✅ Implementado |
-| 22 | Primitive Obsession | Money.java | 112 líneas | ✅ Creada |
+| 20 | Default case | AccountService.java | 259-271 | Implementado |
+| 21 | Validación unicidad | createAccount() | 68-82 | Implementado |
+| 22 | Primitive Obsession | Money.java | 112 líneas | Creada |
 
 ### Desglose por Archivo
 
-**AccountServiceRefactored.java** (294 líneas)
+**AccountService.java** (294 líneas)
 - 12 issues implementadas directamente  
 - Código limpio, SOLID-compliant, fácil de mantener y testear
 
@@ -1308,7 +1250,7 @@ A continuación, se adjuntan evidencias del estado de la cobertura de código (C
 - `InsufficientFundsException.java` (23 líneas) - Para fondos insuficientes
 - `AccountNotFoundException.java` (17 líneas) - Para cuentas no encontradas
 - `InvalidOperationException.java` (12 líneas) - Para operaciones inválidas
-- **Uso**: Importadas y usadas en AccountServiceRefactored.java (líneas 11-15), reemplazando IllegalArgumentException
+- **Uso**: Importadas y usadas en AccountService.java (líneas 11-15), reemplazando IllegalArgumentException
 
 **Clases de Dominio** (Extensiones)
 - `Account.java`: +método `getPreferredNotificationType()` (3 líneas) - Issue 14 (Ley de Demeter)

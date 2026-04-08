@@ -18,9 +18,14 @@ import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 
+import java.util.List;
 import java.util.Optional;
 
 import static org.junit.jupiter.api.Assertions.*;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.anyInt;
+import static org.mockito.ArgumentMatchers.anyString;
+import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.*;
 
 /* PLAN DE PRUEBAS - AccountService
@@ -90,16 +95,24 @@ public class AccountServiceTest {
 
     // CRUD y CONSULTAS
 
-    // Hecho por: [Nombre del Alumno]
+    // Hecho por: Adrián Villalba Cuello de Oro
     @Test
-    @DisplayName("1. createAccount: Prueba que se genera un número, se asigna el usuario y se guarda")
+    @DisplayName("1. createAccount: Prueba que genera un número, se asigna al usuario y se guarda")
     void createAccountTest() {
         // Given (Preparar datos del User, configurar el mock de randomService y accountRepository.save)
+        User mockUser = new User("Ana", "Pass123", "USER");
+        when(randomService.nextInt(anyInt())).thenReturn(123456);
+        when(accountRepository.save(any(Account.class))).thenAnswer(invocation -> invocation.getArgument(0)); // Devuelve la cuenta que se le dio
 
         // When (Llamar a accountService.createAccount)
+        Account newAccount = accountService.createAccount(mockUser, Account.AccountType.CHECKING);
 
         // Then (Hacer asserts para comprobar la cuenta devuelta y usar verify para ver que se guardó)
-
+        assertNotNull(newAccount);
+        assertEquals("ES0000123456", newAccount.getAccountNumber());
+        assertEquals(mockUser, newAccount.getUser());
+        assertEquals(0.0, newAccount.getBalance());
+        verify(accountRepository, times(1)).save(any(Account.class));
     }
 
     // Hecho por: Raúl Tejada Merinero
@@ -135,27 +148,42 @@ public class AccountServiceTest {
         assertEquals("Account not found", exception.getMessage());
     }
 
-    // Hecho por: [Nombre del Alumno]
+    // Hecho por: Adrián Villalba Cuello de Oro
     @Test
     @DisplayName("4. getUserAccounts: Prueba que devuelve la lista de cuentas del usuario")
     void getUserAccountsTest() {
         // Given (Preparar un User y configurar accountRepository.findByUser para devolver una lista)
+        User mockUser = new User("Ana", "Pass123", "USER");
+        List <Account> listAccounts = List.of(new Account(), new Account());
+        when (accountRepository.findByUser(mockUser)).thenReturn(listAccounts);
 
         // When (Llamar a accountService.getUserAccounts)
+        List <Account> myAccounts = accountService.getUserAccounts(mockUser);
 
         // Then (Comprobar que la lista devuelta no está vacía y tiene el tamaño esperado)
+        assertNotNull(myAccounts);
+        assertEquals(2, myAccounts.size());
+        verify(accountRepository, times(1)).findByUser(mockUser);
 
     }
 
-    // Hecho por: [Nombre del Alumno]
+    // Hecho por: Adrián Villalba Cuello de Oro
     @Test
     @DisplayName("5. getBalance: Prueba que devuelve el saldo correcto")
     void getBalanceTest() {
         // Given (Configurar accountRepository.findByAccountNumber para devolver una cuenta con saldo X)
+        Account mockAccount = new Account();
+        mockAccount.setAccountNumber("ES0000123456");
+        mockAccount.setBalance(500.0);
+        when(accountRepository.findByAccountNumber("ES0000123456")).thenReturn(Optional.of(mockAccount));
 
         // When (Llamar a accountService.getBalance)
+        double myBalance = accountService.getBalance("ES0000123456");
 
         // Then (Comprobar con assertEquals que el saldo devuelto es X)
+        assertNotNull(myBalance);
+        assertEquals(500.0, myBalance, 0.001);
+        verify(accountRepository, times(1)).findByAccountNumber("ES0000123456");
 
     }
 
@@ -195,30 +223,42 @@ public class AccountServiceTest {
         verify(accountRepository, times(1)).delete(account);
     }
 
-    // Hecho por: [Nombre del Alumno]
+    // Hecho por: Adrián Villalba Cuello de Oro
     @Test
     @DisplayName("8. rm_HasBalance: Prueba que lanza IllegalArgumentException si el saldo != 0")
     void rm_HasBalanceTest() {
         // Given (Configurar cuenta con saldo mayor a 0 y accountRepository.findByAccountNumber)
+        Account mockAccount = new Account();
+        mockAccount.setAccountNumber("ES0000123456");
+        mockAccount.setBalance(500.0);
+        when(accountRepository.findByAccountNumber("ES0000123456")).thenReturn(Optional.of(mockAccount));
 
         // When (Llamar a accountService.rm usando assertThrows)
+        IllegalArgumentException exception = assertThrows(IllegalArgumentException.class, () -> {
+            accountService.rm("ES0000123456");
+        });
 
         // Then (Comprobar el mensaje "Cannot delete account with non-zero balance")
+        assertEquals("Cannot delete account with non-zero balance", exception.getMessage());
 
     }
 
 
     // FALLOS DEPOSIT
 
-    // Hecho por: [Nombre del Alumno]
+    // Hecho por: Adrián Villalba Cuello de Oro
     @Test
     @DisplayName("9. deposit_ZeroAmount: Lanza excepción si amount == 0")
     void deposit_ZeroAmountTest() {
         // Given (No hacen falta mocks aquí, solo preparar variables: amount = 0)
 
         // When (Llamar a accountService.deposit usando assertThrows)
+        IllegalArgumentException exception = assertThrows(IllegalArgumentException.class, () -> {
+            accountService.deposit("ES0000123456", 0.0, "Ingreso de prueba");
+        });
 
         // Then (Comprobar el mensaje de excepción correspondiente)
+        assertEquals("Amount must be positive", exception.getMessage());
 
     }
 
@@ -528,15 +568,21 @@ public class AccountServiceTest {
 
     // RETIROS / WITHDRAW)
 
-    // Hecho por: [Nombre del Alumno]
+    // Hecho por: Adrián Villalba Cuello de Oro
     @Test
     @DisplayName("23. withdraw_NegativeOrZero: Lanza excepción si amount <= 0")
     void withdraw_NegativeOrZeroTest() {
         // Given (Preparar cantidad inválida <= 0)
+        String accountNumber = "ES0000123456";
+        double amount = -3.0;
 
         // When (Llamar a accountService.withdraw usando assertThrows)
+        IllegalArgumentException exception = assertThrows(IllegalArgumentException.class, () -> {
+            accountService.withdraw(accountNumber, amount, "Retirada de prueba");
+        });
 
         // Then (Comprobar mensaje de excepción)
+        assertEquals("Amount must be positive", exception.getMessage());
 
     }
 
@@ -630,15 +676,22 @@ public class AccountServiceTest {
 
     // FALLOS TRANSFER
 
-    // Hecho por: [Nombre del Alumno]
+    // Hecho por: Adrián Villalba Cuello de Oro
     @Test
     @DisplayName("29. transfer_NegativeOrZero: Lanza excepción si amount <= 0")
     void transfer_NegativeOrZeroTest() {
         // Given (Preparar amount <= 0)
+        String fromAccountNumber = "ES0000123456";
+        String toAccountNumber = "ES0000654321";
+        double amount = -3.0;
 
         // When (Llamar a accountService.transfer usando assertThrows)
+        IllegalArgumentException exception = assertThrows(IllegalArgumentException.class, () -> {
+            accountService.transfer(fromAccountNumber, toAccountNumber, amount);
+        });
 
         // Then (Comprobar mensaje de excepción)
+        assertEquals("Amount must be positive", exception.getMessage());
 
     }
 

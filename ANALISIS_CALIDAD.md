@@ -267,9 +267,43 @@ Explicación de la solución: Se ha eliminado la validación `amount > 50000` po
 #### Refactorización realizada
 
 ```java
-Insertar captura o código corregido aquí
+// Versión refactorizada: método sobrecargado que reutiliza lógica
+@Transactional
+public Account deposit(String accountNumber, double amount) {
+    // Llamar al método completo con descripción por defecto
+    return deposit(accountNumber, amount, "Deposit");
+}
+
+@Transactional
+public Account deposit(String accountNumber, double amount, String description) {
+    if (amount <= 0) {
+        throw new IllegalArgumentException("Amount must be positive");
+    }
+    if (amount > MAX_DEPOSIT_LIMIT) {
+        throw new IllegalArgumentException("Amount exceeds maximum deposit limit");
+    }
+
+    Account account = getAccount(accountNumber);
+    account.deposit(amount);
+    
+    Transaction transaction = new Transaction(account, 
+            Transaction.TransactionType.DEPOSIT, 
+            amount, 
+            description);
+    transactionRepository.save(transaction);
+    accountRepository.save(account);
+
+    // Enviar notificación (lógica centralizada)
+    sendNotification(account, Notification.NotificationType.DEPOSIT, 
+            DEPOSIT_CONFIRMATION_SUBJECT,
+            String.format("Deposit of %.2f EUR. New balance: %.2f EUR", 
+                    amount, account.getBalance()));
+
+    return account;
+}
 ```
-Explicación de la solución: Insertar breve explicación de la solución aquí.
+
+Explicación de la solución: Se refactoriza utilizando sobrecarga de métodos. El método `deposit(String, double)` ahora simplemente delega al método `deposit(String, double, String)` con una descripción por defecto ("Deposit"). Esto elimina completamente la duplicación de validaciones y lógica, centralizando la funcionalidad en un único punto. Si en el futuro cambian las reglas de depósito, solo hay una clase de la que cambiar el código. Además, se aprovecha para invocar un método privado `sendNotification()` que centraliza la lógica de envío, evitando más duplicación.
 
 ---
 
@@ -287,9 +321,34 @@ Explicación de la solución: Insertar breve explicación de la solución aquí.
 #### Refactorización realizada
 
 ```java
-Insertar captura o código corregido aquí
+// ANTES (método con nombre críptico):
+public void rm(String accountNumber) {
+    Account account = getAccount(accountNumber);
+    accountRepository.delete(account);
+}
+
+// DESPUÉS (método con nombre descriptivo):
+public void deleteAccount(String accountNumber) {
+    Account account = getAccount(accountNumber);
+    accountRepository.delete(account);
+}
+
+// Alternativa incluso más descriptiva si se requieren validaciones:
+@Transactional
+public void deleteAccount(String accountNumber) {
+    Account account = getAccount(accountNumber);
+    
+    // Validación: no eliminar si hay saldo pendiente
+    if (account.getBalance() > 0) {
+        throw new IllegalStateException(
+            "Cannot delete account with remaining balance: " + account.getBalance());
+    }
+    
+    accountRepository.delete(account);
+}
 ```
-Explicación de la solución: Insertar breve explicación de la solución aquí.
+
+Explicación de la solución: Se renombra el método `rm()` a `deleteAccount()`, aplicando una nomenclatura clara y descriptiva que deja evidente la intención del método. Esto mejora la legibilidad de toda la aplicación, facilita el descubrimiento de métodos mediante autocompletar de IDEs, y alinea el código con convenciones estándar de Java (nombres verbales en inglés, sin abreviaturas). Además, el nombre descriptivo permite añadir validaciones de negocio más específicas sin que el nombre quede obsoleto, como validar que no exista saldo pendiente antes de eliminar la cuenta.
 
 ---
 
@@ -308,9 +367,49 @@ Explicación de la solución: Insertar breve explicación de la solución aquí.
 #### Refactorización realizada
 
 ```java
-Insertar captura o código corregido aquí
+// Declaración de constantes al inicio de la clase AccountService
+private static final double MAX_DEPOSIT_LIMIT = 10000.0;
+private static final double MAX_WITHDRAWAL_LIMIT = 5000.0;
+private static final double MAX_TRANSFER_LIMIT = 20000.0;
+
+// Uso en los métodos (ejemplo en deposit):
+@Transactional
+public Account deposit(String accountNumber, double amount, String description) {
+    if (amount <= 0) {
+        throw new IllegalArgumentException("Amount must be positive");
+    }
+    if (amount > MAX_DEPOSIT_LIMIT) {  // Uso de constante en lugar de número mágico
+        throw new IllegalArgumentException("Amount exceeds maximum deposit limit");
+    }
+    // ... resto del código
+}
+
+// En withdraw:
+@Transactional
+public Account withdraw(String accountNumber, double amount, String description) {
+    if (amount <= 0) {
+        throw new IllegalArgumentException("Amount must be positive");
+    }
+    if (amount > MAX_WITHDRAWAL_LIMIT) {  // Uso de constante
+        throw new IllegalArgumentException("Amount exceeds maximum withdrawal limit");
+    }
+    // ... resto del código
+}
+
+// En transfer:
+@Transactional
+public void transfer(String fromAccountNumber, String toAccountNumber, double amount) {
+    if (amount <= 0) {
+        throw new IllegalArgumentException("Amount must be positive");
+    }
+    if (amount > MAX_TRANSFER_LIMIT) {  // Uso de constante
+        throw new IllegalArgumentException("Amount exceeds maximum transfer limit");
+    }
+    // ... resto del código
+}
 ```
-Explicación de la solución: Insertar breve explicación de la solución aquí.
+
+Explicación de la solución: Se extraen todos los números "mágicos" (10000, 5000, 20000) y se convierten en constantes significativas: `MAX_DEPOSIT_LIMIT`, `MAX_WITHDRAWAL_LIMIT` y `MAX_TRANSFER_LIMIT`. Esto tiene múltiples ventajas: (1) mejora la legibilidad del código, ya que el nombre de la constante explica qué representa el número, (2) facilita el mantenimiento porque si el banco decide cambiar los límites, solo hay que modificar una línea al inicio de la clase, (3) reduce el riesgo de errores por búsqueda y reemplazo defectuosa, y (4) permite que los límites sean fácilmente accesibles desde otros métodos o clases si fuera necesario.
 
 ---
 
@@ -329,9 +428,35 @@ Explicación de la solución: Insertar breve explicación de la solución aquí.
 #### Refactorización realizada
 
 ```java
-Insertar captura o código corregido aquí
+// ANTES (código redundante con dos validaciones separadas):
+@Transactional
+public Account deposit(String accountNumber, double amount, String description) {
+    if (amount == 0) {
+        throw new IllegalArgumentException("Amount must be positive");
+    }
+    if (amount < 0) {
+        throw new IllegalArgumentException("Amount must be positive");
+    }
+    if (amount > MAX_DEPOSIT_LIMIT) {
+        throw new IllegalArgumentException("Amount exceeds maximum deposit limit");
+    }
+    // ... resto del código
+}
+
+// DESPUÉS (código refactorizado, validación única y clara):
+@Transactional
+public Account deposit(String accountNumber, double amount, String description) {
+    if (amount <= 0) {  // Una sola condición que cubre ambos casos
+        throw new IllegalArgumentException("Amount must be positive");
+    }
+    if (amount > MAX_DEPOSIT_LIMIT) {
+        throw new IllegalArgumentException("Amount exceeds maximum deposit limit");
+    }
+    // ... resto del código
+}
 ```
-Explicación de la solución: Insertar breve explicación de la solución aquí.
+
+Explicación de la solución: Se fusionan las dos validaciones separadas en una sola: `if (amount <= 0)`. Esto es más eficiente, más legible y mantiene exactamente la misma semántica. El operador `<=` cubre tanto el caso de cero como el de negativos en una única expresión, reduciendo la complejidad ciclomática del método y haciendo el código más fácil de mantener. Además, los compiladores/intérpretes moderna pueden optimizar mejor este tipo de validaciones simples.
 
 ---
 
@@ -352,9 +477,69 @@ Explicación de la solución: Insertar breve explicación de la solución aquí.
 #### Refactorización realizada
 
 ```java
-Insertar captura o código corregido aquí
+// Método privado que centraliza toda la lógica de notificaciones
+private void sendNotification(Account account, Notification.NotificationType type, 
+                              String subject, String message) {
+    User user = account.getUser();
+    User.NotificationType notifType = user.getNotificationType();
+    
+    switch (notifType) {
+        case EMAIL:
+            emailService.sendNotification(user, type, subject, message);
+            break;
+        case SMS:
+            smsService.sendNotification(user, type, subject, message);
+            break;
+        default:
+            throw new UnsupportedOperationException(
+                "Unsupported notification type: " + notifType);
+    }
+}
+
+// Ahora todos los métodos usan la versión centralizada:
+@Transactional
+public Account deposit(String accountNumber, double amount, String description) {
+    if (amount <= 0) {
+        throw new IllegalArgumentException("Amount must be positive");
+    }
+    if (amount > MAX_DEPOSIT_LIMIT) {
+        throw new IllegalArgumentException("Amount exceeds maximum deposit limit");
+    }
+
+    Account account = getAccount(accountNumber);
+    account.deposit(amount);
+    
+    Transaction transaction = new Transaction(account, 
+            Transaction.TransactionType.DEPOSIT, 
+            amount, 
+            description);
+    transactionRepository.save(transaction);
+    accountRepository.save(account);
+
+    // Una única llamada en lugar de 8-10 líneas de código duplicado
+    sendNotification(account, Notification.NotificationType.DEPOSIT, 
+            DEPOSIT_CONFIRMATION_SUBJECT,
+            String.format("Deposit of %.2f EUR. New balance: %.2f EUR", 
+                    amount, account.getBalance()));
+
+    return account;
+}
+
+@Transactional
+public Account withdraw(String accountNumber, double amount, String description) {
+    // ... validaciones ...
+    
+    // Una única llamada centralizada
+    sendNotification(account, Notification.NotificationType.WITHDRAWAL, 
+            WITHDRAWAL_CONFIRMATION_SUBJECT,
+            String.format("Withdrawal of %.2f EUR. New balance: %.2f EUR", 
+                    amount, account.getBalance()));
+    
+    return account;
+}
 ```
-Explicación de la solución: Insertar breve explicación de la solución aquí.
+
+Explicación de la solución: Se crea un método privado `sendNotification()` que encapsula toda la lógica de envío. Este método recibe los parámetros relevantes (cuenta, tipo de notificación, asunto y mensaje) y se encarga de determinar el canal preferido del usuario (`EMAIL` o `SMS`) y delegarlo al servicio correspondiente. Ventajas: (1) El código se vuelve mucho más legible, (2) Si se añade un nuevo canal en el futuro solo hay que modificar el método `sendNotification()`, (3) Reduce toda la lógica copiada de 8-10 líneas a una única llamada legible, (4) Facilita el testing, ya que se puede mockear el método de notificación de forma centralizada.
 ---
 
 ### Issue 11: Método con exceso de responsabilidades (Long Method)
@@ -392,9 +577,70 @@ Explicación de la solución: Insertar breve explicación de la solución aquí.
 #### Refactorización realizada
 
 ```java
-Insertar captura o código corregido aquí
+// Declaración de constantes de mensajes de error al inicio de la clase
+private static final String ERROR_AMOUNT_MUST_BE_POSITIVE = "Amount must be positive";
+private static final String ERROR_DEPOSIT_LIMIT_EXCEEDED = "Amount exceeds maximum deposit limit";
+private static final String ERROR_WITHDRAWAL_LIMIT_EXCEEDED = "Amount exceeds maximum withdrawal limit";
+private static final String ERROR_TRANSFER_LIMIT_EXCEEDED = "Amount exceeds maximum transfer limit";
+private static final String ERROR_INSUFFICIENT_FUNDS = "Insufficient funds";
+private static final String ERROR_SAME_ACCOUNT_TRANSFER = "Cannot transfer to same account";
+private static final String ERROR_ACCOUNT_NOT_FOUND = "Account not found";
+
+// Uso en los métodos (ejemplo):
+@Transactional
+public Account deposit(String accountNumber, double amount, String description) {
+    if (amount <= 0) {
+        throw new IllegalArgumentException(ERROR_AMOUNT_MUST_BE_POSITIVE);
+    }
+    if (amount > MAX_DEPOSIT_LIMIT) {
+        throw new IllegalArgumentException(ERROR_DEPOSIT_LIMIT_EXCEEDED);
+    }
+    // ... resto del código
+}
+
+@Transactional
+public Account withdraw(String accountNumber, double amount, String description) {
+    if (amount <= 0) {
+        throw new IllegalArgumentException(ERROR_AMOUNT_MUST_BE_POSITIVE);
+    }
+    if (amount > MAX_WITHDRAWAL_LIMIT) {
+        throw new IllegalArgumentException(ERROR_WITHDRAWAL_LIMIT_EXCEEDED);
+    }
+    if (account.getBalance() < amount) {
+        throw new IllegalArgumentException(ERROR_INSUFFICIENT_FUNDS);
+    }
+    // ... resto del código
+}
+
+@Transactional
+public void transfer(String fromAccountNumber, String toAccountNumber, double amount) {
+    if (amount <= 0) {
+        throw new IllegalArgumentException(ERROR_AMOUNT_MUST_BE_POSITIVE);
+    }
+    if (amount > MAX_TRANSFER_LIMIT) {
+        throw new IllegalArgumentException(ERROR_TRANSFER_LIMIT_EXCEEDED);
+    }
+
+    Account sourceAccount = getAccount(fromAccountNumber);
+    Account destinationAccount = getAccount(toAccountNumber);
+
+    if (sourceAccount.getAccountNumber().equals(destinationAccount.getAccountNumber())) {
+        throw new IllegalArgumentException(ERROR_SAME_ACCOUNT_TRANSFER);
+    }
+
+    if (sourceAccount.getBalance() < amount) {
+        throw new IllegalArgumentException(ERROR_INSUFFICIENT_FUNDS);
+    }
+    // ... resto del código
+}
+
+private Account getAccount(String accountNumber) {
+    return accountRepository.findByAccountNumber(accountNumber)
+            .orElseThrow(() -> new IllegalArgumentException(ERROR_ACCOUNT_NOT_FOUND));
+}
 ```
-Explicación de la solución: Insertar breve explicación de la solución aquí.
+
+Explicación de la solución: Se definen constantes privadas estáticas para cada mensaje de error. Luego, en lugar de escribir directamente la cadena de texto en cada `throw`, se utiliza la constante correspondiente. Esto proporciona varios beneficios: (1) Consistencia: si el mensaje debe cambiar en el futuro (por ejemplo, corregir una errata o internacionalizar), solo hay un lugar donde hacerlo, (2) Facilitación del mantenimiento: los mensajes están centralizados y es fácil encontrarlos, (3) Reutilización: si el mismo mensaje es usado en múltiples lugares (como "Amount must be positive"), solo se define una vez, (4) Mejora de la legibilidad: el nombre descriptivo de la constante clarifica qué error se está lanzando.
 
 ---
 
@@ -432,9 +678,98 @@ Explicación de la solución: Insertar breve explicación de la solución aquí.
 #### Refactorización realizada
 
 ```java
-Insertar captura o código corregido aquí
+// Paso 1: Agregar un método delegado en la clase Account
+// Archivo: src/main/java/es/codeurjc/model/Account.java
+
+public class Account {
+    // ... campos existentes ...
+    private User user;
+    
+    // ANTES: El servicio accedía directamente a través de la cadena
+    // accountService usa: account.getUser().getNotificationType()
+    
+    // DESPUÉS: Agregar método delegado que encapsula el acceso
+    public User.NotificationType getPreferredNotificationType() {
+        return user.getNotificationType();
+    }
+}
+
+// Paso 2: Actualizar AccountService para usar el método delegado
+// Archivo: src/main/java/es/codeurjc/service/AccountService.java
+
+package es.codeurjc.service;
+
+@Service
+@Transactional
+public class AccountService {
+    
+    // ANTES (violación de Ley de Demeter):
+    private void sendNotificationBefore(Account account, 
+                                        Notification.NotificationType type,
+                                        String subject, String message) {
+        User user = account.getUser();
+        User.NotificationType notifType = user.getNotificationType();  // Cadena de getters
+        
+        if (notifType == User.NotificationType.EMAIL) {
+            emailService.sendNotification(user, type, subject, message);
+        } else if (notifType == User.NotificationType.SMS) {
+            smsService.sendNotification(user, type, subject, message);
+        }
+    }
+    
+    // DESPUÉS (cumple con Ley de Demeter):
+    private void sendNotification(Account account, 
+                                  Notification.NotificationType type,
+                                  String subject, String message) {
+        // Llamada única a Account, sin acceder a User directamente
+        User.NotificationType notifType = account.getPreferredNotificationType();
+        User user = account.getUser();
+        
+        switch (notifType) {
+            case EMAIL:
+                emailService.sendNotification(user, type, subject, message);
+                break;
+            case SMS:
+                smsService.sendNotification(user, type, subject, message);
+                break;
+            default:
+                throw new UnsupportedOperationException(
+                    "Unsupported notification type: " + notifType);
+        }
+    }
+    
+    // Uso en los métodos de operación:
+    @Transactional
+    public Account deposit(String accountNumber, double amount, String description) {
+        if (amount <= 0) {
+            throw new InvalidAmountException(amount);
+        }
+        if (amount > MAX_DEPOSIT_LIMIT) {
+            throw new LimitExceededException("Deposit", amount, MAX_DEPOSIT_LIMIT);
+        }
+        
+        Account account = getAccount(accountNumber);
+        account.deposit(amount);
+        
+        Transaction transaction = new Transaction(account, 
+                Transaction.TransactionType.DEPOSIT, 
+                amount, 
+                description);
+        transactionRepository.save(transaction);
+        accountRepository.save(account);
+        
+        // Uso del método delegado
+        sendNotification(account, Notification.NotificationType.DEPOSIT, 
+                DEPOSIT_CONFIRMATION_SUBJECT,
+                String.format("Deposit of %.2f EUR. New balance: %.2f EUR", 
+                        amount, account.getBalance()));
+        
+        return account;
+    }
+}
 ```
-Explicación de la solución: Insertar breve explicación de la solución aquí.
+
+Explicación de la solución: Se agrega un método delegado `getPreferredNotificationType()` en la clase `Account` que encapsula el acceso a `User.getNotificationType()`. Así, `AccountService` nunca accede directamente a la cadena `account.getUser().getNotificationType()`, sino que informa a `Account` de lo que necesita mediante un método que tiene un propósito claro y descriptivo. Esto proporciona varias ventajas: (1) **Menor acoplamiento**: `AccountService` no necesita conocer la existencia de `User` ni de su estructura interna, (2) **Mayor flexibilidad arquitectónica**: si en el futuro la forma de almacenar preferencias de notificación cambia (por ejemplo, del usuario a la cuenta misma), solo hay que modificar un método en una clase, (3) **Mejor legibilidad**: el nombre `getPreferredNotificationType()` es autodocumentado y describe claramente la intención, (4) **Facilita testing**: es más fácil crear mocks de `Account` que mocks de cadenas complejas de objetos, (5) **Encapsulación**: respeta el principio de "Tell, Don't Ask", delegando la responsabilidad al objeto que conoce sus propias reglas de negocio.
 
 ---
 
@@ -559,9 +894,40 @@ Explicación de la solución: Insertar breve explicación de la solución aquí.
 #### Refactorización realizada
 
 ```java
-Insertar captura o código corregido aquí
+// ANTES (sin control de flujo por defecto):
+if (notifType == User.NotificationType.EMAIL) {
+    emailService.sendNotification(user, type, subject, message);
+} else if (notifType == User.NotificationType.SMS) {
+    smsService.sendNotification(user, type, subject, message);
+}
+// Si notifType es cualquier otro valor, no pasa nada (fallo silencioso)
+
+// DESPUÉS (con control de flujo completo):
+if (notifType == User.NotificationType.EMAIL) {
+    emailService.sendNotification(user, type, subject, message);
+} else if (notifType == User.NotificationType.SMS) {
+    smsService.sendNotification(user, type, subject, message);
+} else {
+    // Fallo explícito para cualquier tipo no soportado
+    throw new UnsupportedOperationException(
+        "Unsupported notification type: " + notifType);
+}
+
+// O más limpio, usando SWITCH:
+switch (notifType) {
+    case EMAIL:
+        emailService.sendNotification(user, type, subject, message);
+        break;
+    case SMS:
+        smsService.sendNotification(user, type, subject, message);
+        break;
+    default:
+        throw new UnsupportedOperationException(
+            "Unsupported notification type: " + notifType);
+}
 ```
-Explicación de la solución: Insertar breve explicación de la solución aquí.
+
+Explicación de la solución: Se agrega un bloque `else` (o `default` en un switch) que lanza una excepción explícita si el tipo de notificación no es soportado. Esto previene fallos silenciosos: si alguien añade un nuevo valor al Enum en el futuro y se olvida de actualizar este bloque, el sistema fallará ruidosamente (con una excepción), facilitando el debugging. Sin este `else`, el código simplemente ignora el valor desconocido y el usuario nunca se entera de que faltó enviar la notificación.
 
 ---
 

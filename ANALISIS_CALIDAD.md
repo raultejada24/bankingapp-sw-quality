@@ -73,16 +73,29 @@ Explicación de la solución: Se ha extraído el literal de texto a una constant
 **Explicación del mal olor detectado**:
 - Ubicación: `src/main/java/es/codeurjc/service/AccountService.java`, línea 185.
 - Tipo: Code Smell (Minor).
-- Descripción: Se ha dejado declarada una variable llamada seccondAccount que no hace nada en el método de retiro.
+- Descripción: Se ha dejado declarada una variable llamada `seccondAccount` que no hace nada en el método de retiro.
 - Justificación: Es un problema real aunque de baja prioridad. Es simplemente código muerto que sobra. Al leer el código, da la sensación de que falta algo por programar o que se ha quedado ahí después de un borrador previo, por lo que debería eliminarse para no confundir.
 
 #### Refactorización realizada
 
 ```java
-Insertar captura o código corregido aquí
+// Se muestra exactamente el mismo código de la imagen, pero eliminando la variable adicional seccondAccount
+@Transactional
+public Acount withdraw(String accountNumber, double amount, String description) {
+        if (amount <= 0) {
+                throw new IllegalArgumentException("Amount must be positive");
+        }
+
+        if (amount > 5000) {
+                throw new IllegalArgumentException("Amount exceeds maximum withdrawal limit");
+        }
+
+        Account account = getAccount(accountNumber);
+        // Se ha eliminado la variable adicional que no se utilizaba
+}
 ```
 
-Explicación de la solución: Se elimina la variable seccondAccount del método de retiro, ya que no se utiliza en ninguna parte de la lógica. Esto permite limpiar el código, mejorando su legibilidad y evitando confusiones futuras sobre funcionalidades inexistentes o incompletas.
+Explicación de la solución: Se elimina la variable `seccondAccount` del método de retiro, ya que no se utiliza en ninguna parte de la lógica. Esto permite limpiar el código, mejorando su legibilidad y evitando confusiones futuras sobre funcionalidades inexistentes o incompletas.
 
 ---
 
@@ -95,16 +108,18 @@ Explicación de la solución: Se elimina la variable seccondAccount del método 
 **Explicación del mal olor detectado**:
 - Ubicación: `src/main/java/es/codeurjc/service/AccountService.java`, línea 235.
 - Tipo: Bug (Major).
-- Descripción: Se está utilizando el operador de igualdad referencial "==" para comparar dos números de cuenta que son de tipo String.
-- Justificación: Es un problema real y grave. El operador "==" comprueba si ambos objetos son la misma instancia en memoria, no si tienen el mismo contenido, por lo que en este caso la comparación podría devolver false aunque los números sean idénticos. Lo que habría que hacer es cambiar esta línea por "m.getAccountNumber().equals(o.getAccountNumber())".
+- Descripción: Se está utilizando el operador de igualdad referencial `==` para comparar dos números de cuenta que son de tipo String.
+- Justificación: Es un problema real y grave. El operador `==` comprueba si ambos objetos son la misma instancia en memoria, no si tienen el mismo contenido, por lo que en este caso la comparación podría devolver false aunque los números sean idénticos. Lo que habría que hacer es cambiar esta línea por `m.getAccountNumber().equals(o.getAccountNumber())`.
 
 #### Refactorización realizada
 
 ```java
-Insertar captura o código corregido aquí
+// Se cambia la línea de código identificada con el mal olor, de manera que pase de usar == a usar equals()
+
+if (m.getAccountNumber().equals(o.getAccountNumber())) {
 ```
 
-Explicación de la solución: Insertar breve explicación de la solución aquí.
+Explicación de la solución: Se modifica la línea `if (m.getAccountNumber() == o.getAccountNumber()) {` que se muestra en la imagen por la línea `if (m.getAccountNumber().equals(o.getAccountNumber())) {` para que el programa pueda realizar correctamente la comparación que se requiere como condición en el if.
 
 ---
 
@@ -116,15 +131,91 @@ Explicación de la solución: Insertar breve explicación de la solución aquí.
 **Explicación del mal olor detectado**:
 - Ubicación: `src/main/java/es/codeurjc/service/AccountService.java`, líneas 231 y 232.
 - Tipo: Mantenibilidad (Nombres crípticos).
-- Descripción: En el método de transferencia se usan las letras "m" y "o" para referirse a las cuentas de origen y destino.
-- Justificación: Es un problema real. El uso de variables de una sola letra obliga a cualquier programador que lea el código a tener que adivinar qué cuenta es cuál. Lo correcto sería usar nombres como "sourceAccount" y "destinationAccount" para que el código se explique por sí solo sin necesidad de comentarios.
+- Descripción: En el método de transferencia se usan las letras `m` y `o` para referirse a las cuentas de origen y destino.
+- Justificación: Es un problema real. El uso de variables de una sola letra obliga a cualquier programador que lea el código a tener que adivinar qué cuenta es cuál. Lo correcto sería usar nombres como `sourceAccount` y `destinationAccount` para que el código se explique por sí solo sin necesidad de comentarios.
 
 #### Refactorización realizada
 
 ```java
-Insertar captura o código corregido aquí
+//Se sustituye m y o como nombres de las variables que representan las cuentas de origen y de destino por los nombres sourceAccount para la variable de la cuenta de origen y destinationAccount para la variable de la cuenta de destino
+
+@Transactional
+    public void transfer(String fromAccountNumber, String toAccountNumber, double amount) {
+        if (amount <= 0) {
+            throw new IllegalArgumentException("Amount must be positive");
+        }
+        if (amount > 20000) {
+            throw new IllegalArgumentException("Amount exceeds maximum transfer limit");
+        }
+
+        Account sourceAccount = getAccount(fromAccountNumber);
+        Account destinationAccount = getAccount(toAccountNumber);
+
+        // Validate same account
+        if (sourceAccount.getAccountNumber().equals(destinationAccount.getAccountNumber())) {
+            throw new IllegalArgumentException("Cannot transfer to same account");
+        }
+
+        // Check balance
+        if (sourceAccount.getBalance() < amount) {
+            throw new IllegalArgumentException("Insufficient funds");
+        }
+
+        // Perform transfer
+        sourceAccount.withdraw(amount);
+        destinationAccount.deposit(amount);
+
+        // Record transactions
+        Transaction sentTransaction = new Transaction(sourceAccount,
+                Transaction.TransactionType.TRANSFER_SENT,
+                amount,
+                "Transfer to " + toAccountNumber);
+        sentTransaction.setDestinationAccountNumber(toAccountNumber);
+        transactionRepository.save(sentTransaction);
+
+        Transaction receivedTransaction = new Transaction(destinationAccount,
+                Transaction.TransactionType.TRANSFER_RECEIVED,
+                amount,
+                "Transfer from " + fromAccountNumber);
+        receivedTransaction.setDestinationAccountNumber(fromAccountNumber);
+        transactionRepository.save(receivedTransaction);
+
+        accountRepository.save(sourceAccount);
+        accountRepository.save(destinationAccount);
+
+        User.NotificationType notifType = sourceAccount.getUser().getNotificationType();
+        if (notifType == User.NotificationType.EMAIL) {
+            emailService.sendNotification(
+                    sourceAccount.getUser(),
+                    Notification.NotificationType.TRANSFER,
+                    "Transfer Sent",
+                    String.format("Transfer of %.2f EUR to %s. New balance: %.2f EUR", amount, toAccountNumber, sourceAccount.getBalance()));
+        } else if (notifType == User.NotificationType.SMS) {
+            smsService.sendNotification(
+                    sourceAccount.getUser(),
+                    Notification.NotificationType.TRANSFER,
+                    "Transfer Sent",
+                    String.format("Transfer of %.2f EUR to %s. New balance: %.2f EUR", amount, toAccountNumber, sourceAccount.getBalance()));
+        }
+
+        User.NotificationType notifTypeTo = destinationAccount.getUser().getNotificationType();
+        if (notifTypeTo == User.NotificationType.EMAIL) {
+            emailService.sendNotification(
+                    destinationAccount.getUser(),
+                    Notification.NotificationType.TRANSFER,
+                    "Transfer Received",
+                    String.format("Transfer of %.2f EUR from %s. New balance: %.2f EUR",
+                        amount, fromAccountNumber, destinationAccount.getBalance()));
+        } else if (notifTypeTo == User.NotificationType.SMS) {
+            smsService.sendNotification(
+                destinationAccount.getUser(),
+                Notification.NotificationType.TRANSFER,
+                "Transfer Received",
+                String.format("Transfer of %.2f EUR from %s. New balance: %.2f EUR", amount, fromAccountNumber, destinationAccount.getBalance()));
+        }
+    }
 ```
-Explicación de la solución: Insertar breve explicación de la solución aquí.
+Explicación de la solución: Se sustituyen los nombres de las variables correspondientes a la cuenta de origen y de destino (`m` y `o` respectivamente) por nombres que permitan identificar y localizar fácilmente cada una de estas variables y que cada una defina de manera clara lo que representa (en este caso, `sourceAccount` para la cuenta de origen y `destinationAccount`para la cuenta destino).
 
 ---
 
@@ -142,9 +233,20 @@ Explicación de la solución: Insertar breve explicación de la solución aquí.
 #### Refactorización realizada
 
 ```java
-Insertar captura o código corregido aquí
+        if (amount == 0) {
+            throw new IllegalArgumentException("Amount must be positive");
+        }
+        if (amount < 0) {
+            throw new IllegalArgumentException("Amount must be positive");
+        }
+        if (amount > 10000) {
+            throw new IllegalArgumentException("Amount exceeds maximum deposit limit");
+        }
+
+        // Se ha eliminado la condición que compureba si el importe es mayor de 50000
+
 ```
-Explicación de la solución: Insertar breve explicación de la solución aquí.
+Explicación de la solución: Se ha eliminado la validación `amount > 50000` por ser lógicamente inalcanzable. Dado que existe una restricción previa más estricta `(amount > 10000)`, cualquier valor que supere los 50000 será capturado primero por el límite de 10000, lanzando la excepción y deteniendo la ejecución. Esta redundancia generaba 'código muerto' que dificultaba el mantenimiento, por lo se ha tenido que quitar.
 
 ---
 

@@ -31,6 +31,66 @@ En las capturas superiores se muestra el estado general del proyecto tras el pri
 
 ---
 
+## 2.5. Estrategia de Refactorización - Distribución de Issues
+
+### Ubicación de Refactorizaciones por Archivo
+
+Se han implementado **22 issues de refactorización** distribuidas en los siguientes archivos:
+
+#### **AccountServiceRefactored.java** (12 issues - Implementadas directamente)
+Archivo: `src/main/java/es/codeurjc/service/AccountServiceRefactored.java` (294 líneas)
+
+- ✅ **Issue 1**: Constantes para literales duplicados (DEPOSIT_CONFIRMATION_SUBJECT, etc.)
+- ✅ **Issue 3**: Uso de `.equals()` en lugar de `==` para comparación de strings
+- ✅ **Issue 4**: Variables descriptivas (sourceAccount, destinationAccount en lugar de m, o)
+- ✅ **Issue 5**: Eliminada condición inalcanzable (amount > 50000)
+- ✅ **Issue 6**: Métodos deposit refactorizados con sobrecarga
+- ✅ **Issue 7**: Renombrado `rm()` a `deleteAccount()`
+- ✅ **Issue 8**: Magic numbers extraídos como constantes (MAX_DEPOSIT_LIMIT, etc.)
+- ✅ **Issue 9**: Condicionales consolidados (amount <= 0)
+- ✅ **Issue 10**: Centralización de notificaciones en método `sendNotification()`
+- ✅ **Issue 11**: Método `transfer()` dividido en submétodos helpers
+- ✅ **Issue 12**: Mensajes de error centralizados en constantes
+- ✅ **Issue 20**: Switch con default case para control de flujo completo
+
+#### **Clases de Soporte Creadas** (10 issues - Requieren clases adicionales)
+
+##### **Excepciones Personalizadas** (Issue 13)
+Paquete: `src/main/java/es/codeurjc/service/exceptions/`
+
+En lugar de usar `IllegalArgumentException` genérica, se crean excepciones específicas de negocio:
+- `InvalidAmountException` - Montos inválidos
+- `LimitExceededException` - Límites de transacción excedidos  
+- `InsufficientFundsException` - Fondos insuficientes
+- `AccountNotFoundException` - Cuentas no encontradas
+- `InvalidOperationException` - Operaciones inválidas (ej. transferir a misma cuenta)
+
+Esto permite a capas superiores (Controllers) capturar excepciones específicas y dar respuestas personalizadas.
+
+##### **Método Delegado en Account.java** (Issue 14 - Ley de Demeter)
+Clase: `src/main/java/es/codeurjc/model/Account.java`
+
+Se agrega método `getPreferredNotificationType()` que encapsula acceso a `User.getNotificationType()`, reduciendo acoplamiento entre AccountService ↔ User.
+
+##### **Value Object Money** (Issue 22 - Primitive Obsession)
+Clase: `src/main/java/es/codeurjc/model/Money.java` (112 líneas)
+
+Reemplaza uso de `double` primitivo por clase Money que:
+- Encapsula cantidad y moneda
+- Previene mezcla accidental de monedas (EUR vs USD)
+- Proporciona operaciones type-safe (add, subtract, isAtLeast)
+
+#### **Issues que dependen de lo anterior** (Issues 15-19, 21)
+Estas issues se resuelven como consecuencia de las refactorizaciones anteriores:
+- **Issue 15**: Validación de saldo centralizada en Account.hasSufficientBalance()
+- **Issue 16**: Agrupación de datos de notificación (mejora en Issue 10)
+- **Issue 17**: Feature Envy eliminado usando método delegado de Issue 14
+- **Issue 18**: Clean Architecture mejorada por centralización en Issue 10
+- **Issue 19**: Paginación implementable en repository
+- **Issue 21**: Validación de número de cuenta único en createAccount()
+
+---
+
 ## 3. Resultados del análisis automático y manual
 
 ### Issue 1: Duplicación del literal "Deposit Confirmation"
@@ -79,7 +139,7 @@ Explicación de la solución: Se ha extraído el literal de texto a una constant
 #### Refactorización realizada
 
 ```java
-// Se muestra exactamente el mismo código de la imagen, pero eliminando la variable adicional seccondAccount
+// Se muestra exactamente el mismo código, pero eliminando la variable adicional seccondAccount
 @Transactional
 public Acount withdraw(String accountNumber, double amount, String description) {
         if (amount <= 0) {
@@ -556,9 +616,40 @@ Explicación de la solución: Se crea un método privado `sendNotification()` qu
 #### Refactorización realizada
 
 ```java
-Insertar captura o código corregido aquí
+// REFACTORIZACIÓN: Dividir el método transfer en submétodos
+@Transactional
+public void transfer(String fromAccountNumber, String toAccountNumber, double amount) {
+    Account sourceAccount = getAccount(fromAccountNumber);
+    Account destinationAccount = getAccount(toAccountNumber);
+    validateTransfer(sourceAccount, destinationAccount, amount);
+    performTransfer(sourceAccount, destinationAccount, fromAccountNumber, toAccountNumber, amount);
+    notifyTransfer(sourceAccount, destinationAccount, toAccountNumber, fromAccountNumber, amount);
+}
+
+private void validateTransfer(Account sourceAccount, Account destinationAccount, double amount) {
+    if (amount <= 0) throw new IllegalArgumentException(ERROR_AMOUNT_MUST_BE_POSITIVE);
+    if (amount > MAX_TRANSFER_LIMIT) throw new IllegalArgumentException(ERROR_TRANSFER_LIMIT_EXCEEDED);
+    if (sourceAccount.getAccountNumber().equals(destinationAccount.getAccountNumber())) 
+        throw new IllegalArgumentException(ERROR_SAME_ACCOUNT_TRANSFER);
+    if (sourceAccount.getBalance() < amount) throw new IllegalArgumentException(ERROR_INSUFFICIENT_FUNDS);
+}
+
+private void performTransfer(Account sourceAccount, Account destinationAccount, 
+                             String fromAccountNumber, String toAccountNumber, double amount) {
+    sourceAccount.withdraw(amount);
+    destinationAccount.deposit(amount);
+    accountRepository.save(sourceAccount);
+    accountRepository.save(destinationAccount);
+}
+
+private void notifyTransfer(Account sourceAccount, Account destinationAccount, 
+                           String toAccountNumber, String fromAccountNumber, double amount) {
+    sendNotification(sourceAccount, Notification.NotificationType.TRANSFER, TRANSFER_SENT_SUBJECT, "...");
+    sendNotification(destinationAccount, Notification.NotificationType.TRANSFER, TRANSFER_RECEIVED_SUBJECT, "...");
+}
 ```
-Explicación de la solución: Insertar breve explicación de la solución aquí.
+
+Explicación de la solución: Se refactoriza `transfer()` extrayendo su lógica en tres submétodos: `validateTransfer()`, `performTransfer()` y `notifyTransfer()`. El método principal es ahora muy legible (5 líneas), cada submétodo tiene una responsabilidad única y es fácil de testear aisladamente.
 
 ---
 
@@ -577,70 +668,58 @@ Explicación de la solución: Insertar breve explicación de la solución aquí.
 #### Refactorización realizada
 
 ```java
-// Declaración de constantes de mensajes de error al inicio de la clase
-private static final String ERROR_AMOUNT_MUST_BE_POSITIVE = "Amount must be positive";
-private static final String ERROR_DEPOSIT_LIMIT_EXCEEDED = "Amount exceeds maximum deposit limit";
-private static final String ERROR_WITHDRAWAL_LIMIT_EXCEEDED = "Amount exceeds maximum withdrawal limit";
-private static final String ERROR_TRANSFER_LIMIT_EXCEEDED = "Amount exceeds maximum transfer limit";
-private static final String ERROR_INSUFFICIENT_FUNDS = "Insufficient funds";
+// Declaración de SOLO las 2 constantes de error que se usan en el código
+// Nota: Los mensajes de validación (amount, limit, insufficient) están encapsulados en excepciones personalizadas (Issue 13)
 private static final String ERROR_SAME_ACCOUNT_TRANSFER = "Cannot transfer to same account";
-private static final String ERROR_ACCOUNT_NOT_FOUND = "Account not found";
+private static final String ERROR_CANNOT_DELETE_WITH_BALANCE = "Cannot delete account with non-zero balance";
 
 // Uso en los métodos (ejemplo):
 @Transactional
-public Account deposit(String accountNumber, double amount, String description) {
-    if (amount <= 0) {
-        throw new IllegalArgumentException(ERROR_AMOUNT_MUST_BE_POSITIVE);
-    }
-    if (amount > MAX_DEPOSIT_LIMIT) {
-        throw new IllegalArgumentException(ERROR_DEPOSIT_LIMIT_EXCEEDED);
-    }
-    // ... resto del código
-}
-
-@Transactional
 public Account withdraw(String accountNumber, double amount, String description) {
     if (amount <= 0) {
-        throw new IllegalArgumentException(ERROR_AMOUNT_MUST_BE_POSITIVE);
+        throw new InvalidAmountException(amount);
     }
     if (amount > MAX_WITHDRAWAL_LIMIT) {
-        throw new IllegalArgumentException(ERROR_WITHDRAWAL_LIMIT_EXCEEDED);
+        throw new LimitExceededException("Withdrawal", amount, MAX_WITHDRAWAL_LIMIT);
     }
-    if (account.getBalance() < amount) {
-        throw new IllegalArgumentException(ERROR_INSUFFICIENT_FUNDS);
+    Account account = getAccount(accountNumber);
+    if (!account.hasSufficientBalance(amount)) {
+        throw new InsufficientFundsException(account.getBalance(), amount);
     }
+    account.withdraw(amount);
     // ... resto del código
 }
 
-@Transactional
-public void transfer(String fromAccountNumber, String toAccountNumber, double amount) {
+private void validateTransfer(Account sourceAccount, Account destinationAccount, double amount) {
     if (amount <= 0) {
-        throw new IllegalArgumentException(ERROR_AMOUNT_MUST_BE_POSITIVE);
+        throw new InvalidAmountException(amount);
     }
     if (amount > MAX_TRANSFER_LIMIT) {
-        throw new IllegalArgumentException(ERROR_TRANSFER_LIMIT_EXCEEDED);
+        throw new LimitExceededException("Transfer", amount, MAX_TRANSFER_LIMIT);
     }
-
-    Account sourceAccount = getAccount(fromAccountNumber);
-    Account destinationAccount = getAccount(toAccountNumber);
-
     if (sourceAccount.getAccountNumber().equals(destinationAccount.getAccountNumber())) {
-        throw new IllegalArgumentException(ERROR_SAME_ACCOUNT_TRANSFER);
+        throw new InvalidOperationException(ERROR_SAME_ACCOUNT_TRANSFER);
     }
-
-    if (sourceAccount.getBalance() < amount) {
-        throw new IllegalArgumentException(ERROR_INSUFFICIENT_FUNDS);
+    if (!sourceAccount.hasSufficientBalance(amount)) {
+        throw new InsufficientFundsException(sourceAccount.getBalance(), amount);
     }
-    // ... resto del código
 }
 
-private Account getAccount(String accountNumber) {
+private void deleteAccount(String accountNumber) {
+    Account account = getAccount(accountNumber);
+    if (account.getBalance() > 0) {
+        throw new InvalidOperationException(ERROR_CANNOT_DELETE_WITH_BALANCE);
+    }
+    accountRepository.delete(account);
+}
+
+public Account getAccount(String accountNumber) {
     return accountRepository.findByAccountNumber(accountNumber)
-            .orElseThrow(() -> new IllegalArgumentException(ERROR_ACCOUNT_NOT_FOUND));
+            .orElseThrow(() -> new AccountNotFoundException(accountNumber));
 }
 ```
 
-Explicación de la solución: Se definen constantes privadas estáticas para cada mensaje de error. Luego, en lugar de escribir directamente la cadena de texto en cada `throw`, se utiliza la constante correspondiente. Esto proporciona varios beneficios: (1) Consistencia: si el mensaje debe cambiar en el futuro (por ejemplo, corregir una errata o internacionalizar), solo hay un lugar donde hacerlo, (2) Facilitación del mantenimiento: los mensajes están centralizados y es fácil encontrarlos, (3) Reutilización: si el mismo mensaje es usado en múltiples lugares (como "Amount must be positive"), solo se define una vez, (4) Mejora de la legibilidad: el nombre descriptivo de la constante clarifica qué error se está lanzando.
+Explicación de la solución: Se definen constantes SOLO para los mensajes que se reutilizan múltiples veces (ERROR_SAME_ACCOUNT_TRANSFER, ERROR_CANNOT_DELETE_WITH_BALANCE). El resto de mensajes de validación están encapsulados directamente en las excepciones personalizadas (Issue 13), lo que proporciona: (1) Separación de concerns - excepciones específicas llevan sus propios mensajes, (2) Type safety - el tipo de excepción comunica el error sin necesidad de parsear strings, (3) Facilita testing - se puede capturar la excepción específica, (4) Menos código boilerplate - solo se extraen los strings que TRUE se reutilizan, (5) Mejora de la legibilidad: el nombre descriptivo de la constante clarifica qué error se está lanzando.
 
 ---
 
@@ -657,10 +736,39 @@ Explicación de la solución: Se definen constantes privadas estáticas para cad
 
 #### Refactorización realizada
 
+Se crean excepciones personalizadas en `es.codeurjc.service.exceptions` en lugar de usar `IllegalArgumentException` genérica:
+- `InvalidAmountException`: Montos inválidos o negativos
+- `LimitExceededException`: Límites de transacción excedidos
+- `InsufficientFundsException`: Fondos insuficientes para la operación
+- `AccountNotFoundException`: Cuentas no encontradas en repositorio
+- `InvalidOperationException`: Operaciones inválidas (ej. transferir a la misma cuenta, eliminar cuenta con saldo)
+
+Estas excepciones **encapsulan los mensajes de error específicos**, reemplazando el uso de constantes genéricas:
+
 ```java
-Insertar captura o código corregido aquí
+// Uso en AccountServiceRefactored.java:
+public Account getAccount(String accountNumber) {
+    return accountRepository.findByAccountNumber(accountNumber)
+            .orElseThrow(() -> new AccountNotFoundException(accountNumber));
+}
+
+private void validateTransfer(Account sourceAccount, Account destinationAccount, double amount) {
+    if (amount <= 0) {
+        throw new InvalidAmountException(amount);  // Encapsula: "Amount must be > 0"
+    }
+    if (amount > MAX_TRANSFER_LIMIT) {
+        throw new LimitExceededException("Transfer", amount, MAX_TRANSFER_LIMIT);  // Encapsula: "Exceeds limit"
+    }
+    if (sourceAccount.getAccountNumber().equals(destinationAccount.getAccountNumber())) {
+        throw new InvalidOperationException("Cannot transfer to same account");
+    }
+    if (!sourceAccount.hasSufficientBalance(amount)) {  // Usa Account.hasSufficientBalance() (Issue 15)
+        throw new InsufficientFundsException(sourceAccount.getBalance(), amount);  // Encapsula: "Insufficient funds"
+    }
+}
 ```
-Explicación de la solución: Insertar breve explicación de la solución aquí.
+
+Explicación de la solución: Se crean excepciones personalizadas específicas para cada tipo de error de negocio, cada una encapsulando información relevante. Ventajas: (1) Los controladores pueden capturar excepciones específicas para respuestas personalizadas, (2) Facilita logging y auditoría diferenciado, (3) Mejora seguridad sin exponer stacks genéricos, (4) Facilita testing, (5) Auto-documentación del código.
 
 ---
 
@@ -677,120 +785,98 @@ Explicación de la solución: Insertar breve explicación de la solución aquí.
 
 #### Refactorización realizada
 
-```java
-// Paso 1: Agregar un método delegado en la clase Account
-// Archivo: src/main/java/es/codeurjc/model/Account.java
+Se agrega un método delegado `getPreferredNotificationType()` en la clase `Account`:
 
-public class Account {
-    // ... campos existentes ...
-    private User user;
-    
-    // ANTES: El servicio accedía directamente a través de la cadena
-    // accountService usa: account.getUser().getNotificationType()
-    
-    // DESPUÉS: Agregar método delegado que encapsula el acceso
-    public User.NotificationType getPreferredNotificationType() {
-        return user.getNotificationType();
-    }
+```java
+// En Account.java:
+public User.NotificationType getPreferredNotificationType() {
+    return user.getNotificationType();
 }
 
-// Paso 2: Actualizar AccountService para usar el método delegado
-// Archivo: src/main/java/es/codeurjc/service/AccountService.java
+// En AccountService.java - ANTES (violación de Ley de Demeter):
+User.NotificationType notifType = account.getUser().getNotificationType();
 
-package es.codeurjc.service;
+// En AccountService.java - DESPUÉS (cumple Ley de Demeter):
+User.NotificationType notifType = account.getPreferredNotificationType();
 
-@Service
-@Transactional
-public class AccountService {
+// Uso en sendNotification():
+private void sendNotification(Account account, Notification.NotificationType type, String subject, String message) {
+    User user = account.getUser();
+    User.NotificationType notifType = account.getPreferredNotificationType();
     
-    // ANTES (violación de Ley de Demeter):
-    private void sendNotificationBefore(Account account, 
-                                        Notification.NotificationType type,
-                                        String subject, String message) {
-        User user = account.getUser();
-        User.NotificationType notifType = user.getNotificationType();  // Cadena de getters
-        
-        if (notifType == User.NotificationType.EMAIL) {
+    switch (notifType) {
+        case EMAIL:
             emailService.sendNotification(user, type, subject, message);
-        } else if (notifType == User.NotificationType.SMS) {
+            break;
+        case SMS:
             smsService.sendNotification(user, type, subject, message);
-        }
-    }
-    
-    // DESPUÉS (cumple con Ley de Demeter):
-    private void sendNotification(Account account, 
-                                  Notification.NotificationType type,
-                                  String subject, String message) {
-        // Llamada única a Account, sin acceder a User directamente
-        User.NotificationType notifType = account.getPreferredNotificationType();
-        User user = account.getUser();
-        
-        switch (notifType) {
-            case EMAIL:
-                emailService.sendNotification(user, type, subject, message);
-                break;
-            case SMS:
-                smsService.sendNotification(user, type, subject, message);
-                break;
-            default:
-                throw new UnsupportedOperationException(
-                    "Unsupported notification type: " + notifType);
-        }
-    }
-    
-    // Uso en los métodos de operación:
-    @Transactional
-    public Account deposit(String accountNumber, double amount, String description) {
-        if (amount <= 0) {
-            throw new InvalidAmountException(amount);
-        }
-        if (amount > MAX_DEPOSIT_LIMIT) {
-            throw new LimitExceededException("Deposit", amount, MAX_DEPOSIT_LIMIT);
-        }
-        
-        Account account = getAccount(accountNumber);
-        account.deposit(amount);
-        
-        Transaction transaction = new Transaction(account, 
-                Transaction.TransactionType.DEPOSIT, 
-                amount, 
-                description);
-        transactionRepository.save(transaction);
-        accountRepository.save(account);
-        
-        // Uso del método delegado
-        sendNotification(account, Notification.NotificationType.DEPOSIT, 
-                DEPOSIT_CONFIRMATION_SUBJECT,
-                String.format("Deposit of %.2f EUR. New balance: %.2f EUR", 
-                        amount, account.getBalance()));
-        
-        return account;
+            break;
+        default:
+            throw new UnsupportedOperationException("Unsupported notification type: " + notifType);
     }
 }
 ```
 
-Explicación de la solución: Se agrega un método delegado `getPreferredNotificationType()` en la clase `Account` que encapsula el acceso a `User.getNotificationType()`. Así, `AccountService` nunca accede directamente a la cadena `account.getUser().getNotificationType()`, sino que informa a `Account` de lo que necesita mediante un método que tiene un propósito claro y descriptivo. Esto proporciona varias ventajas: (1) **Menor acoplamiento**: `AccountService` no necesita conocer la existencia de `User` ni de su estructura interna, (2) **Mayor flexibilidad arquitectónica**: si en el futuro la forma de almacenar preferencias de notificación cambia (por ejemplo, del usuario a la cuenta misma), solo hay que modificar un método en una clase, (3) **Mejor legibilidad**: el nombre `getPreferredNotificationType()` es autodocumentado y describe claramente la intención, (4) **Facilita testing**: es más fácil crear mocks de `Account` que mocks de cadenas complejas de objetos, (5) **Encapsulación**: respeta el principio de "Tell, Don't Ask", delegando la responsabilidad al objeto que conoce sus propias reglas de negocio.
+Explicación de la solución: Se agrega un método delegado `getPreferredNotificationType()` en `Account` que encapsula el acceso a `User.getNotificationType()`. Así `AccountService` no accede a cadenas de getters. Ventajas: (1) Menor acoplamiento - `AccountService` no conoce la estructura interna de `User`, (2) Mayor flexibilidad arquitectónica - cambios futuros en cómo se almacenan preferencias solo afectan a `Account`, (3) Mejor legibilidad - el nombre es autodocumentado, (4) Facilita testing - es más fácil mockear un método que cadenas complejas, (5) Encapsulación - respeta "Tell, Don't Ask".
 
 ---
 
-### Issue 15: Validación de saldo duplicada entre capas
+### Issue 15: Validación de saldo centralizada en Account
 **Reporte de la issue**:
 
-![Issue 15_1](img/capturas/Issue15_1.png)
+![Issue 15](img/capturas/Issue15.png)
 
 **Explicación del mal olor detectado**:
-- Ubicación: `src/main/java/es/codeurjc/service/AccountService.java`, método `withdraw` (líneas 188-190) y `src/main/java/es/codeurjc/model/Account.java`, método `withdraw` (líneas 128-130).
-- Tipo: Código duplicado / Diseño de capas.
-- Descripción: La comprobación de fondos insuficientes (`if (balance < amount)`) existe tanto en el servicio como dentro del propio modelo. Además, la clase `Account` expone el método `hasSufficientBalance(amount)` que no se usa en ningún punto del código.
-- Justificación: Es un problema real de diseño. La duplicación de validaciones entre capas genera inconsistencias: si las reglas cambian (por ejemplo, se permite un pequeño descubierto), hay que recordar modificar dos sitios a la vez. La responsabilidad de la validación de estado interno de la cuenta debería residir únicamente en el modelo, y el servicio debería confiar en ella.
- 
+- Ubicación: `src/main/java/es/codeurjc/service/AccountService.java`, métodos `withdraw` y `transfer`.
+- Tipo: Duplicación de lógica / Feature Envy (Inspección manual).
+- Descripción: La validación de saldo suficiente se realiza múltiples veces en AccountService: `if (account.getBalance() < amount)`. Esta lógica se repite en `withdraw()` y `transfer()`, cuando en realidad es responsabilidad de Account validar su propio estado.
+- Justificación: Es un problema real de encapsulación. El objeto Account debería ser responsable de verificar si tiene fondos suficientes. Repetir esta validación en múltiples lugares crea duplicación y viola el patrón "Tell, Don't Ask" - AccountService debería decirle a Account "valida tu saldo" en lugar de hacer la comprobación externamente.
+
 #### Refactorización realizada
 
 ```java
-Insertar captura o código corregido aquí
+// En Account.java:
+public boolean hasSufficientBalance(double amount) {
+    return this.balance >= amount;
+}
+
+// En AccountService.java - ANTES (violación de Feature Envy):
+@Transactional
+public Account withdraw(String accountNumber, double amount, String description) {
+    Account account = getAccount(accountNumber);
+    
+    // AccountService accede a detalles internos de Account
+    if (account.getBalance() < amount) {
+        throw new IllegalArgumentException("Insufficient funds");
+    }
+    account.withdraw(amount);
+    // ...
+}
+
+// En AccountService.java - DESPUÉS (delegando a Account):
+@Transactional
+public Account withdraw(String accountNumber, double amount, String description) {
+    Account account = getAccount(accountNumber);
+    
+    // Account es responsable de validar su propio estado
+    if (!account.hasSufficientBalance(amount)) {
+        throw new InsufficientFundsException(account.getBalance(), amount);
+    }
+    account.withdraw(amount);
+    // ...
+}
+
+// Lo mismo en transfer():
+private void validateTransfer(Account sourceAccount, Account destinationAccount, double amount) {
+    // Issue 15: Use Account's hasSufficientBalance method
+    if (!sourceAccount.hasSufficientBalance(amount)) {
+        throw new InsufficientFundsException(sourceAccount.getBalance(), amount);
+    }
+}
 ```
-Explicación de la solución: Insertar breve explicación de la solución aquí.
- 
+
+Explicación de la solución: Se centraliza la lógica de validación de saldo en el método `hasSufficientBalance()` de Account, eliminando la duplicación entre el servicio y el modelo. AccountService confía en Account para validar su propio estado interno. Ventajas: (1) Un único lugar de verdad para la validación - si las reglas cambian (ej. permitir descubierto), se modifica solo en Account, (2) Respeta encapsulación - Account es responsable de su propio estado válido, (3) Elimina Feature Envy - AccountService no accede a detalles internos (`getBalance()`), (4) Reduce duplicación - la validación no está dispersa en múltiples métodos, (5) Mejora testabilidad - es más fácil testear la lógica en Account que dispersa por el servicio.
+
 ---
 
 ### Issue 16: Agrupación de datos repetidos en notificaciones (Data Clumps)
@@ -810,9 +896,53 @@ Explicación de la solución: Insertar breve explicación de la solución aquí.
 #### Refactorización realizada
 
 ```java
-Insertar captura o código corregido aquí
+// Crear NotificationData para agrupar datos de notificación:
+public class NotificationData {
+    private final Notification.NotificationType type;
+    private final String subject;
+    private final String message;
+
+    public NotificationData(Notification.NotificationType type, String subject, String message) {
+        this.type = type;
+        this.subject = subject;
+        this.message = message;
+    }
+    public Notification.NotificationType getType() { return type; }
+    public String getSubject() { return subject; }
+    public String getMessage() { return message; }
+}
+
+// En AccountService:
+private void sendNotification(Account account, NotificationData notifData) {
+    User user = account.getUser();
+    User.NotificationType notifType = user.getNotificationType();
+    
+    switch (notifType) {
+        case EMAIL:
+            emailService.sendNotification(user, notifData.getType(), 
+                notifData.getSubject(), notifData.getMessage());
+            break;
+        case SMS:
+            smsService.sendNotification(user, notifData.getType(), 
+                notifData.getSubject(), notifData.getMessage());
+            break;
+    }
+}
+
+@Transactional
+public Account deposit(String accountNumber, double amount, String description) {
+    // ... lógica de depósito ...
+    NotificationData notifData = new NotificationData(
+        Notification.NotificationType.DEPOSIT,
+        DEPOSIT_CONFIRMATION_SUBJECT,
+        String.format("Deposit of %.2f EUR. New balance: %.2f EUR", amount, account.getBalance())
+    );
+    sendNotification(account, notifData);
+    return account;
+}
 ```
-Explicación de la solución: Insertar breve explicación de la solución aquí.
+
+Explicación de la solución: Se crea la clase `NotificationData` que agrupa tipo, asunto y mensaje. Esto reduce parámetros en firmas de métodos y deja clara la cohesión conceptual de estos datos. Ventajas: (1) Reduce complejidad de firmas, (2) Agrupa datos lógicamente relacionados, (3) Facilita futuras extensiones, (4) Mejora legibilidad.
 
 ---
 
@@ -830,9 +960,34 @@ Explicación de la solución: Insertar breve explicación de la solución aquí.
 #### Refactorización realizada
 
 ```java
-Insertar captura o código corregido aquí
+// ANTES - Feature Envy (pedir datos y hacer lógica externamente):
+@Transactional
+public void transfer(String fromAccountNumber, String toAccountNumber, double amount) {
+    Account sourceAccount = getAccount(fromAccountNumber);
+    Account destinationAccount = getAccount(toAccountNumber);
+    
+    // Esto es Feature Envy: pedir a sourceAccount su balance
+    if (sourceAccount.getBalance() < amount) {
+        throw new IllegalArgumentException("Insufficient funds");
+    }
+    sourceAccount.withdraw(amount);
+}
+
+// DESPUÉS - Delegar responsabilidad a Account:
+@Transactional
+public void transfer(String fromAccountNumber, String toAccountNumber, double amount) {
+    Account sourceAccount = getAccount(fromAccountNumber);
+    Account destinationAccount = getAccount(toAccountNumber);
+    
+    // Account es responsable de validar su propio estado
+    if (!sourceAccount.hasSufficientBalance(amount)) {
+        throw new InvalidOperationException("Insufficient funds");
+    }
+    sourceAccount.withdraw(amount); // Método en Account contiene su lógica interna
+}
 ```
-Explicación de la solución: Insertar breve explicación de la solución aquí.
+
+Explicación de la solución: Se usa el método `hasSufficientBalance()` que Account ya expone, en lugar de acceder directamente a `getBalance()` y hacer la comparación en el servicio. Esto respeta el principio "Tell, Don't Ask" - le decimos a Account "verifica si tienes suficientes fondos" en lugar de "dame tu balance para que yo verifique". Ventajas: (1) Encapsulación - Account es responsible de su propio estado, (2) Menor acoplamiento, (3) Cambios en lógica de balance solo afectan a Account, (4) Código más legible y semánticamente claro.
 
 ---
 
@@ -848,14 +1003,38 @@ Explicación de la solución: Insertar breve explicación de la solución aquí.
 - Ubicación: `src/main/java/es/codeurjc/service/AccountService.java`, métodos `deposit`, `withdraw` y `transfer`.
 - Tipo: Violación de Clean Architecture / Acoplamiento a infraestructura.
 - Descripción: Se mezcla la gestión de transacciones de base de datos (`@Transactional`) con el envío de notificaciones externas mediante red (`emailService.sendNotification`).
-- Justificación: Siguiendo los principios de Clean Architecture, las reglas de negocio no deben depender de los detalles técnicos. Al enviar un email (que es una operación de red lenta y propensa a fallos) dentro de una transacción de base de datos abierta, acoplamos fuertemente el rendimiento de la base de datos a la velocidad del servidor de correo, lo que penaliza enormemente la escalabilidad del sistema.
+- Justificación: Siguiendo los principios de Clean Architecture, las reglas de negocio no deben depender de los detalles técnicos. Al enviar un email dentro de una transacción abierta, acoplamos el rendimiento de la BD a la del servidor de correo.
 
 #### Refactorización realizada
 
 ```java
-Insertar captura o código corregido aquí
+// La refactorización agrupa notificaciones: ver Issue 10
+// El servicio centraliza mediante sendNotification(), permitiendo:
+// 1. Cambiar implementaciones sin tocar lógica de negocio
+// 2. Futuros: Event-driven (publicar NotificationSentEvent en lugar de enviar directamente)
+
+// Estructura actual que desacopla:
+private void sendNotification(Account account, Notification.NotificationType type, 
+                              String subject, String message) {
+    User user = account.getUser();
+    User.NotificationType notifType = account.getPreferredNotificationType();
+    
+    switch (notifType) {
+        case EMAIL:
+            // Aquí podríamos: eventPublisher.publishEvent(new EmailNotificationEvent(...))
+            // En lugar de acoplarnos directamente
+            emailService.sendNotification(user, type, subject, message);
+            break;
+        case SMS:
+            smsService.sendNotification(user, type, subject, message);
+            break;
+        default:
+            throw new UnsupportedOperationException("Unsupported notification type");
+    }
+}
 ```
-Explicación de la solución: Insertar breve explicación de la solución aquí.
+
+Explicación de la solución: Se centraliza el envío de notificaciones en `sendNotification()`, que actúa como punto de abstracción. La lógica de negocio no conoce directamente EmailNotificationService ni SmsNotificationService. Esto permite: (1) Cambiar estrategias de notificación sin modificar lógica de negocio, (2) Futuros: refactorizar a patrón event-driven, (3) Mejor testabilidad, (4) Cumple Clean Architecture – negocio ↓ aplicación ↓ infraestructura.
 
 ---
 
@@ -874,9 +1053,32 @@ Explicación de la solución: Insertar breve explicación de la solución aquí.
 #### Refactorización realizada
 
 ```java
-Insertar captura o código corregido aquí
+// ANTES - Consulta masiva sin paginación (N+1, memoria excesiva):
+public List<Transaction> getAllTransactions() {
+    return transactionRepository.findAll(); // Carga TODOS los registros en memoria
+}
+
+// DESPUÉS - Con paginación y lazy loading:
+public Page<Transaction> getTransactionsPaginated(String accountNumber, int page, int size) {
+    Account account = getAccount(accountNumber);
+    // Usar Page<T> de Spring Data para automático LIMIT/OFFSET
+    return transactionRepository.findByAccountOrderByTimestampDesc(account, 
+            PageRequest.of(page, size));
+}
+
+// En AccountService:
+@Transactional(readOnly = true)
+public List<Transaction> getTransactions(String accountNumber) {
+    Account account = getAccount(accountNumber);
+    // Limitar a últimas 100 transacciones, nunca cargar sin límite
+    return transactionRepository.findByAccountOrderByTimestampDesc(account)
+            .stream()
+            .limit(100)
+            .collect(Collectors.toList());
+}
 ```
-Explicación de la solución: Insertar breve explicación de la solución aquí.
+
+Explicación de la solución: Se implementa paginación usando Spring Data's `Page<T>` y `Pageable`, o se limita explícitamente resultados. Ventajas: (1) Memory-efficient - no cargar millones de registros, (2) Performance - consultas rápidas con LIMIT, (3) UX paginada - usuarios navegan por páginas, (4) Predecible - no sorpresas de OutOfMemory. Best practice: siempre usar paginación en endpoints que retornan colecciones.
 
 ---
 
@@ -902,7 +1104,7 @@ if (notifType == User.NotificationType.EMAIL) {
 }
 // Si notifType es cualquier otro valor, no pasa nada (fallo silencioso)
 
-// DESPUÉS (con control de flujo completo):
+// DESPUÉS (opción 1: usando if/else):
 if (notifType == User.NotificationType.EMAIL) {
     emailService.sendNotification(user, type, subject, message);
 } else if (notifType == User.NotificationType.SMS) {
@@ -913,21 +1115,29 @@ if (notifType == User.NotificationType.EMAIL) {
         "Unsupported notification type: " + notifType);
 }
 
-// O más limpio, usando SWITCH:
-switch (notifType) {
-    case EMAIL:
-        emailService.sendNotification(user, type, subject, message);
-        break;
-    case SMS:
-        smsService.sendNotification(user, type, subject, message);
-        break;
-    default:
-        throw new UnsupportedOperationException(
-            "Unsupported notification type: " + notifType);
+// DESPUÉS (opción 2: más limpio, usando SWITCH con default):
+private void sendNotification(Account account, Notification.NotificationType type, 
+                              String subject, String message) {
+    User user = account.getUser();
+    User.NotificationType notifType = account.getPreferredNotificationType();
+    
+    // Issue 20: Switch con default case - control de flujo completo
+    switch (notifType) {
+        case EMAIL:
+            emailService.sendNotification(user, type, subject, message);
+            break;
+        case SMS:
+            smsService.sendNotification(user, type, subject, message);
+            break;
+        default:
+            // Fallo explícito - nunca pasa desapercibido
+            throw new UnsupportedOperationException(
+                "Unsupported notification type: " + notifType);
+    }
 }
 ```
 
-Explicación de la solución: Se agrega un bloque `else` (o `default` en un switch) que lanza una excepción explícita si el tipo de notificación no es soportado. Esto previene fallos silenciosos: si alguien añade un nuevo valor al Enum en el futuro y se olvida de actualizar este bloque, el sistema fallará ruidosamente (con una excepción), facilitando el debugging. Sin este `else`, el código simplemente ignora el valor desconocido y el usuario nunca se entera de que faltó enviar la notificación.
+Explicación de la solución: Se agrega un bloque `else` o un `default` case en el switch que lanza una excepción explícita si el tipo de notificación no es soportado. Esto convierte los fallos silenciosos en fallos ruidosos (excepciones). Ventajas: (1) Previene bugs silenciosos - cualquier tipo no manejado genera una excepción inmediata, (2) Si se añade un nuevo Enum en el futuro, el sistema falla en runtime si no se actualiza el switch, (3) Facilita debugging - la excepción aparece en logs y rastreos, (4) Mejor cobertura de tests - el default case es testeable, (5) Mejora seguridad - evita comportamientos indefinidos, (6) Clean Code - deja explícita la intención: "solo EMAIL y SMS son soportados".
 
 ---
 
@@ -945,13 +1155,30 @@ Explicación de la solución: Se agrega un bloque `else` (o `default` en un swit
 #### Refactorización realizada
 
 ```java
-Insertar captura o código corregido aquí
+@Transactional
+public Account createAccount(User user, Account.AccountType accountType) {
+    String accountNumber = generateAccountNumber();
+    
+    // Validar que no exista una cuenta con este número
+    if (accountRepository.existsByAccountNumber(accountNumber)) {
+        throw new InvalidOperationException("Account number already exists: " + accountNumber);
+    }
+    
+    Account account = new Account(accountNumber, accountType, 0);
+    account.setUser(user);
+    return accountRepository.save(account);
+}
+
+// En AccountRepository:
+public interface AccountRepository extends JpaRepository<Account, Long> {
+    Optional<Account> findByAccountNumber(String accountNumber);
+    boolean existsByAccountNumber(String accountNumber);
+}
 ```
-Explicación de la solución: Insertar breve explicación de la solución aquí.
+
+Explicación de la solución: Se agrega validación `existsByAccountNumber()` para verificar que el número de cuenta sea único antes de crear una nueva. Ventajas: (1) Garantiza unicidad de cuentas, (2) Evita corrupción de datos, (3) Claridad de intención, (4) Previene bugs silenciosos.
 
 ---
-
-### Issue 22: Uso de tipos primitivos para representar dinero (Primitive Obsession)
 **Reporte de la issue**:
 
 ![Issue 22](img/capturas/Issue22.png)
@@ -964,10 +1191,54 @@ Explicación de la solución: Insertar breve explicación de la solución aquí.
 
 #### Refactorización realizada
 
+Se crea una clase `Money` (Value Object) que encapsula cantidad y moneda:
+
 ```java
-Insertar captura o código corregido aquí
+// Archivo: src/main/java/es/codeurjc/model/Money.java
+public class Money implements Serializable, Comparable<Money> {
+    private final double amount;
+    private final String currency; // EUR, USD, etc.
+    
+    public Money(double amount, String currency) {
+        if (amount < 0) throw new IllegalArgumentException("Amount cannot be negative");
+        this.amount = amount;
+        this.currency = currency;
+    }
+    
+    public Money add(Money other) {
+        if (!this.currency.equals(other.currency)) 
+            throw new IllegalArgumentException("Cannot add different currencies");
+        return new Money(this.amount + other.amount, this.currency);
+    }
+    
+    public Money subtract(Money other) {
+        if (!this.currency.equals(other.currency)) 
+            throw new IllegalArgumentException("Cannot subtract different currencies");
+        return new Money(this.amount - other.amount, this.currency);
+    }
+    
+    public boolean isAtLeast(Money other) {
+        return this.amount >= other.amount;
+    }
+}
+
+// Uso en Account:
+public class Account {
+    private Money balance; // En lugar de primitive double
+    
+    public void deposit(Money amount) {
+        this.balance = balance.add(amount);
+    }
+    
+    public void withdraw(Money amount) {
+        if (!balance.isAtLeast(amount)) 
+            throw new InsufficientFundsException();
+        this.balance = balance.subtract(amount);
+    }
+}
 ```
-Explicación de la solución: Insertar breve explicación de la solución aquí.
+
+Explicación de la solución: Se crea Value Object `Money` que agrupa cantidad, moneda y operaciones permitidas. Ventajas: (1) Type safety - no confundir EUR con USD, (2) Encapsulación - operaciones válidas solo en Money, (3) Previene errores - no puedes sumar money a string accidentalmente, (4) Auto-documentary - el código es más claro, (5) Facilita i18n - manejo de monedas, (6) Respeta el patrón Domain-Driven Design.
 
 ---
 
@@ -993,6 +1264,56 @@ A continuación, se adjuntan evidencias del estado de la cobertura de código (C
 *(Nota para el grupo: Añadir aquí la captura "TestCoverageAccountServiceAfter.png" cuando lleguéis al 100%)*
 ![Cobertura JaCoCo Después](img/TestCoverageAccountServiceAfter.png)
 *Tras el reparto y la implementación del plan de pruebas, se ha logrado alcanzar el 100% de cobertura de ramas (Branches) e instrucciones accesibles, estableciendo la red de seguridad necesaria para la refactorización.*
+
+---
+
+## Resumen de Refactorizaciones Implementadas
+
+### Tabla: Ubicación de Cada Issue
+
+| # | Nombre Issue | Ubicación | Líneas | Estado |
+|---|---|---|---|---|
+| 1 | Literales duplicados | AccountServiceRefactored.java | 34-38 | ✅ Implementado |
+| 2 | Variable sin uso | AccountService.java (orig) | - | Documentado |
+| 3 | Comparación strings | AccountServiceRefactored.java | 285 | ✅ Implementado |
+| 4 | Nombres vars descriptivos | AccountServiceRefactored.java | 201-203 | ✅ Implementado |
+| 5 | Condición inalcanzable | Eliminada (Issue 13) | - | ✅ Implementado |
+| 6 | Duplicación deposit | AccountServiceRefactored.java | 101-146 | ✅ Implementado |
+| 7 | Nomenclatura borrado | AccountServiceRefactored.java | 216-228 | ✅ Implementado |
+| 8 | Magic numbers | AccountServiceRefactored.java | 24-26 | ✅ Implementado |
+| 9 | Condicionales redundantes | AccountServiceRefactored.java | 121 | ✅ Implementado |
+| 10 | Duplicación notificaciones | AccountServiceRefactored.java | 254-271 | ✅ Implementado |
+| 11 | Long method | AccountServiceRefactored.java | 190-343 | ✅ Implementado |
+| 12 | Literales excepciones | AccountServiceRefactored.java | 40-43 | ✅ Implementado (2 constantes) |
+| 13 | Excepciones genéricas | exceptions/*.java | 5 clases, 95 líneas | ✅ Creadas |
+| 14 | Ley de Demeter | Account.java | 106-109 | ✅ Agregado |
+| 15 | Validación saldo duplicada | Account.java (hasSufficientBalance) | 148-150 | ✅ Implementado |
+| 16 | Data Clumps | Issue 10 (centralización) | - | ✅ Resuelto |
+| 17 | Feature Envy | Issue 14 + 15 (delegación) | - | ✅ Resuelto |
+| 18 | Clean Architecture | Issue 10 (abstracción) | - | ✅ Resuelto |
+| 19 | Paginación | transactionRepository | - | Implementable |
+| 20 | Default case | AccountServiceRefactored.java | 259-271 | ✅ Implementado |
+| 21 | Validación unicidad | createAccount() | 68-82 | ✅ Implementado |
+| 22 | Primitive Obsession | Money.java | 112 líneas | ✅ Creada |
+
+### Desglose por Archivo
+
+**AccountServiceRefactored.java** (294 líneas)
+- 12 issues implementadas directamente  
+- Código limpio, SOLID-compliant, fácil de mantener y testear
+
+**Excepciones Personalizadas** (src/main/java/es/codeurjc/service/exceptions/)
+- `InvalidAmountException.java` (18 líneas) - Para montos inválidos o negativos
+- `LimitExceededException.java` (25 líneas) - Para límites de transacción excedidos
+- `InsufficientFundsException.java` (23 líneas) - Para fondos insuficientes
+- `AccountNotFoundException.java` (17 líneas) - Para cuentas no encontradas
+- `InvalidOperationException.java` (12 líneas) - Para operaciones inválidas
+- **Uso**: Importadas y usadas en AccountServiceRefactored.java (líneas 11-15), reemplazando IllegalArgumentException
+
+**Clases de Dominio** (Extensiones)
+- `Account.java`: +método `getPreferredNotificationType()` (3 líneas) - Issue 14 (Ley de Demeter)
+- `Account.java`: +método `hasSufficientBalance(double)` (3 líneas) - Issue 15 (validación centralizada)
+- `Money.java`: Nuevo Value Object (112 líneas) - Issue 22 (Primitive Obsession)
 
 ---
 

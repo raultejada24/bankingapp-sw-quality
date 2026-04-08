@@ -137,7 +137,9 @@ Explicación de la solución: Se modifica la línea `if (m.getAccountNumber() ==
 #### Refactorización realizada
 
 ```java
-//Se sustituye m y o como nombres de las variables que representan las cuentas de origen y de destino por los nombres sourceAccount para la variable de la cuenta de origen y destinationAccount para la variable de la cuenta de destino
+// Se sustituye m y o como nombres de las variables que representan las cuentas de origen y de destino por los
+//nombres sourceAccount para la variable de la cuenta de origen y destinationAccount para la variable de la
+//cuenta de destino
 
 @Transactional
     public void transfer(String fromAccountNumber, String toAccountNumber, double amount) {
@@ -148,6 +150,7 @@ Explicación de la solución: Se modifica la línea `if (m.getAccountNumber() ==
             throw new IllegalArgumentException("Amount exceeds maximum transfer limit");
         }
 
+        //m y o ahora son sourceAccount y destinationAccount
         Account sourceAccount = getAccount(fromAccountNumber);
         Account destinationAccount = getAccount(toAccountNumber);
 
@@ -215,7 +218,7 @@ Explicación de la solución: Se modifica la línea `if (m.getAccountNumber() ==
         }
     }
 ```
-Explicación de la solución: Se sustituyen los nombres de las variables correspondientes a la cuenta de origen y de destino (`m` y `o` respectivamente) por nombres que permitan identificar y localizar fácilmente cada una de estas variables y que cada una defina de manera clara lo que representa (en este caso, `sourceAccount` para la cuenta de origen y `destinationAccount`para la cuenta destino).
+Explicación de la solución: Se sustituyen los nombres de las variables correspondientes a la cuenta de origen y de destino (`m` y `o` respectivamente) por nombres más descriptivos que permitan identificar y localizar fácilmente cada una de estas variables y que cada una defina de manera clara lo que representa (en este caso, `sourceAccount` para la cuenta de origen y `destinationAccount`para la cuenta destino).
 
 ---
 
@@ -243,7 +246,7 @@ Explicación de la solución: Se sustituyen los nombres de las variables corresp
             throw new IllegalArgumentException("Amount exceeds maximum deposit limit");
         }
 
-        // Se ha eliminado la condición que compureba si el importe es mayor de 50000
+        // Se ha eliminado la condición que comprueba si el importe es mayor de 50000
 
 ```
 Explicación de la solución: Se ha eliminado la validación `amount > 50000` por ser lógicamente inalcanzable. Dado que existe una restricción previa más estricta `(amount > 10000)`, cualquier valor que supere los 50000 será capturado primero por el límite de 10000, lanzando la excepción y deteniendo la ejecución. Esta redundancia generaba 'código muerto' que dificultaba el mantenimiento, por lo se ha tenido que quitar.

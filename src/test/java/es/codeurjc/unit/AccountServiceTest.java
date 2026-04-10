@@ -586,15 +586,20 @@ public class AccountServiceTest {
 
     }
 
-    // Hecho por: [Nombre del Alumno]
+    // Hecho por: Arturo Vinuesa Domínguez
     @Test
     @DisplayName("24. withdraw_Exceeds5k: Lanza excepción si amount > 5000")
     void withdraw_Exceeds5kTest() {
         // Given (Preparar cantidad inválida > 5000)
+        double amount = 6000.0;
 
         // When (Llamar a accountService.withdraw usando assertThrows)
+        IllegalArgumentException exception = assertThrows(IllegalArgumentException.class, () -> {
+            accountService.withdraw("ES12345", amount, "Retirada grande");
+        });
 
         // Then (Comprobar mensaje de excepción)
+        assertEquals("Amount exceeds maximum withdrawal limit", exception.getMessage());
 
     }
 
@@ -616,15 +621,36 @@ public class AccountServiceTest {
 
     }
 
-    // Hecho por: [Nombre del Alumno]
+    // Hecho por: Arturo Vinuesa Domínguez
     @Test
     @DisplayName("26. withdraw_Success_Email: Retiro válido y notificación EMAIL")
     void withdraw_Success_EmailTest() {
         // Given (Configurar cuenta con fondos, User con EMAIL, Mocks de BD)
+        User user = new User();
+        user.setNotificationType(User.NotificationType.EMAIL);
+        Account userAccount = new Account("ES129", Account.AccountType.CHECKING, 500);
+        userAccount.setUser(user);
+
+        when(accountRepository.findByAccountNumber("ES129")).thenReturn(Optional.of(userAccount));
+        when(accountRepository.save(any(Account.class))).thenReturn(userAccount);
 
         // When (Llamar a accountService.withdraw)
+        accountService.withdraw("ES129", 150, "Compra online");
 
         // Then (Verificar resta de saldo, guardado en BD y llamada a emailService)
+        assertEquals(350, userAccount.getBalance());
+
+        verify(accountRepository, times(1)).findByAccountNumber("ES129");
+        verify(transactionRepository, times(1)).save(any(Transaction.class));
+        verify(accountRepository, times(1)).save(userAccount);
+        verify(emailService, times(1)).sendNotification(
+                eq(user),
+                eq(Notification.NotificationType.WITHDRAWAL),
+                anyString(),
+                anyString()
+        );
+
+        verifyNoInteractions(smsService);
 
     }
 
@@ -661,15 +687,28 @@ public class AccountServiceTest {
 
     }
 
-    // Hecho por: [Nombre del Alumno]
+    // Hecho por: Arturo Vinuesa Domínguez
     @Test
     @DisplayName("28. withdraw_Success_NoNotif: Retiro válido sin notificación")
     void withdraw_Success_NoNotifTest() {
         // Given (Configurar cuenta con fondos, User sin notificación, Mocks de BD)
+        User user = new User();
+        user.setNotificationType(null);
+        Account account = new Account("ES130", Account.AccountType.SAVINGS, 400);
+        account.setUser(user);
+
+        when(accountRepository.findByAccountNumber("ES130")).thenReturn(Optional.of(account));
+        when(accountRepository.save(any(Account.class))).thenReturn(account);
 
         // When (Llamar a accountService.withdraw)
+        accountService.withdraw("ES130", 100, "Retirada cajero");
 
         // Then (Verificar resta de saldo, guardado y cerciorarse de no llamar a notificaciones)
+        assertEquals(300, account.getBalance());
+        verify(accountRepository, times(1)).findByAccountNumber("ES130");
+        verify(transactionRepository, times(1)).save(any(Transaction.class));
+        verify(accountRepository, times(1)).save(account);
+        verifyNoInteractions(emailService, smsService);
 
     }
 
@@ -695,15 +734,20 @@ public class AccountServiceTest {
 
     }
 
-    // Hecho por: [Nombre del Alumno]
+    // Hecho por: Arturo Vinuesa Domínguez
     @Test
     @DisplayName("30. transfer_Exceeds20k: Lanza excepción si amount > 20000")
     void transfer_Exceeds20kTest() {
         // Given (Preparar amount > 20000)
+        double amount = 25000.0;
 
         // When (Llamar a accountService.transfer usando assertThrows)
+        IllegalArgumentException exception = assertThrows(IllegalArgumentException.class, () -> {
+            accountService.transfer("ES131", "ES132", amount);
+        });
 
         // Then (Comprobar mensaje de excepción)
+        assertEquals("Amount exceeds maximum transfer limit", exception.getMessage());
 
     }
 
@@ -726,41 +770,116 @@ public class AccountServiceTest {
 
     }
 
-    // Hecho por: [Nombre del Alumno]
+    // Hecho por: Arturo Vinuesa Domínguez
     @Test
     @DisplayName("32. transfer_InsufficientFunds: Lanza excepción si saldo origen < amount")
     void transfer_InsufficientFundsTest() {
         // Given (Mock BD devuelve cuenta origen sin fondos y cuenta destino normal)
+        User user = new User();
+        user.setNotificationType(null);
+        Account source = new Account("ES133", Account.AccountType.CHECKING, 50);
+        Account destination = new Account("ES134", Account.AccountType.SAVINGS, 100);
+        source.setUser(user);
+        destination.setUser(user);
+
+        when(accountRepository.findByAccountNumber("ES133")).thenReturn(Optional.of(source));
+        when(accountRepository.findByAccountNumber("ES134")).thenReturn(Optional.of(destination));
 
         // When (Llamar a accountService.transfer usando assertThrows)
+        IllegalArgumentException exception = assertThrows(IllegalArgumentException.class, () -> {
+            accountService.transfer("ES133", "ES134", 100);
+        });
 
         // Then (Comprobar mensaje "Insufficient funds")
+        assertEquals("Insufficient funds", exception.getMessage());
 
     }
 
     // ÉXITOS TRANSFER
 
-    // Hecho por: [Nombre del Alumno]
+    // Hecho por: Arturo Vinuesa Domínguez
     @Test
     @DisplayName("33. transfer_Success_Emails: Transferencia válida. Remitente EMAIL, Destinatario EMAIL")
     void transfer_Success_EmailsTest() {
         // Given (Mock BD devuelve cuentas válidas con User en EMAIL)
+        User sourceUser = new User();
+        sourceUser.setNotificationType(User.NotificationType.EMAIL);
+        User destinationUser = new User();
+        destinationUser.setNotificationType(User.NotificationType.EMAIL);
+        Account source = new Account("ES135", Account.AccountType.CHECKING, 500);
+        Account destination = new Account("ES136", Account.AccountType.SAVINGS, 100);
+        source.setUser(sourceUser);
+        destination.setUser(destinationUser);
+
+        when(accountRepository.findByAccountNumber("ES135")).thenReturn(Optional.of(source));
+        when(accountRepository.findByAccountNumber("ES136")).thenReturn(Optional.of(destination));
 
         // When (Llamar a accountService.transfer)
+        accountService.transfer("ES135", "ES136", 200);
 
         // Then (Verificar intercambio de saldos, guardado de transacciones y llamadas a emailService)
+        assertEquals(300, source.getBalance());
+        assertEquals(300, destination.getBalance());
+
+        verify(transactionRepository, times(2)).save(any(Transaction.class));
+        verify(accountRepository, times(1)).save(source);
+        verify(accountRepository, times(1)).save(destination);
+        verify(emailService, times(1)).sendNotification(
+                eq(sourceUser),
+                eq(Notification.NotificationType.TRANSFER),
+                eq("Transfer Sent"),
+                anyString()
+        );
+        verify(emailService, times(1)).sendNotification(
+                eq(destinationUser),
+                eq(Notification.NotificationType.TRANSFER),
+                eq("Transfer Received"),
+                anyString()
+        );
+        verifyNoInteractions(smsService);
 
     }
 
-    // Hecho por: [Nombre del Alumno]
+    // Hecho por: Arturo Vinuesa Domínguez
     @Test
     @DisplayName("34. transfer_Success_Sms: Transferencia válida. Remitente SMS, Destinatario SMS")
     void transfer_Success_SmsTest() {
         // Given (Mock BD devuelve cuentas válidas con User en SMS)
+        User sourceUser = new User();
+        sourceUser.setNotificationType(User.NotificationType.SMS);
+        User destinationUser = new User();
+        destinationUser.setNotificationType(User.NotificationType.SMS);
+        Account source = new Account("ES137", Account.AccountType.CHECKING, 700);
+        Account destination = new Account("ES138", Account.AccountType.SAVINGS, 200);
+        source.setUser(sourceUser);
+        destination.setUser(destinationUser);
+
+        when(accountRepository.findByAccountNumber("ES137")).thenReturn(Optional.of(source));
+        when(accountRepository.findByAccountNumber("ES138")).thenReturn(Optional.of(destination));
 
         // When (Llamar a accountService.transfer)
+        accountService.transfer("ES137", "ES138", 300);
 
         // Then (Verificar intercambio de saldos, guardado de transacciones y llamadas a smsService)
+        assertEquals(400, source.getBalance());
+        assertEquals(500, destination.getBalance());
+
+        verify(transactionRepository, times(2)).save(any(Transaction.class));
+        verify(accountRepository, times(1)).save(source);
+        verify(accountRepository, times(1)).save(destination);
+        verify(smsService, times(1)).sendNotification(
+                eq(sourceUser),
+                eq(Notification.NotificationType.TRANSFER),
+                eq("Transfer Sent"),
+                anyString()
+        );
+        verify(smsService, times(1)).sendNotification(
+                eq(destinationUser),
+                eq(Notification.NotificationType.TRANSFER),
+                eq("Transfer Received"),
+                anyString()
+        );
+        verifyNoInteractions(emailService);
     }
 
     // Hecho por: Raúl Tejada Merinero

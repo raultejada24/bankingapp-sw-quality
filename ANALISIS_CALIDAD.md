@@ -963,22 +963,22 @@ A continuación, se adjuntan evidencias del estado de la cobertura de código (C
 | 4 | Nombres variables | Renombrado Semántico | AccountService.java | ✅ Implementado | Raúl |
 | 5 | Lógica inalcanzable | Eliminación de Bloque Bloqueado | AccountService.java | ✅ Implementado | Raúl |
 | 6 | Duplicación deposit | Sobrecarga de Métodos | AccountService.java | ✅ Implementado | Raúl |
-| 7 | Nomenclatura borrado | Renombrado a deleteAccount | AccountService.java | ✅ Implementado |  |
-| 8 | Magic numbers | Constantes de Negocio | AccountService.java | ✅ Implementado |  |
-| 9 | Condicionales redundantes | Unificación de Operadores (<=) | AccountService.java | ✅ Implementado |  |
-| 10 | Duplicación notificaciones | Método Privado Centralizado | AccountService.java | ✅ Implementado |  |
-| 11 | Long method | Extract Method (Transfer split) | AccountService.java | ✅ Implementado |  |
-| 12 | Literales excepciones | Centralización de Errores | AccountService.java | ✅ Implementado |  |
-| 13 | Excepciones genéricas | Clases Estáticas Internas | AccountService.java | ✅ Implementado |  |
-| 14 | Ley de Demeter | Encapsulación de Navegación | AccountService.java | ✅ Implementado |  |
-| 15 | Validación duplicada | Método ensureSufficientBalance | AccountService.java | ✅ Implementado |  |
-| 16 | Data Clumps | Simplificación de Parámetros | AccountService.java | ✅ Implementado |  |
-| 17 | Feature Envy | Delegación de Validación | AccountService.java | ✅ Implementado |  |
-| 18 | Clean Architecture | Abstracción de Notificación | AccountService.java | ✅ Implementado |  |
-| 19 | Paginación | Limitación de Stream (limit) | AccountService.java | ✅ Implementado |  |
-| 20 | Default case | Inserción de Clausura default | AccountService.java | ✅ Implementado |  |
-| 21 | Validación unicidad | Comprobación exists en BD | AccountService.java | ✅ Implementado |  |
-| 22 | Primitive Obsession | Validación de Precisión Financiera | AccountService.java | ✅ Implementado |  |
+| 7 | Nomenclatura borrado | Renombrado a deleteAccount | AccountService.java | ✅ Sin hacer |  |
+| 8 | Magic numbers | Constantes de Negocio | AccountService.java | ✅ Sin hacer |  |
+| 9 | Condicionales redundantes | Unificación de Operadores (<=) | AccountService.java | ✅ Sin hacer |  |
+| 10 | Duplicación notificaciones | Método Privado Centralizado | AccountService.java | ✅ Sin hacer |  |
+| 11 | Long method | Extract Method (Transfer split) | AccountService.java | ✅ Sin hacer |  |
+| 12 | Literales excepciones | Centralización de Errores | AccountService.java | ✅ Sin hacer |  |
+| 13 | Excepciones genéricas | Clases Estáticas Internas | AccountService.java | ✅ Sin hacer |  |
+| 14 | Ley de Demeter | Encapsulación de Navegación | AccountService.java | ✅ Sin hacer |  |
+| 15 | Validación duplicada | Método ensureSufficientBalance | AccountService.java | ✅ Sin hacer |  |
+| 16 | Data Clumps | Simplificación de Parámetros | AccountService.java | ✅ Sin hacer |  |
+| 17 | Feature Envy | Delegación de Validación | AccountService.java | ✅ Sin hacer |  |
+| 18 | Clean Architecture | Abstracción de Notificación | AccountService.java | ✅ Sin hacer |  |
+| 19 | Paginación | Limitación de Stream (limit) | AccountService.java | ✅ Sin hacer |  |
+| 20 | Default case | Inserción de Clausura default | AccountService.java | ✅ Sin hacer |  |
+| 21 | Validación unicidad | Comprobación exists en BD | AccountService.java | ✅ Sin hacer |  |
+| 22 | Primitive Obsession | Validación de Precisión Financiera | AccountService.java | ✅ Sin hacer |  |
 
 ---
 

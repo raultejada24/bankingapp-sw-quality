@@ -1,10 +1,8 @@
 package es.codeurjc.model;
-
 import jakarta.persistence.*;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
-
 /**
  * Account entity representing a bank account.
  */
@@ -96,15 +94,6 @@ public class Account {
     
     public void setUser(User user) {
         this.user = user;
-    }
-
-    /**
-     * Issue 14: Delegated method to get user's preferred notification type
-     * Follows Law of Demeter - Account handles accessing User's notification preference
-     * @return User's preferred notification type
-     */
-    public User.NotificationType getPreferredNotificationType() {
-        return user.getNotificationType();
     }
     
     public List<Transaction> getTransactions() {

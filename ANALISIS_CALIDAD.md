@@ -1199,13 +1199,22 @@ En definitiva, este análisis evidencia la importancia de aplicar principios de 
 A continuación, se adjuntan evidencias del estado de la cobertura de código (Code Coverage) de la clase `AccountService` evaluada mediante el plugin JaCoCo durante la **Tarea 2**.
 
 **Cobertura Inicial (Antes de las pruebas):**
+
 ![Cobertura JaCoCo Antes](img/TestCoverageAccountServiceBefore.png)
+
 *En esta captura se aprecia que, inicialmente, la clase carecía por completo de pruebas unitarias (0% de ramas cubiertas).*
 
+**Ejecución "mvn clean test":**
+
+![Tests](img/testsPassed.png)
+
+*Resultado de la ejecución automatizada de las pruebas unitarias. Se verifica que los 35 casos diseñados para aislar la lógica de AccountService finalizan con estado exitoso.*
+
 **Cobertura Final (Tras implementar AccountServiceTest):**
-*(Nota para el grupo: Añadir aquí la captura "TestCoverageAccountServiceAfter.png" cuando lleguéis al 100%)*
+
 ![Cobertura JaCoCo Después](img/TestCoverageAccountServiceAfter.png)
-*Tras el reparto y la implementación del plan de pruebas, se ha logrado alcanzar el 100% de cobertura de ramas (Branches) e instrucciones accesibles, estableciendo la red de seguridad necesaria para la refactorización.*
+
+*Tras el reparto y la implementación del plan de pruebas, se ha logrado alcanzar el 98% de cobertura de ramas (Branches) e instrucciones accesibles, estableciendo la red de seguridad necesaria para la refactorización.*
 
 ---
 

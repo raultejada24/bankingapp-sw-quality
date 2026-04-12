@@ -20,6 +20,18 @@ import java.util.List;
 @Service
 public class AccountService {
 
+    // Constants for business rules
+    private static final double MAX_DEPOSIT_LIMIT = 10000.0;
+    private static final double MAX_WITHDRAWAL_LIMIT = 5000.0;
+    private static final double MAX_TRANSFER_LIMIT = 20000.0;
+    private static final String DEPOSIT_CONFIRMATION_SUBJECT = "Deposit Confirmation";
+    private static final String ERROR_AMOUNT_MUST_BE_POSITIVE = "Amount must be positive";
+    private static final String ERROR_MAX_DEPOSIT_EXCEEDED = "Amount exceeds maximum deposit limit";
+    private static final String ERROR_MAX_WITHDRAWAL_EXCEEDED = "Amount exceeds maximum withdrawal limit";
+    private static final String ERROR_MAX_TRANSFER_EXCEEDED = "Amount exceeds maximum transfer limit";
+    private static final String ERROR_INSUFFICIENT_FUNDS = "Insufficient funds";
+    private static final String ERROR_SAME_ACCOUNT_TRANSFER = "Cannot transfer to same account";
+
     private final AccountRepository accountRepository;
     private final TransactionRepository transactionRepository;
     private final EmailNotificationService emailService;
@@ -71,21 +83,24 @@ public class AccountService {
     }
 
     /**
+     * Quick deposit without description
+     */
+    @Transactional
+    public Account deposit(String accountNumber, double amount) {
+        // Llama al método completo pasando una descripción por defecto ("Quick deposit")
+        return deposit(accountNumber, amount, "Quick deposit");
+    }
+
+    /**
      * Deposit money into account
      */
     @Transactional
     public Account deposit(String accountNumber, double amount, String description) {
-        if (amount == 0) {
-            throw new IllegalArgumentException("Amount must be positive");
+        if (amount <= 0) {
+            throw new IllegalArgumentException(ERROR_AMOUNT_MUST_BE_POSITIVE);
         }
-        if (amount < 0) {
-            throw new IllegalArgumentException("Amount must be positive");
-        }
-        if (amount > 10000) {
-            throw new IllegalArgumentException("Amount exceeds maximum deposit limit");
-        }
-        if (amount > 50000) {
-            throw new IllegalArgumentException("Amount exceeds maximum deposit limit");
+        if (amount > MAX_DEPOSIT_LIMIT) {
+            throw new IllegalArgumentException(ERROR_MAX_DEPOSIT_EXCEEDED);
         }
 
         Account account = getAccount(accountNumber);
@@ -104,63 +119,14 @@ public class AccountService {
             emailService.sendNotification(
                     account.getUser(),
                     Notification.NotificationType.DEPOSIT,
-                    "Deposit Confirmation",
+                    DEPOSIT_CONFIRMATION_SUBJECT,
                     String.format("Deposit of %.2f EUR. New balance: %.2f EUR",
                             amount, account.getBalance()));
         } else if (notifType == User.NotificationType.SMS) {
             smsService.sendNotification(
                     account.getUser(),
                     Notification.NotificationType.DEPOSIT,
-                    "Deposit Confirmation",
-                    String.format("Deposit: %.2f EUR. Balance: %.2f EUR",
-                            amount, account.getBalance()));
-        }
-
-        return savedAccount;
-    }
-
-    /**
-     * Quick deposit without description
-     */
-    @Transactional
-    public Account deposit(String accountNumber, double amount) {
-        if (amount == 0) {
-            throw new IllegalArgumentException("Amount must be positive");
-        }
-        if (amount < 0) {
-            throw new IllegalArgumentException("Amount must be positive");
-        }
-        if (amount > 10000) {
-            throw new IllegalArgumentException("Amount exceeds maximum deposit limit");
-        }
-        if (amount > 50000) {
-            throw new IllegalArgumentException("Amount exceeds maximum deposit limit");
-        }
-
-        Account account = getAccount(accountNumber);
-        account.deposit(amount);
-
-        // Record transaction
-        Transaction transaction = new Transaction(account, Transaction.TransactionType.DEPOSIT,
-                amount, "Quick deposit");
-        transactionRepository.save(transaction);
-
-        Account savedAccount = accountRepository.save(account);
-
-        // Send notification
-        User.NotificationType notifType = account.getUser().getNotificationType();
-        if (notifType == User.NotificationType.EMAIL) {
-            emailService.sendNotification(
-                    account.getUser(),
-                    Notification.NotificationType.DEPOSIT,
-                    "Deposit Confirmation",
-                    String.format("Deposit of %.2f EUR. New balance: %.2f EUR",
-                            amount, account.getBalance()));
-        } else if (notifType == User.NotificationType.SMS) {
-            smsService.sendNotification(
-                    account.getUser(),
-                    Notification.NotificationType.DEPOSIT,
-                    "Deposit Confirmation",
+                    DEPOSIT_CONFIRMATION_SUBJECT,
                     String.format("Deposit: %.2f EUR. Balance: %.2f EUR",
                             amount, account.getBalance()));
         }
@@ -174,18 +140,18 @@ public class AccountService {
     @Transactional
     public Account withdraw(String accountNumber, double amount, String description) {
         if (amount <= 0) {
-            throw new IllegalArgumentException("Amount must be positive");
+            throw new IllegalArgumentException(ERROR_AMOUNT_MUST_BE_POSITIVE);
         }
 
-        if (amount > 5000) {
-            throw new IllegalArgumentException("Amount exceeds maximum withdrawal limit");
+        if (amount > MAX_WITHDRAWAL_LIMIT) {
+            throw new IllegalArgumentException(ERROR_MAX_WITHDRAWAL_EXCEEDED);
         }
 
         Account account = getAccount(accountNumber);
 
         // Check balance
         if (account.getBalance() < amount) {
-            throw new IllegalArgumentException("Insufficient funds");
+            throw new IllegalArgumentException(ERROR_INSUFFICIENT_FUNDS);
         }
 
         account.withdraw(amount);
@@ -221,76 +187,76 @@ public class AccountService {
     @Transactional
     public void transfer(String fromAccountNumber, String toAccountNumber, double amount) {
         if (amount <= 0) {
-            throw new IllegalArgumentException("Amount must be positive");
+            throw new IllegalArgumentException(ERROR_AMOUNT_MUST_BE_POSITIVE);
         }
-        if (amount > 20000) {
-            throw new IllegalArgumentException("Amount exceeds maximum transfer limit");
+        if (amount > MAX_TRANSFER_LIMIT) {
+            throw new IllegalArgumentException(ERROR_MAX_TRANSFER_EXCEEDED);
         }
 
-        Account m = getAccount(fromAccountNumber);
-        Account o = getAccount(toAccountNumber);
+        Account sourceAccount = getAccount(fromAccountNumber);
+        Account destinationAccount = getAccount(toAccountNumber);
 
         // Validate same account
-        if (m.getAccountNumber() == o.getAccountNumber()) {
-            throw new IllegalArgumentException("Cannot transfer to same account");
+        if (sourceAccount.getAccountNumber().equals(destinationAccount.getAccountNumber())) {
+            throw new IllegalArgumentException(ERROR_SAME_ACCOUNT_TRANSFER);
         }
 
         // Check balance
-        if (m.getBalance() < amount) {
-            throw new IllegalArgumentException("Insufficient funds");
+        if (sourceAccount.getBalance() < amount) {
+            throw new IllegalArgumentException(ERROR_INSUFFICIENT_FUNDS);
         }
 
         // Perform transfer
-        m.withdraw(amount);
-        o.deposit(amount);
+        sourceAccount.withdraw(amount);
+        destinationAccount.deposit(amount);
 
         // Record transactions
-        Transaction sentTransaction = new Transaction(m,
+        Transaction sentTransaction = new Transaction(sourceAccount,
                 Transaction.TransactionType.TRANSFER_SENT,
                 amount,
                 "Transfer to " + toAccountNumber);
         sentTransaction.setDestinationAccountNumber(toAccountNumber);
         transactionRepository.save(sentTransaction);
 
-        Transaction receivedTransaction = new Transaction(o,
+        Transaction receivedTransaction = new Transaction(destinationAccount,
                 Transaction.TransactionType.TRANSFER_RECEIVED,
                 amount,
                 "Transfer from " + fromAccountNumber);
         receivedTransaction.setDestinationAccountNumber(fromAccountNumber);
         transactionRepository.save(receivedTransaction);
 
-        accountRepository.save(m);
-        accountRepository.save(o);
+        accountRepository.save(sourceAccount);
+        accountRepository.save(destinationAccount);
 
-        User.NotificationType notifType = m.getUser().getNotificationType();
+        User.NotificationType notifType = sourceAccount.getUser().getNotificationType();
         if (notifType == User.NotificationType.EMAIL) {
             emailService.sendNotification(
-                    m.getUser(),
+                    sourceAccount.getUser(),
                     Notification.NotificationType.TRANSFER,
                     "Transfer Sent",
-                    String.format("Transfer of %.2f EUR to %s. New balance: %.2f EUR", amount, toAccountNumber, m.getBalance()));
+                    String.format("Transfer of %.2f EUR to %s. New balance: %.2f EUR", amount, toAccountNumber, sourceAccount.getBalance()));
         } else if (notifType == User.NotificationType.SMS) {
             smsService.sendNotification(
-                    m.getUser(),
+                    sourceAccount.getUser(),
                     Notification.NotificationType.TRANSFER,
                     "Transfer Sent",
-                    String.format("Transfer of %.2f EUR to %s. New balance: %.2f EUR", amount, toAccountNumber, m.getBalance()));
+                    String.format("Transfer of %.2f EUR to %s. New balance: %.2f EUR", amount, toAccountNumber, sourceAccount.getBalance()));
         }
 
-        User.NotificationType notifTypeTo = o.getUser().getNotificationType();
+        User.NotificationType notifTypeTo = destinationAccount.getUser().getNotificationType();
         if (notifTypeTo == User.NotificationType.EMAIL) {
             emailService.sendNotification(
-                    o.getUser(),
+                    destinationAccount.getUser(),
                     Notification.NotificationType.TRANSFER,
                     "Transfer Received",
                     String.format("Transfer of %.2f EUR from %s. New balance: %.2f EUR",
-                        amount, fromAccountNumber, o.getBalance()));
+                        amount, fromAccountNumber, destinationAccount.getBalance()));
         } else if (notifTypeTo == User.NotificationType.SMS) {
             smsService.sendNotification(
-                o.getUser(),
+                destinationAccount.getUser(),
                 Notification.NotificationType.TRANSFER,
                 "Transfer Received",
-                String.format("Transfer of %.2f EUR from %s. New balance: %.2f EUR", amount, fromAccountNumber, o.getBalance()));
+                String.format("Transfer of %.2f EUR from %s. New balance: %.2f EUR", amount, fromAccountNumber, destinationAccount.getBalance()));
         }
     }
 

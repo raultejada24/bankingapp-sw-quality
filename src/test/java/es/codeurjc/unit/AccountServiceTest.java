@@ -14,6 +14,7 @@ import es.codeurjc.service.notifications.SmsNotificationService;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
+import org.mockito.ArgumentCaptor;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
@@ -54,6 +55,7 @@ import static org.mockito.Mockito.*;
  * 20. quickDeposit_Success_Email: Ingreso válido y notificación por EMAIL.
  * 21. quickDeposit_Success_Sms: Ingreso válido y notificación por SMS.
  * 22. quickDeposit_Success_NoNotif: Ingreso válido sin notificación.
+ * 36. quickDeposit_DefaultDescription: Verifica que el ingreso rápido guarda "Quick deposit" como descripción por defecto. * 
  * --- Withdraw ---
  * 23. withdraw_NegativeOrZero: Lanza excepción si amount <= 0.
  * 24. withdraw_Exceeds5k: Lanza excepción si amount > 5000.
@@ -61,6 +63,7 @@ import static org.mockito.Mockito.*;
  * 26. withdraw_Success_Email: Retiro válido y notificación EMAIL.
  * 27. withdraw_Success_Sms: Retiro válido y notificación SMS.
  * 28. withdraw_Success_NoNotif: Retiro válido sin notificación.
+ * 37. withdraw_ExactBalance: Retiro válido por el saldo exacto, dejando la cuenta a 0.
  * --- Transfer ---
  * 29. transfer_NegativeOrZero: Lanza excepción si amount <= 0.
  * 30. transfer_Exceeds20k: Lanza excepción si amount > 20000.
@@ -904,6 +907,55 @@ public class AccountServiceTest {
         assertEquals(300, origen.getBalance());
         assertEquals(300, destino.getBalance());
         verify(transactionRepository, times(2)).save(any(Transaction.class)); // 2 transacciones creadas
+        verifyNoInteractions(emailService, smsService);
+    }
+
+    // Hecho por: Adrián Varea Fernández
+    @Test
+    @DisplayName("36. quickDeposit_DefaultDescription: El ingreso rápido guarda la descripción por defecto")
+    void quickDeposit_DefaultDescriptionTest() {
+        // Given (Cuenta válida y captura de la transacción persistida)
+        User user = new User();
+        user.setNotificationType(null);
+        Account account = new Account("ES140", Account.AccountType.CHECKING, 200);
+        account.setUser(user);
+        ArgumentCaptor<Transaction> transactionCaptor = ArgumentCaptor.forClass(Transaction.class);
+
+        when(accountRepository.findByAccountNumber("ES140")).thenReturn(Optional.of(account));
+        when(accountRepository.save(any(Account.class))).thenReturn(account);
+
+        // When (Llamar al ingreso rápido, que debe usar la descripción por defecto)
+        accountService.deposit("ES140", 25);
+
+        // Then (Comprobar la descripción por defecto y el resto de efectos esperados)
+        verify(transactionRepository, times(1)).save(transactionCaptor.capture());
+        assertEquals("Quick deposit", transactionCaptor.getValue().getDescription());
+        assertEquals(Transaction.TransactionType.DEPOSIT, transactionCaptor.getValue().getType());
+        assertEquals(225, account.getBalance());
+        verifyNoInteractions(emailService, smsService);
+    }
+
+    // Hecho por: Adrián Varea Fernández
+    @Test
+    @DisplayName("37. withdraw_ExactBalance: retirar el saldo exacto deja la cuenta a 0")
+    void withdraw_ExactBalanceTest() {
+        // Given (Cuenta con fondos exactos y sin notificaciones)
+        User user = new User();
+        user.setNotificationType(null);
+        Account account = new Account("ES141", Account.AccountType.SAVINGS, 400);
+        account.setUser(user);
+
+        when(accountRepository.findByAccountNumber("ES141")).thenReturn(Optional.of(account));
+        when(accountRepository.save(any(Account.class))).thenReturn(account);
+
+        // When (Retirar exactamente todo el saldo disponible)
+        accountService.withdraw("ES141", 400, "Vaciar cuenta");
+
+        // Then (La operación se permite, guarda cambios y deja saldo a 0)
+        assertEquals(0, account.getBalance());
+        verify(accountRepository, times(1)).findByAccountNumber("ES141");
+        verify(transactionRepository, times(1)).save(any(Transaction.class));
+        verify(accountRepository, times(1)).save(account);
         verifyNoInteractions(emailService, smsService);
     }
 

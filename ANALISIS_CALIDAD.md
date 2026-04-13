@@ -2,7 +2,7 @@
 Adrián Varea Fernández, Adrián Villalba Cuello de Oro, Arturo Vinuesa Domínguez, Blas Vita Ramos, Gonzalo Andrés Zurdo Patino, Raúl Tejada Merinero
 
 # Análisis Integral de Calidad del Código
-**Proyecto:** banking-app-2026 | **Enfoque:** Análisis + Refactorización + Validación | **Status:** Fase 1 Completada (6/22 Issues)
+**Proyecto:** banking-app-2026 | **Enfoque:** Análisis + Refactorización + Validación
 
 ## Índice
 1. [Introducción y objetivo](#1-introducción-y-objetivo)
@@ -909,7 +909,7 @@ La sustitución de números mágicos y literales por constantes, junto con la su
 
 **Impacto Mensurable:**
 - 22 refactorizaciones implementadas exitosamente
-- Tests unitarios pasando (35 tests)
+- Tests unitarios pasando (37 tests)
 - Compilación sin errores
 - Preparación para 100% de cobertura JaCoCo
 
@@ -935,7 +935,7 @@ A continuación, se adjuntan evidencias del estado de la cobertura de código (C
 
 ![Tests](img/testsPassed.png)
 
-*Verificación de éxito: Los 35 tests unitarios pasan correctamente, validando tanto el flujo positivo como la gestión de excepciones. Comando ejecutado: `mvn clean test`*
+*Verificación de éxito: Los 37 tests unitarios pasan correctamente, validando tanto el flujo positivo como la gestión de excepciones. Comando ejecutado: `mvn clean test`*
 
 **Fase 3 - Cobertura Post-Testing:**
 

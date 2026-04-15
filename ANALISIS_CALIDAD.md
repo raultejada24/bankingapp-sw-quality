@@ -673,7 +673,9 @@ Explicación de la solución: Para evitar modificar clases de dominio fuera de n
 ### Issue 15: Validación de saldo centralizada en Account
 **Reporte de la issue**:
 
-![Issue 15](img/capturas/Issue15.png)
+![Issue 15](img/capturas/Issue15_1.png)
+
+![Issue 15](img/capturas/Issue15_2.png)
 
 **Explicación del mal olor detectado**:
 - Ubicación: `src/main/java/es/codeurjc/service/AccountService.java`, métodos `withdraw` y `transfer`.

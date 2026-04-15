@@ -13,6 +13,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
+import java.util.stream.Collectors;
 
 /**
  * Service for managing bank accounts.
@@ -24,6 +25,8 @@ public class AccountService {
     private static final double MAX_DEPOSIT_LIMIT = 10000.0;
     private static final double MAX_WITHDRAWAL_LIMIT = 5000.0;
     private static final double MAX_TRANSFER_LIMIT = 20000.0;
+    private static final int MAX_ACCOUNT_NUMBER_GENERATION_ATTEMPTS = 5;
+    private static final int MAX_TRANSACTIONS_HISTORY_RESULTS = 100;
     private static final String DEPOSIT_CONFIRMATION_SUBJECT = "Deposit Confirmation";
     private static final String ERROR_AMOUNT_MUST_BE_POSITIVE = "Amount must be positive";
     private static final String ERROR_MAX_DEPOSIT_EXCEEDED = "Amount exceeds maximum deposit limit";
@@ -31,6 +34,9 @@ public class AccountService {
     private static final String ERROR_MAX_TRANSFER_EXCEEDED = "Amount exceeds maximum transfer limit";
     private static final String ERROR_INSUFFICIENT_FUNDS = "Insufficient funds";
     private static final String ERROR_SAME_ACCOUNT_TRANSFER = "Cannot transfer to same account";
+    private static final String ERROR_ACCOUNT_NOT_FOUND = "Account not found";
+    private static final String ERROR_NON_ZERO_BALANCE = "Cannot delete account with non-zero balance";
+    private static final String ERROR_ACCOUNT_NUMBER_GENERATION_FAILED = "Could not generate unique account number";
 
     private final AccountRepository accountRepository;
     private final TransactionRepository transactionRepository;
@@ -54,10 +60,20 @@ public class AccountService {
      * Create a new account
      */
     public Account createAccount(User user, Account.AccountType accountType) {
-        String accountNumber = generateAccountNumber();
+        String accountNumber = generateUniqueAccountNumber();
         Account account = new Account(accountNumber, accountType, 0);
         account.setUser(user);
         return accountRepository.save(account);
+    }
+
+    private String generateUniqueAccountNumber() {
+        for (int attempt = 0; attempt < MAX_ACCOUNT_NUMBER_GENERATION_ATTEMPTS; attempt++) {
+            String accountNumber = generateAccountNumber();
+            if (accountRepository.findByAccountNumber(accountNumber).isEmpty()) {
+                return accountNumber;
+            }
+        }
+        throw new AccountNumberGenerationException(ERROR_ACCOUNT_NUMBER_GENERATION_FAILED);
     }
 
     /**
@@ -72,7 +88,7 @@ public class AccountService {
      */
     public Account getAccount(String accountNumber) {
         return accountRepository.findByAccountNumber(accountNumber)
-                .orElseThrow(() -> new IllegalArgumentException("Account not found"));
+                .orElseThrow(() -> new AccountNotFoundException(ERROR_ACCOUNT_NOT_FOUND));
     }
 
     /**
@@ -116,10 +132,10 @@ public class AccountService {
     @Transactional
     public Account deposit(String accountNumber, double amount, String description) {
         if (amount <= 0) {
-            throw new IllegalArgumentException(ERROR_AMOUNT_MUST_BE_POSITIVE);
+            throw new InvalidAmountException(ERROR_AMOUNT_MUST_BE_POSITIVE);
         }
         if (amount > MAX_DEPOSIT_LIMIT) {
-            throw new IllegalArgumentException(ERROR_MAX_DEPOSIT_EXCEEDED);
+            throw new LimitExceededException(ERROR_MAX_DEPOSIT_EXCEEDED);
         }
 
         Account account = getAccount(accountNumber);
@@ -149,18 +165,18 @@ public class AccountService {
     @Transactional
     public Account withdraw(String accountNumber, double amount, String description) {
         if (amount <= 0) {
-            throw new IllegalArgumentException(ERROR_AMOUNT_MUST_BE_POSITIVE);
+            throw new InvalidAmountException(ERROR_AMOUNT_MUST_BE_POSITIVE);
         }
 
         if (amount > MAX_WITHDRAWAL_LIMIT) {
-            throw new IllegalArgumentException(ERROR_MAX_WITHDRAWAL_EXCEEDED);
+            throw new LimitExceededException(ERROR_MAX_WITHDRAWAL_EXCEEDED);
         }
 
         Account account = getAccount(accountNumber);
 
         // Check balance
         if (account.getBalance() < amount) {
-            throw new IllegalArgumentException(ERROR_INSUFFICIENT_FUNDS);
+            throw new InsufficientFundsException(ERROR_INSUFFICIENT_FUNDS);
         }
 
         account.withdraw(amount);
@@ -189,10 +205,10 @@ public class AccountService {
     @Transactional
     public void transfer(String fromAccountNumber, String toAccountNumber, double amount) {
         if (amount <= 0) {
-            throw new IllegalArgumentException(ERROR_AMOUNT_MUST_BE_POSITIVE);
+            throw new InvalidAmountException(ERROR_AMOUNT_MUST_BE_POSITIVE);
         }
         if (amount > MAX_TRANSFER_LIMIT) {
-            throw new IllegalArgumentException(ERROR_MAX_TRANSFER_EXCEEDED);
+            throw new LimitExceededException(ERROR_MAX_TRANSFER_EXCEEDED);
         }
 
         Account sourceAccount = getAccount(fromAccountNumber);
@@ -200,12 +216,12 @@ public class AccountService {
 
         // Validate same account
         if (sourceAccount.getAccountNumber().equals(destinationAccount.getAccountNumber())) {
-            throw new IllegalArgumentException(ERROR_SAME_ACCOUNT_TRANSFER);
+            throw new SameAccountTransferException(ERROR_SAME_ACCOUNT_TRANSFER);
         }
 
         // Check balance
         if (sourceAccount.getBalance() < amount) {
-            throw new IllegalArgumentException(ERROR_INSUFFICIENT_FUNDS);
+            throw new InsufficientFundsException(ERROR_INSUFFICIENT_FUNDS);
         }
 
         // Perform transfer
@@ -254,10 +270,15 @@ public class AccountService {
         Account account = getAccount(accountNumber);
 
         if (account.getBalance() != 0) {
-            throw new IllegalArgumentException("Cannot delete account with non-zero balance");
+            throw new NonZeroBalanceException(ERROR_NON_ZERO_BALANCE);
         }
 
         accountRepository.delete(account);
+    }
+
+    @Deprecated
+    public void rm(String accountNumber) {
+        deleteAccount(accountNumber);
     }
 
     /**
@@ -271,8 +292,54 @@ public class AccountService {
     /**
      * Get account transactions
      */
+    @Transactional(readOnly = true)
     public List<Transaction> getTransactions(String accountNumber) {
         Account account = getAccount(accountNumber);
-        return transactionRepository.findByAccountOrderByTimestampDesc(account);
+        return transactionRepository.findByAccountOrderByTimestampDesc(account)
+                .stream()
+                .limit(MAX_TRANSACTIONS_HISTORY_RESULTS)
+                .collect(Collectors.toList());
+    }
+
+    public static class AccountNotFoundException extends IllegalArgumentException {
+        public AccountNotFoundException(String message) {
+            super(message);
+        }
+    }
+
+    public static class InvalidAmountException extends IllegalArgumentException {
+        public InvalidAmountException(String message) {
+            super(message);
+        }
+    }
+
+    public static class LimitExceededException extends IllegalArgumentException {
+        public LimitExceededException(String message) {
+            super(message);
+        }
+    }
+
+    public static class InsufficientFundsException extends IllegalArgumentException {
+        public InsufficientFundsException(String message) {
+            super(message);
+        }
+    }
+
+    public static class SameAccountTransferException extends IllegalArgumentException {
+        public SameAccountTransferException(String message) {
+            super(message);
+        }
+    }
+
+    public static class NonZeroBalanceException extends IllegalArgumentException {
+        public NonZeroBalanceException(String message) {
+            super(message);
+        }
+    }
+
+    public static class AccountNumberGenerationException extends IllegalStateException {
+        public AccountNumberGenerationException(String message) {
+            super(message);
+        }
     }
 }

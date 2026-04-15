@@ -584,7 +584,7 @@ Explicación de la solución: Se extraen todos los literales de texto que actúa
 - Descripción: Se utiliza sistemáticamente la excepción genérica `IllegalArgumentException` para reportar errores de naturaleza muy distinta: fallos de validación, cuenta no encontrada, fondos insuficientes o errores de borrado.
 - Justificación: Es un problema real que afecta la testabilidad y la extensibilidad. Al lanzar siempre la misma excepción genérica, es imposible para las capas superiores (como un controlador de API) capturar fallos específicos para dar respuestas personalizadas al usuario (ej. diferenciar un error de "Límite excedido" de uno de "Cuenta no encontrada"). Se deberían emplear excepciones de negocio personalizadas.
 
-#### Refactorización realizada - Hecho por: [Nombre]
+#### Refactorización realizada - Hecho por: Arturo Vinuesa
 
 Para mantener todo encapsulado dentro del mismo fichero, se han declarado excepciones de negocio personalizadas como clases internas (inner classes) estáticas al final de AccountService.java:
 
@@ -813,7 +813,7 @@ Explicación de la solución: La creación del método centralizado de notificac
 - Descripción: El método `transactionRepository.findByAccountOrderByTimestampDesc(account)` devuelve la lista completa de todas las transacciones de una cuenta de golpe en un objeto `List<Transaction>`.
 - Justificación: En un sistema real, una cuenta bancaria acumula miles de transacciones con el tiempo. Traer todos esos registros de golpe a la memoria penaliza el rendimiento y dificulta la mantenibilidad a largo plazo, pudiendo causar caídas por falta de memoria (Out Of Memory). Debería aplicarse paginación desde el repositorio para traer los datos en lotes pequeños.
 
-#### Refactorización realizada - Hecho por: [Nombre]
+#### Refactorización realizada - Hecho por: Arturo Vinuesa
 
 ```java
 @Transactional(readOnly = true)
@@ -866,7 +866,7 @@ Explicación de la solución: Se añade un caso `else` en las condiciones del m�
 - Descripción: El método genera un número de cuenta mediante `generateAccountNumber()` y lo guarda directamente sin comprobar si ya existe en la base de datos. Además, añade este número de cuenta a la cuenta y luego lo usa para buscar cuentas, lo que nos dice que es un identificador, por lo cual debe ser único.
 - Justificación: Es un problema real porque no se garantiza la unicidad del número de cuenta, lo cual es un requisito crítico en un sistema bancario. Aunque la probabilidad de colisión sea muy baja, el impacto sería grave (dos cuentas con el mismo identificador). Se debería validar contra el repositorio o delegar en la base de datos con una restricción única. No se deben correr riesgos así simplemente porque sea difícil que suceda.
 
-#### Refactorización realizada - Hecho por: [Nombre]
+#### Refactorización realizada - Hecho por: Arturo Vinuesa
 
 ```java
 @Transactional
@@ -993,15 +993,15 @@ A continuación, se adjuntan evidencias del estado de la cobertura de código (C
 | 10 | Duplicación notificaciones | Método Privado Centralizado | AccountService.java | ✅ Implementado | Adrián Villalba |
 | 11 | Long method | Extract Method (Transfer split) | AccountService.java | ✅ Sin hacer |  |
 | 12 | Literales excepciones | Centralización de Errores | AccountService.java | ✅ Sin hacer |  |
-| 13 | Excepciones genéricas | Clases Estáticas Internas | AccountService.java | ✅ Sin hacer |  |
+| 13 | Excepciones genéricas | Clases Estáticas Internas | AccountService.java | ✅ Implementado | Arturo Vinuesa |
 | 14 | Ley de Demeter | Encapsulación de Navegación | AccountService.java | ✅ Sin hacer |  |
 | 15 | Validación duplicada | Método ensureSufficientBalance | AccountService.java | ✅ Sin hacer |  |
 | 16 | Data Clumps | Simplificación de Parámetros | AccountService.java | ✅ Implementado | Adrián Villalba |
 | 17 | Feature Envy | Delegación de Validación | AccountService.java | ✅ Sin hacer |  |
 | 18 | Clean Architecture | Abstracción de Notificación | AccountService.java | ✅ Implementado | Adrián Villalba |
-| 19 | Paginación | Limitación de Stream (limit) | AccountService.java | ✅ Sin hacer |  |
+| 19 | Paginación | Limitación de Stream (limit) | AccountService.java | ✅ Implementado | Arturo Vinuesa |
 | 20 | Default case | Inserción de Clausura default | AccountService.java | ✅ Implementado | Adrián Villalba |
-| 21 | Validación unicidad | Comprobación exists en BD | AccountService.java | ✅ Sin hacer |  |
+| 21 | Validación unicidad | Comprobación exists en BD | AccountService.java | ✅ Implementado | Arturo Vinuesa |
 | 22 | Primitive Obsession | Validación de Precisión Financiera | AccountService.java | ✅ Sin hacer |  |
 
 ---

@@ -21,7 +21,7 @@ Para garantizar una revisión exhaustiva, el equipo ha aplicado un enfoque híbr
 
 **Fase 1 - Detección y Análisis:** Por un lado, hemos ejecutado un escaneo automatizado mediante la plataforma SonarCloud, lo que nos ha proporcionado una visión global de las métricas de mantenibilidad, fiabilidad y seguridad del sistema. Por otro lado, hemos llevado a cabo una inspección manual minuciosa, indispensable para detectar problemas de diseño o violaciones de principios arquitectónicos (como SOLID, DRY o la Ley de Demeter) que las herramientas automáticas suelen pasar por alto.
 
-**Fase 2 - Refactorización:** Se han implementado 6 refactorizaciones iniciales siguiendo la estrategia de "Refactorización Integral de Clase Única", consolidando todos los cambios exclusivamente en `AccountService.java` mediante inner classes, métodos privados centralizados y eliminación de código muerto.
+**Fase 2 - Refactorización:** Se han implementado 11 refactorizaciones siguiendo la estrategia de "Refactorización Integral de Clase Única", consolidando todos los cambios exclusivamente en `AccountService.java` mediante inner classes, métodos privados centralizados y eliminación de código muerto.
 
 **Fase 3 - Validación:** Se han ejecutado los tests unitarios para garantizar que los cambios no rompen la funcionalidad existente, manteniendo la máxima seguridad en la refactorización.
 
@@ -267,7 +267,7 @@ Explicación de la solución: Se ha eliminado la validación `amount > 50000` po
 - Descripción: Existen dos métodos para depositar dinero que repiten exactamente las mismas validaciones y la misma lógica de guardado y notificación.
 - Justificación: Es un problema real de duplicación. Si en el futuro el banco decide cambiar una regla de depósito, el desarrollador tendrá que modificar dos métodos distintos. El método corto (sin descripción) debería simplemente llamar al método largo pasando una descripción por defecto, evitando así tener el código duplicado.
 
-#### Refactorización realizada - Hecho por: [Nombre]
+#### Refactorización realizada - Hecho por: Raúl Tejada Merinero
 
 ```java
 // Versión refactorizada: método sobrecargado que reutiliza la lógica del método principal
@@ -312,7 +312,7 @@ Explicación de la solución: Se refactoriza utilizando sobrecarga de métodos. 
 - Descripción: El método para eliminar una cuenta se llama simplemente "rm".
 - Justificación: Es un mal olor claro. Aunque "rm" es un comando conocido en sistemas Linux, en el contexto de un servicio Java de una aplicación bancaria se deben usar nombres verbales completos como "deleteAccount". Las abreviaturas crípticas reducen la legibilidad de la arquitectura del sistema.
 
-#### Refactorización realizada - Hecho por: [Nombre]
+#### Refactorización realizada - Hecho por: Adrián Villalba Cuello de Oro
 
 ```java
 // ANTES (método con nombre críptico):
@@ -447,7 +447,7 @@ Explicación de la solución: Se fusionan las dos validaciones separadas en una 
 - Descripción: La lógica para comprobar qué tipo de notificación tiene configurada el usuario (`EMAIL` o `SMS`) y realizar el envío a través del servicio correspondiente está copiada y pegada a lo largo de todos los métodos de operaciones bancarias.
 - Justificación: Es un problema real y grave de mantenibilidad. Si en el futuro se añade un nuevo canal de notificación, habrá que modificar el código en 5 lugares distintos, aumentando el riesgo de errores. La solución ideal sería extraer esta lógica a un método privado genérico.
 
-#### Refactorización realizada - Hecho por: [Nombre]
+#### Refactorización realizada - Hecho por: Adrián Villalba Cuello de Oro
 
 ```java
 // 1. Se crea un método privado auxiliar para centralizar la lógica:
@@ -475,6 +475,7 @@ public Account withdraw(String accountNumber, double amount, String description)
 ```
 
 Explicación de la solución: Se crea un método privado `sendNotification()` que encapsula toda la lógica de envío. Este método recibe los parámetros relevantes (cuenta, tipo de notificación, asunto y mensaje) y se encarga de determinar el canal preferido del usuario (`EMAIL` o `SMS`) y delegarlo al servicio correspondiente. Ventajas: (1) El código se vuelve mucho más legible, (2) Si se añade un nuevo canal en el futuro solo hay que modificar el método `sendNotification()`, (3) Reduce toda la lógica copiada de 8-10 líneas a una única llamada legible, (4) Facilita el testing, ya que se puede mockear el método de notificación de forma centralizada.
+
 ---
 
 ### Issue 11: Método con exceso de responsabilidades (Long Method)
@@ -673,7 +674,8 @@ Explicación de la solución: Para evitar modificar clases de dominio fuera de n
 ### Issue 15: Validación de saldo centralizada en Account
 **Reporte de la issue**:
 
-![Issue 15](img/capturas/Issue15.png)
+![Issue 15](img/capturas/Issue15_1.png)
+![Issue 15](img/capturas/Issue15_2.png)
 
 **Explicación del mal olor detectado**:
 - Ubicación: `src/main/java/es/codeurjc/service/AccountService.java`, métodos `withdraw` y `transfer`.
@@ -716,7 +718,7 @@ Explicación de la solución: Se crea un método privado `ensureSufficientBalanc
 - Descripción: Los métodos de notificación siempre reciben los mismos parámetros: usuario, tipo, título y mensaje.
 - Justificación: Es un problema porque estos datos siempre viajan juntos, lo que indica que debería existir un objeto que los encapsule. Esto mejora la claridad y reduce errores.
 
-#### Refactorización realizada - Hecho por: [Nombre]
+#### Refactorización realizada - Hecho por: Adrián Villalba Cuello de Oro
 
 ```java
 // Solución: Centralización en el método privado sendNotification (ya realizado en Issue 10)
@@ -766,7 +768,7 @@ Explicación de la solución:
 - Descripción: Se mezcla la gestión de transacciones de base de datos (`@Transactional`) con el envío de notificaciones externas mediante red (`emailService.sendNotification`).
 - Justificación: Siguiendo los principios de Clean Architecture, las reglas de negocio no deben depender de los detalles técnicos. Al enviar un email dentro de una transacción abierta, acoplamos el rendimiento de la BD a la del servidor de correo.
 
-#### Refactorización realizada - Hecho por: [Nombre]
+#### Refactorización realizada - Hecho por: Adrián Villalba Cuello de Oro
 
 ```java
 // Solución: Abstracción mediante el método sendNotification (Issue 10)
@@ -819,15 +821,16 @@ Explicación de la solución: Para no modificar la interfaz del Repositorio (fue
 - Descripción: El código evalúa `if (notifType == EMAIL)` y luego usa `else if (notifType == SMS)`, pero carece de un bloque `else` final.
 - Justificación: Al dejar "caminos" lógicos sin cubrir, la complejidad de las pruebas aumenta porque ese camino invisible no tiene un comportamiento definido. Si en el futuro se añade un nuevo valor al Enum `NotificationType` (por ejemplo, `PUSH`) y se olvida modificar este bloque, el sistema pasará por alto el envío de forma silenciosa sin lanzar ninguna alerta o excepción, dificultando mucho el debugging.
 
-#### Refactorización realizada - Hecho por: [Nombre]
+#### Refactorización realizada - Hecho por: Adrián Villalba Cuello de Oro
 
 ```java
 // Implementado en Issue 10 (sendNotification):
-default:
-    throw new UnsupportedOperationException("Unsupported notification type: " + notifType);
+else {
+        throw new UnsupportedOperationException("Unsupported notification type: " + notifType);
+     }
 ```
 
-Explicación de la solución: Se añade un caso `default` en el switch de notificaciones para que, si el sistema evoluciona y se añaden tipos nuevos no contemplados, el programa falle de forma explícita en lugar de ignorar el envío.
+Explicación de la solución: Se añade un caso `else` en las condiciones del método sendNotificaction() para que, si el sistema evoluciona y se añaden tipos nuevos no contemplados, el programa falle de forma explícita en lugar de ignorar el envío.
 
 ---
 
@@ -963,20 +966,20 @@ A continuación, se adjuntan evidencias del estado de la cobertura de código (C
 | 4 | Nombres variables | Renombrado Semántico | AccountService.java | ✅ Implementado | Raúl |
 | 5 | Lógica inalcanzable | Eliminación de Bloque Bloqueado | AccountService.java | ✅ Implementado | Raúl |
 | 6 | Duplicación deposit | Sobrecarga de Métodos | AccountService.java | ✅ Implementado | Raúl |
-| 7 | Nomenclatura borrado | Renombrado a deleteAccount | AccountService.java | ✅ Sin hacer |  |
+| 7 | Nomenclatura borrado | Renombrado a deleteAccount | AccountService.java | ✅ Implementado | Adrián Villalba |
 | 8 | Magic numbers | Constantes de Negocio | AccountService.java | ✅ Sin hacer |  |
 | 9 | Condicionales redundantes | Unificación de Operadores (<=) | AccountService.java | ✅ Sin hacer |  |
-| 10 | Duplicación notificaciones | Método Privado Centralizado | AccountService.java | ✅ Sin hacer |  |
+| 10 | Duplicación notificaciones | Método Privado Centralizado | AccountService.java | ✅ Implementado | Adrián Villalba |
 | 11 | Long method | Extract Method (Transfer split) | AccountService.java | ✅ Sin hacer |  |
 | 12 | Literales excepciones | Centralización de Errores | AccountService.java | ✅ Sin hacer |  |
 | 13 | Excepciones genéricas | Clases Estáticas Internas | AccountService.java | ✅ Sin hacer |  |
 | 14 | Ley de Demeter | Encapsulación de Navegación | AccountService.java | ✅ Sin hacer |  |
 | 15 | Validación duplicada | Método ensureSufficientBalance | AccountService.java | ✅ Sin hacer |  |
-| 16 | Data Clumps | Simplificación de Parámetros | AccountService.java | ✅ Sin hacer |  |
+| 16 | Data Clumps | Simplificación de Parámetros | AccountService.java | ✅ Implementado | Adrián Villalba |
 | 17 | Feature Envy | Delegación de Validación | AccountService.java | ✅ Sin hacer |  |
-| 18 | Clean Architecture | Abstracción de Notificación | AccountService.java | ✅ Sin hacer |  |
+| 18 | Clean Architecture | Abstracción de Notificación | AccountService.java | ✅ Implementado | Adrián Villalba |
 | 19 | Paginación | Limitación de Stream (limit) | AccountService.java | ✅ Sin hacer |  |
-| 20 | Default case | Inserción de Clausura default | AccountService.java | ✅ Sin hacer |  |
+| 20 | Default case | Inserción de Clausura default | AccountService.java | ✅ Implementado | Adrián Villalba |
 | 21 | Validación unicidad | Comprobación exists en BD | AccountService.java | ✅ Sin hacer |  |
 | 22 | Primitive Obsession | Validación de Precisión Financiera | AccountService.java | ✅ Sin hacer |  |
 

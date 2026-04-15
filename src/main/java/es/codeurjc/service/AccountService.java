@@ -83,11 +83,30 @@ public class AccountService {
     }
 
     /**
+     * Send notification
+     */
+    private void sendNotification(User user, Notification.NotificationType type, String subject, String message) {
+        User.NotificationType notifType = user.getNotificationType();
+
+        if (notifType == User.NotificationType.EMAIL) {
+            emailService.sendNotification(user, type, subject, message);
+        } else if (notifType == User.NotificationType.SMS) {
+            smsService.sendNotification(user, type, subject, message);
+        }
+        // Para controlar el flujo por defecto 
+        else {
+            throw new UnsupportedOperationException("Unsupported notification type: " + notifType);
+        }
+        
+    }
+
+    /**
      * Quick deposit without description
      */
     @Transactional
     public Account deposit(String accountNumber, double amount) {
-        // Llama al método completo pasando una descripción por defecto ("Quick deposit")
+        // Llama al método completo pasando una descripción por defecto ("Quick
+        // deposit")
         return deposit(accountNumber, amount, "Quick deposit");
     }
 
@@ -113,23 +132,13 @@ public class AccountService {
 
         Account savedAccount = accountRepository.save(account);
 
-        // Send notification
-        User.NotificationType notifType = account.getUser().getNotificationType();
-        if (notifType == User.NotificationType.EMAIL) {
-            emailService.sendNotification(
-                    account.getUser(),
-                    Notification.NotificationType.DEPOSIT,
-                    DEPOSIT_CONFIRMATION_SUBJECT,
-                    String.format("Deposit of %.2f EUR. New balance: %.2f EUR",
-                            amount, account.getBalance()));
-        } else if (notifType == User.NotificationType.SMS) {
-            smsService.sendNotification(
-                    account.getUser(),
-                    Notification.NotificationType.DEPOSIT,
-                    DEPOSIT_CONFIRMATION_SUBJECT,
-                    String.format("Deposit: %.2f EUR. Balance: %.2f EUR",
-                            amount, account.getBalance()));
-        }
+        // Una única llamada al método sendNotification() en lugar de todo el bloque
+        // if/else repetido
+        sendNotification(
+                account.getUser(),
+                Notification.NotificationType.DEPOSIT,
+                DEPOSIT_CONFIRMATION_SUBJECT,
+                String.format("Deposit of %.2f EUR. New balance: %.2f EUR", amount, account.getBalance()));
 
         return savedAccount;
     }
@@ -163,20 +172,13 @@ public class AccountService {
 
         Account savedAccount = accountRepository.save(account);
 
-        User.NotificationType notifType = account.getUser().getNotificationType();
-        if (notifType == User.NotificationType.EMAIL) {
-            emailService.sendNotification(
-                    account.getUser(),
-                    Notification.NotificationType.WITHDRAWAL,
-                    "Withdrawal Confirmation",
-                    String.format("Withdrawal of %.2f EUR. New balance: %.2f EUR", amount, account.getBalance()));
-        } else if (notifType == User.NotificationType.SMS) {
-            smsService.sendNotification(
-                    account.getUser(),
-                    Notification.NotificationType.WITHDRAWAL,
-                    "Withdrawal",
-                    String.format("Withdrawal of %.2f EUR. New balance: %.2f EUR", amount, account.getBalance()));
-        }
+        // Una única llamada al método sendNotification() en lugar de todo el bloque
+        // if/else repetido
+        sendNotification(
+                account.getUser(),
+                Notification.NotificationType.WITHDRAWAL,
+                "Withdrawal Confirmation",
+                String.format("Withdrawal of %.2f EUR. New balance: %.2f EUR", amount, account.getBalance()));
 
         return savedAccount;
     }
@@ -228,42 +230,27 @@ public class AccountService {
         accountRepository.save(sourceAccount);
         accountRepository.save(destinationAccount);
 
-        User.NotificationType notifType = sourceAccount.getUser().getNotificationType();
-        if (notifType == User.NotificationType.EMAIL) {
-            emailService.sendNotification(
-                    sourceAccount.getUser(),
-                    Notification.NotificationType.TRANSFER,
-                    "Transfer Sent",
-                    String.format("Transfer of %.2f EUR to %s. New balance: %.2f EUR", amount, toAccountNumber, sourceAccount.getBalance()));
-        } else if (notifType == User.NotificationType.SMS) {
-            smsService.sendNotification(
-                    sourceAccount.getUser(),
-                    Notification.NotificationType.TRANSFER,
-                    "Transfer Sent",
-                    String.format("Transfer of %.2f EUR to %s. New balance: %.2f EUR", amount, toAccountNumber, sourceAccount.getBalance()));
-        }
+        // Notificación al que ENVÍA la transferencia
+        sendNotification(
+                sourceAccount.getUser(),
+                Notification.NotificationType.TRANSFER,
+                "Transfer Sent",
+                String.format("Transfer of %.2f EUR to %s. New balance: %.2f EUR", amount, toAccountNumber,
+                        sourceAccount.getBalance()));
 
-        User.NotificationType notifTypeTo = destinationAccount.getUser().getNotificationType();
-        if (notifTypeTo == User.NotificationType.EMAIL) {
-            emailService.sendNotification(
-                    destinationAccount.getUser(),
-                    Notification.NotificationType.TRANSFER,
-                    "Transfer Received",
-                    String.format("Transfer of %.2f EUR from %s. New balance: %.2f EUR",
-                        amount, fromAccountNumber, destinationAccount.getBalance()));
-        } else if (notifTypeTo == User.NotificationType.SMS) {
-            smsService.sendNotification(
+        // Notificación al que RECIBE la transferencia
+        sendNotification(
                 destinationAccount.getUser(),
                 Notification.NotificationType.TRANSFER,
                 "Transfer Received",
-                String.format("Transfer of %.2f EUR from %s. New balance: %.2f EUR", amount, fromAccountNumber, destinationAccount.getBalance()));
-        }
+                String.format("Transfer of %.2f EUR from %s. New balance: %.2f EUR", amount, fromAccountNumber,
+                        destinationAccount.getBalance()));
     }
 
     /**
      * Delete account
      */
-    public void rm(String accountNumber) {
+    public void deleteAccount(String accountNumber) {
         Account account = getAccount(accountNumber);
 
         if (account.getBalance() != 0) {

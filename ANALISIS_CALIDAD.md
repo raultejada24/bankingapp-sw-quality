@@ -676,6 +676,9 @@ Explicación de la solución: Para evitar modificar clases de dominio fuera de n
 
 ![Issue 15](img/capturas/Issue15_1.png)
 ![Issue 15](img/capturas/Issue15_2.png)
+![Issue 15](img/capturas/Issue15_1.png)
+
+![Issue 15](img/capturas/Issue15_2.png)
 
 **Explicación del mal olor detectado**:
 - Ubicación: `src/main/java/es/codeurjc/service/AccountService.java`, métodos `withdraw` y `transfer`.
@@ -747,10 +750,29 @@ Explicación de la solución: Se resuelve mediante la centralización del Issue 
 #### Refactorización realizada - Hecho por: [Nombre]
 
 ```java
+// Se elimina la lógica de "pregunta y decisión" del método transfer y se delega 
+// en el método de validación centralizado que actúa como paso previo a la acción
 
+private void executeWithdrawal(Account account, double amount) {
+    // Aplicamos el principio "Tell, Don't Ask"
+    // En lugar de preguntar por el balance aquí, delegamos la validación
+    ensureSufficientBalance(account, amount); 
+    account.withdraw(amount);
+}
+
+// Aplicación en el método performTransfer refactorizado:
+private void performTransfer(Account sourceAccount, Account destinationAccount, 
+                             String fromAccountNumber, String toAccountNumber, double amount) {
+    
+    executeWithdrawal(sourceAccount, amount); // La "envidia" desaparece del flujo principal
+    destinationAccount.deposit(amount);
+    
+    accountRepository.save(sourceAccount);
+    accountRepository.save(destinationAccount);
+}
 ```
 
-Explicación de la solución:
+Explicación de la solución: Para solucionar la "envidia de atributos", se ha encapsulado la acción de retiro y su validación asociada en un método específico. Aunque la solución ideal de Clean Code sería mover ensureSufficientBalance directamente a la entidad Account, dadas las restricciones de este análisis de "clase única", hemos optado por eliminar la lógica de decisión del flujo de la transferencia. Ahora, el método transfer ya no "fisgonea" el balance de la cuenta para decidir si lanza una excepción; simplemente ordena la ejecución de la operación, cumpliendo con el principio de Tell, Don't Ask.
 
 ---
 

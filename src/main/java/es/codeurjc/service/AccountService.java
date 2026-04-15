@@ -37,6 +37,11 @@ public class AccountService {
     private static final String ERROR_ACCOUNT_NOT_FOUND = "Account not found";
     private static final String ERROR_NON_ZERO_BALANCE = "Cannot delete account with non-zero balance";
     private static final String ERROR_ACCOUNT_NUMBER_GENERATION_FAILED = "Could not generate unique account number";
+    private static final String TRANSFER_SENT_SUBJECT = "Transfer Sent";
+    private static final String TRANSFER_RECEIVED_SUBJECT = "Transfer Received";
+    private static final String TRANSFER_SENT_MESSAGE = "Transfer of %.2f EUR to %s. New balance: %.2f EUR";
+    private static final String TRANSFER_RECEIVED_MESSAGE = "Transfer of %.2f EUR from %s. New balance: %.2f EUR";
+
 
     private final AccountRepository accountRepository;
     private final TransactionRepository transactionRepository;
@@ -101,17 +106,25 @@ public class AccountService {
     /**
      * Send notification
      */
-    private void sendNotification(User user, Notification.NotificationType type, String subject, String message) {
-        User.NotificationType notifType = user.getNotificationType();
+    private User.NotificationType getNotificationPreference(Account account) {
+        return account.getUser().getNotificationType();
+    }
 
-        if (notifType == User.NotificationType.EMAIL) {
-            emailService.sendNotification(user, type, subject, message);
-        } else if (notifType == User.NotificationType.SMS) {
-            smsService.sendNotification(user, type, subject, message);
-        }
-        // Para controlar el flujo por defecto 
-        else {
-            throw new UnsupportedOperationException("Unsupported notification type: " + notifType);
+    private void sendNotification(Account account, Notification.NotificationType type, String subject, String message) {
+        User user = account.getUser();
+
+        // La cadena de llamadas queda oculta tras este método
+        User.NotificationType notifType = getNotificationPreference(account);
+
+        switch (notifType) {
+            case EMAIL:
+                emailService.sendNotification(user, type, subject, message);
+                break;
+            case SMS:
+                smsService.sendNotification(user, type, subject, message);
+                break;
+            default:
+                throw new UnsupportedOperationException("Unsupported notification type: " + notifType);
         }
         
     }
@@ -151,7 +164,7 @@ public class AccountService {
         // Una única llamada al método sendNotification() en lugar de todo el bloque
         // if/else repetido
         sendNotification(
-                account.getUser(),
+                account,
                 Notification.NotificationType.DEPOSIT,
                 DEPOSIT_CONFIRMATION_SUBJECT,
                 String.format("Deposit of %.2f EUR. New balance: %.2f EUR", amount, account.getBalance()));
@@ -162,6 +175,13 @@ public class AccountService {
     /**
      * Withdraw money from account
      */
+
+    private void ensureSufficientBalance(Account account, double amount) {
+        if (account.getBalance() < amount) {
+            throw new InsufficientFundsException(ERROR_INSUFFICIENT_FUNDS);
+        }
+    }
+
     @Transactional
     public Account withdraw(String accountNumber, double amount, String description) {
         if (amount <= 0) {
@@ -175,9 +195,7 @@ public class AccountService {
         Account account = getAccount(accountNumber);
 
         // Check balance
-        if (account.getBalance() < amount) {
-            throw new InsufficientFundsException(ERROR_INSUFFICIENT_FUNDS);
-        }
+        ensureSufficientBalance(account, amount);
 
         account.withdraw(amount);
 
@@ -191,7 +209,7 @@ public class AccountService {
         // Una única llamada al método sendNotification() en lugar de todo el bloque
         // if/else repetido
         sendNotification(
-                account.getUser(),
+                account,
                 Notification.NotificationType.WITHDRAWAL,
                 "Withdrawal Confirmation",
                 String.format("Withdrawal of %.2f EUR. New balance: %.2f EUR", amount, account.getBalance()));
@@ -204,37 +222,46 @@ public class AccountService {
      */
     @Transactional
     public void transfer(String fromAccountNumber, String toAccountNumber, double amount) {
-        if (amount <= 0) {
-            throw new InvalidAmountException(ERROR_AMOUNT_MUST_BE_POSITIVE);
-        }
-        if (amount > MAX_TRANSFER_LIMIT) {
-            throw new LimitExceededException(ERROR_MAX_TRANSFER_EXCEEDED);
-        }
 
         Account sourceAccount = getAccount(fromAccountNumber);
         Account destinationAccount = getAccount(toAccountNumber);
 
+        validateTransfer(sourceAccount, destinationAccount, amount);
+        recordTransfer(sourceAccount, destinationAccount, fromAccountNumber, toAccountNumber, amount);
+        performTransfer(sourceAccount, destinationAccount, amount);
+        notifyTransfer(sourceAccount, destinationAccount, toAccountNumber, fromAccountNumber, amount);
+
+    }
+
+    private void validateTransfer(Account sourceAccount, Account destinationAccount, double amount) {
+        // Validate transfer amount to be positive
+        if (amount <= 0) throw new IllegalArgumentException(ERROR_AMOUNT_MUST_BE_POSITIVE);
+
+        // Validate transfer amount to be within limits
+        if (amount > MAX_TRANSFER_LIMIT) throw new IllegalArgumentException(ERROR_MAX_TRANSFER_EXCEEDED);
+
         // Validate same account
-        if (sourceAccount.getAccountNumber().equals(destinationAccount.getAccountNumber())) {
-            throw new SameAccountTransferException(ERROR_SAME_ACCOUNT_TRANSFER);
-        }
+        if (sourceAccount.getAccountNumber().equals(destinationAccount.getAccountNumber()))
+            throw new IllegalArgumentException(ERROR_SAME_ACCOUNT_TRANSFER);
 
         // Check balance
-        if (sourceAccount.getBalance() < amount) {
-            throw new InsufficientFundsException(ERROR_INSUFFICIENT_FUNDS);
-        }
+        ensureSufficientBalance(sourceAccount, amount);
+    }
 
-        // Perform transfer
+    private void performTransfer(Account sourceAccount, Account destinationAccount, double amount) {
         sourceAccount.withdraw(amount);
         destinationAccount.deposit(amount);
+        accountRepository.save(sourceAccount);
+        accountRepository.save(destinationAccount);
+    }
 
-        // Record transactions
+    private void recordTransfer (Account sourceAccount, Account destinationAccount,
+                                 String fromAccountNumber, String toAccountNumber, double amount) {
         Transaction sentTransaction = new Transaction(sourceAccount,
                 Transaction.TransactionType.TRANSFER_SENT,
                 amount,
                 "Transfer to " + toAccountNumber);
         sentTransaction.setDestinationAccountNumber(toAccountNumber);
-        transactionRepository.save(sentTransaction);
 
         Transaction receivedTransaction = new Transaction(destinationAccount,
                 Transaction.TransactionType.TRANSFER_RECEIVED,
@@ -242,25 +269,18 @@ public class AccountService {
                 "Transfer from " + fromAccountNumber);
         receivedTransaction.setDestinationAccountNumber(fromAccountNumber);
         transactionRepository.save(receivedTransaction);
+    }
 
-        accountRepository.save(sourceAccount);
-        accountRepository.save(destinationAccount);
+    private void notifyTransfer(Account sourceAccount, Account destinationAccount,
+                                String toAccountNumber, String fromAccountNumber, double amount) {
 
         // Notificación al que ENVÍA la transferencia
-        sendNotification(
-                sourceAccount.getUser(),
-                Notification.NotificationType.TRANSFER,
-                "Transfer Sent",
-                String.format("Transfer of %.2f EUR to %s. New balance: %.2f EUR", amount, toAccountNumber,
-                        sourceAccount.getBalance()));
+        sendNotification(sourceAccount, Notification.NotificationType.TRANSFER, TRANSFER_SENT_SUBJECT, String.format(TRANSFER_SENT_MESSAGE, amount, toAccountNumber,
+                sourceAccount.getBalance()));
 
         // Notificación al que RECIBE la transferencia
-        sendNotification(
-                destinationAccount.getUser(),
-                Notification.NotificationType.TRANSFER,
-                "Transfer Received",
-                String.format("Transfer of %.2f EUR from %s. New balance: %.2f EUR", amount, fromAccountNumber,
-                        destinationAccount.getBalance()));
+        sendNotification(destinationAccount, Notification.NotificationType.TRANSFER, TRANSFER_RECEIVED_SUBJECT, String.format(TRANSFER_RECEIVED_MESSAGE, amount, fromAccountNumber,
+                destinationAccount.getBalance()));
     }
 
     /**

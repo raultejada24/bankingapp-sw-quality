@@ -60,7 +60,7 @@ En las capturas superiores se muestra el estado general del proyecto tras el pri
 private static final String DEPOSIT_CONFIRMATION_SUBJECT = "Deposit Confirmation";
 // 2. Sustitución en los métodos deposit() (Ejemplo en canal EMAIL)
 emailService.sendNotification(
-        account.getUser(),
+        account,
         Notification.NotificationType.DEPOSIT,
         DEPOSIT_CONFIRMATION_SUBJECT, // <-- Uso de la constante
         String.format("Deposit of %.2f EUR. New balance: %.2f EUR",
@@ -167,9 +167,8 @@ Explicación de la solución: Se modifica la línea `if (m.getAccountNumber() ==
         }
 
         // Check balance
-        if (sourceAccount.getBalance() < amount) {
-            throw new IllegalArgumentException("Insufficient funds");
-        }
+        // Check balance
+        ensureSufficientBalance(sourceAccount, amount);
 
         // Perform transfer
         sourceAccount.withdraw(amount);
@@ -196,13 +195,13 @@ Explicación de la solución: Se modifica la línea `if (m.getAccountNumber() ==
         User.NotificationType notifType = sourceAccount.getUser().getNotificationType();
         if (notifType == User.NotificationType.EMAIL) {
             emailService.sendNotification(
-                    sourceAccount.getUser(),
+                    sourceAccount,
                     Notification.NotificationType.TRANSFER,
                     "Transfer Sent",
                     String.format("Transfer of %.2f EUR to %s. New balance: %.2f EUR", amount, toAccountNumber, sourceAccount.getBalance()));
         } else if (notifType == User.NotificationType.SMS) {
             smsService.sendNotification(
-                    sourceAccount.getUser(),
+                    sourceAccount,
                     Notification.NotificationType.TRANSFER,
                     "Transfer Sent",
                     String.format("Transfer of %.2f EUR to %s. New balance: %.2f EUR", amount, toAccountNumber, sourceAccount.getBalance()));
@@ -211,14 +210,14 @@ Explicación de la solución: Se modifica la línea `if (m.getAccountNumber() ==
         User.NotificationType notifTypeTo = destinationAccount.getUser().getNotificationType();
         if (notifTypeTo == User.NotificationType.EMAIL) {
             emailService.sendNotification(
-                    destinationAccount.getUser(),
+                    destinationAccount,
                     Notification.NotificationType.TRANSFER,
                     "Transfer Received",
                     String.format("Transfer of %.2f EUR from %s. New balance: %.2f EUR",
                         amount, fromAccountNumber, destinationAccount.getBalance()));
         } else if (notifTypeTo == User.NotificationType.SMS) {
             smsService.sendNotification(
-                destinationAccount.getUser(),
+                destinationAccount,
                 Notification.NotificationType.TRANSFER,
                 "Transfer Received",
                 String.format("Transfer of %.2f EUR from %s. New balance: %.2f EUR", amount, fromAccountNumber, destinationAccount.getBalance()));
@@ -451,7 +450,8 @@ Explicación de la solución: Se fusionan las dos validaciones separadas en una 
 
 ```java
 // 1. Se crea un método privado auxiliar para centralizar la lógica:
-private void sendNotification(User user, Notification.NotificationType type, String subject, String message) {
+private void sendNotification(Account account, Notification.NotificationType type, String subject, String message) {
+    User user = account.getUser();
     User.NotificationType notifType = user.getNotificationType();
     if (notifType == User.NotificationType.EMAIL) {
         emailService.sendNotification(user, type, subject, message);
@@ -466,7 +466,7 @@ public Account withdraw(String accountNumber, double amount, String description)
     // ... lógica de validación y guardado ...
 
     // Una única llamada en lugar de todo el bloque if/else repetido
-    sendNotification(account.getUser(), Notification.NotificationType.WITHDRAWAL, 
+    sendNotification(account, Notification.NotificationType.WITHDRAWAL,
             "Withdrawal Confirmation",
             String.format("Withdrawal of %.2f EUR. New balance: %.2f EUR", amount, account.getBalance()));
 
@@ -489,40 +489,57 @@ Explicación de la solución: Se crea un método privado `sendNotification()` qu
 - Descripción: El método `transfer` es demasiado largo y asume demasiadas responsabilidades: valida límites, comprueba saldos, realiza retiros e ingresos, crea transacciones, guarda en base de datos y envía notificaciones.
 - Justificación: Es un problema real de diseño. Al acumular tantas operaciones, el método tiene una carga cognitiva muy alta, es difícil de testear y propenso a errores. Debería refactorizarse dividiéndolo en submétodos más pequeños y específicos.
 
-#### Refactorización realizada - Hecho por: [Nombre]
+#### Refactorización realizada - Hecho por: Blas Vita Ramos
 
 ```java
-// REFACTORIZACIÓN: Dividir el método transfer en submétodos
 @Transactional
-public void transfer(String fromAccountNumber, String toAccountNumber, double amount) {
-    Account sourceAccount = getAccount(fromAccountNumber);
-    Account destinationAccount = getAccount(toAccountNumber);
-    validateTransfer(sourceAccount, destinationAccount, amount);
-    performTransfer(sourceAccount, destinationAccount, fromAccountNumber, toAccountNumber, amount);
-    notifyTransfer(sourceAccount, destinationAccount, toAccountNumber, fromAccountNumber, amount);
-}
+    public void transfer(String fromAccountNumber, String toAccountNumber, double amount) {
+        Account sourceAccount = getAccount(fromAccountNumber);
+        Account destinationAccount = getAccount(toAccountNumber);
+        validateTransfer(sourceAccount, destinationAccount, amount);
+        recordTransfer(sourceAccount, destinationAccount, fromAccountNumber, toAccountNumber, amount);
+        performTransfer(sourceAccount, destinationAccount, amount);
+        notifyTransfer(sourceAccount, destinationAccount, toAccountNumber, fromAccountNumber, amount);
 
-private void validateTransfer(Account sourceAccount, Account destinationAccount, double amount) {
-    if (amount <= 0) throw new IllegalArgumentException(ERROR_AMOUNT_MUST_BE_POSITIVE);
-    if (amount > MAX_TRANSFER_LIMIT) throw new IllegalArgumentException(ERROR_TRANSFER_LIMIT_EXCEEDED);
-    if (sourceAccount.getAccountNumber().equals(destinationAccount.getAccountNumber())) 
-        throw new IllegalArgumentException(ERROR_SAME_ACCOUNT_TRANSFER);
-    if (sourceAccount.getBalance() < amount) throw new IllegalArgumentException(ERROR_INSUFFICIENT_FUNDS);
-}
+    }
 
-private void performTransfer(Account sourceAccount, Account destinationAccount, 
-                             String fromAccountNumber, String toAccountNumber, double amount) {
-    sourceAccount.withdraw(amount);
-    destinationAccount.deposit(amount);
-    accountRepository.save(sourceAccount);
-    accountRepository.save(destinationAccount);
-}
+    private void validateTransfer(Account sourceAccount, Account destinationAccount, double amount) {
+        if (amount <= 0) throw new IllegalArgumentException(ERROR_AMOUNT_MUST_BE_POSITIVE);
+        if (amount > MAX_TRANSFER_LIMIT) throw new IllegalArgumentException(ERROR_MAX_TRANSFER_EXCEEDED);
+        if (sourceAccount.getAccountNumber().equals(destinationAccount.getAccountNumber()))
+            throw new IllegalArgumentException(ERROR_SAME_ACCOUNT_TRANSFER);
+        if (sourceAccount.getBalance() < amount) throw new IllegalArgumentException(ERROR_INSUFFICIENT_FUNDS);
+    }
 
-private void notifyTransfer(Account sourceAccount, Account destinationAccount, 
-                           String toAccountNumber, String fromAccountNumber, double amount) {
-    sendNotification(sourceAccount, Notification.NotificationType.TRANSFER, TRANSFER_SENT_SUBJECT, "...");
-    sendNotification(destinationAccount, Notification.NotificationType.TRANSFER, TRANSFER_RECEIVED_SUBJECT, "...");
-}
+    private void performTransfer(Account sourceAccount, Account destinationAccount, double amount) {
+        sourceAccount.withdraw(amount);
+        destinationAccount.deposit(amount);
+        accountRepository.save(sourceAccount);
+        accountRepository.save(destinationAccount);
+    }
+
+    private void recordTransfer (Account sourceAccount, Account destinationAccount,
+                                 String fromAccountNumber, String toAccountNumber, double amount) {
+        Transaction sentTransaction = new Transaction(sourceAccount,
+                Transaction.TransactionType.TRANSFER_SENT,
+                amount,
+                "Transfer to " + toAccountNumber);
+        sentTransaction.setDestinationAccountNumber(toAccountNumber);
+        Transaction receivedTransaction = new Transaction(destinationAccount,
+                Transaction.TransactionType.TRANSFER_RECEIVED,
+                amount,
+                "Transfer from " + fromAccountNumber);
+        receivedTransaction.setDestinationAccountNumber(fromAccountNumber);
+        transactionRepository.save(receivedTransaction);
+    }
+
+    private void notifyTransfer(Account sourceAccount, Account destinationAccount,
+                                String toAccountNumber, String fromAccountNumber, double amount) {
+        sendNotification(sourceAccount, Notification.NotificationType.TRANSFER, TRANSFER_SENT_SUBJECT, String.format(TRANSFER_SENT_MESSAGE, amount, toAccountNumber,
+                sourceAccount.getBalance()));
+        sendNotification(destinationAccount, Notification.NotificationType.TRANSFER, TRANSFER_RECEIVED_SUBJECT, String.format(TRANSFER_RECEIVED_MESSAGE, amount, fromAccountNumber,
+                destinationAccount.getBalance()));
+    }
 ```
 
 Explicación de la solución: Se refactoriza `transfer()` extrayendo su lógica en tres submétodos: `validateTransfer()`, `performTransfer()` y `notifyTransfer()`. El método principal es ahora muy legible (5 líneas), cada submétodo tiene una responsabilidad única y es fácil de testear aisladamente.
@@ -634,7 +651,7 @@ Explicación de la solución: Se definen excepciones personalizadas que heredan 
 - Descripción: Se observa el uso repetido de la cadena de llamadas `account.getUser().getNotificationType()` para determinar el canal de notificación.
 - Justificación: Es un problema real de acoplamiento. Esta estructura, conocida como "choque de trenes", obliga a `AccountService` a conocer detalles íntimos de la relación entre `Account` y `User`. Si la forma en que un usuario gestiona sus notificaciones cambia, este servicio se verá afectado innecesariamente. Siguiendo la Ley de Demeter, el servicio solo debería hablar con sus "amigos inmediatos" (la cuenta), delegando en ella la obtención del tipo de notificación mediante un método como `account.getPreferredNotificationType()`.
 
-#### Refactorización realizada - Hecho por: [Nombre]
+#### Refactorización realizada - Hecho por: Blas Vita Ramos
 
 Dado que no podemos modificar la entidad `Account` por restricciones de alcance, refactorizamos encapsulando la navegación profunda en un método privado del propio servicio:
 
@@ -991,11 +1008,11 @@ A continuación, se adjuntan evidencias del estado de la cobertura de código (C
 | 8 | Magic numbers | Constantes de Negocio | AccountService.java | ✅ Sin hacer |  |
 | 9 | Condicionales redundantes | Unificación de Operadores (<=) | AccountService.java | ✅ Sin hacer |  |
 | 10 | Duplicación notificaciones | Método Privado Centralizado | AccountService.java | ✅ Implementado | Adrián Villalba |
-| 11 | Long method | Extract Method (Transfer split) | AccountService.java | ✅ Sin hacer |  |
+| 11 | Long method | Extract Method (Transfer split) | AccountService.java | ✅ Implementado | Blas Vita |
 | 12 | Literales excepciones | Centralización de Errores | AccountService.java | ✅ Sin hacer |  |
 | 13 | Excepciones genéricas | Clases Estáticas Internas | AccountService.java | ✅ Implementado | Arturo Vinuesa |
-| 14 | Ley de Demeter | Encapsulación de Navegación | AccountService.java | ✅ Sin hacer |  |
-| 15 | Validación duplicada | Método ensureSufficientBalance | AccountService.java | ✅ Sin hacer |  |
+| 14 | Ley de Demeter | Encapsulación de Navegación | AccountService.java | ✅ Implementado | Blas Vita |
+| 15 | Validación duplicada | Método ensureSufficientBalance | AccountService.java | ✅ Implementado | Blas Vita |
 | 16 | Data Clumps | Simplificación de Parámetros | AccountService.java | ✅ Implementado | Adrián Villalba |
 | 17 | Feature Envy | Delegación de Validación | AccountService.java | ✅ Sin hacer |  |
 | 18 | Clean Architecture | Abstracción de Notificación | AccountService.java | ✅ Implementado | Adrián Villalba |

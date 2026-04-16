@@ -1018,7 +1018,7 @@ A continuación, se adjuntan evidencias del estado de la cobertura de código (C
 | 19 | Paginación | Limitación de Stream (limit) | AccountService.java | ✅ Implementado | Arturo Vinuesa |
 | 20 | Default case | Inserción de Clausura default | AccountService.java | ✅ Implementado | Adrián Villalba |
 | 21 | Validación unicidad | Comprobación exists en BD | AccountService.java | ✅ Implementado | Arturo Vinuesa |
-| 22 | Primitive Obsession | Validación de Precisión Financiera | AccountService.java | ✅ Sin hacer |  |
+| 22 | Primitive Obsession | Validación de Precisión Financiera | AccountService.java | ✅ Implementado | Adrián Varea |
 
 ---
 

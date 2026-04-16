@@ -1004,16 +1004,16 @@ A continuación, se adjuntan evidencias del estado de la cobertura de código (C
 | 5 | Lógica inalcanzable | Eliminación de Bloque Bloqueado | AccountService.java | ✅ Implementado | Raúl |
 | 6 | Duplicación deposit | Sobrecarga de Métodos | AccountService.java | ✅ Implementado | Raúl |
 | 7 | Nomenclatura borrado | Renombrado a deleteAccount | AccountService.java | ✅ Implementado | Adrián Villalba |
-| 8 | Magic numbers | Constantes de Negocio | AccountService.java | ✅ Sin hacer |  |
-| 9 | Condicionales redundantes | Unificación de Operadores (<=) | AccountService.java | ✅ Sin hacer |  |
+| 8 | Magic numbers | Constantes de Negocio | AccountService.java | ✅ Sin hacer | Gonzalo Zurdo |
+| 9 | Condicionales redundantes | Unificación de Operadores (<=) | AccountService.java | ✅ Sin hacer | Gonzalo Zurdo |
 | 10 | Duplicación notificaciones | Método Privado Centralizado | AccountService.java | ✅ Implementado | Adrián Villalba |
 | 11 | Long method | Extract Method (Transfer split) | AccountService.java | ✅ Implementado | Blas Vita |
-| 12 | Literales excepciones | Centralización de Errores | AccountService.java | ✅ Sin hacer |  |
+| 12 | Literales excepciones | Centralización de Errores | AccountService.java | ✅ Sin hacer | Gonzalo Zurdo |
 | 13 | Excepciones genéricas | Clases Estáticas Internas | AccountService.java | ✅ Implementado | Arturo Vinuesa |
 | 14 | Ley de Demeter | Encapsulación de Navegación | AccountService.java | ✅ Implementado | Blas Vita |
 | 15 | Validación duplicada | Método ensureSufficientBalance | AccountService.java | ✅ Implementado | Blas Vita |
 | 16 | Data Clumps | Simplificación de Parámetros | AccountService.java | ✅ Implementado | Adrián Villalba |
-| 17 | Feature Envy | Delegación de Validación | AccountService.java | ✅ Sin hacer |  |
+| 17 | Feature Envy | Delegación de Validación | AccountService.java | ✅ Sin hacer | Gonzalo Zurdo |
 | 18 | Clean Architecture | Abstracción de Notificación | AccountService.java | ✅ Implementado | Adrián Villalba |
 | 19 | Paginación | Limitación de Stream (limit) | AccountService.java | ✅ Implementado | Arturo Vinuesa |
 | 20 | Default case | Inserción de Clausura default | AccountService.java | ✅ Implementado | Adrián Villalba |

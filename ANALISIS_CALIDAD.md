@@ -916,16 +916,15 @@ Explicación de la solución: Se añade una comprobación previa mediante el rep
 - Descripción: Se utiliza `double` para representar cantidades de dinero (`amount`).
 - Justificación: Es un problema real porque los tipos `double` pueden generar errores de precisión en operaciones financieras. Además, no encapsulan lógica de negocio como moneda o validaciones.
 
-#### Refactorización realizada - Hecho por: [Nombre]
+#### Refactorización realizada - Hecho por: Adrián Varea Fernández
 
 ```java
-// Refactorización: Encapsulación de validación de precisión
-private void validateMoneyPrecision(double amount) {
-    // Validamos que el monto tenga sentido financiero antes de operar
-    if (Double.isNaN(amount) || Double.isInfinite(amount)) {
-        throw new InvalidAmountException(ERROR_AMOUNT_MUST_BE_POSITIVE);
+// Validation of amount
+    private void validateMoneyPrecision(double amount) {
+        if (Double.isNaN(amount) || Double.isInfinite(amount)) {
+            throw new InvalidAmountException(ERROR_AMOUNT_MUST_BE_POSITIVE);
+        }
     }
-}
 ```
 
 Explicación de la solución: Debido a la restricción de no crear nuevas clases como Money.java, se han implementado métodos de validación de tipos en el servicio para mitigar los riesgos asociados al uso de double y asegurar que los valores sean finitos y válidos para operaciones bancarias.

@@ -129,6 +129,13 @@ public class AccountService {
         
     }
 
+    // Validation of amount
+    private void validateMoneyPrecision(double amount) {
+        if (Double.isNaN(amount) || Double.isInfinite(amount)) {
+            throw new InvalidAmountException(ERROR_AMOUNT_MUST_BE_POSITIVE);
+        }
+    }
+
     /**
      * Quick deposit without description
      */
@@ -144,6 +151,7 @@ public class AccountService {
      */
     @Transactional
     public Account deposit(String accountNumber, double amount, String description) {
+        validateMoneyPrecision(amount);
         if (amount <= 0) {
             throw new InvalidAmountException(ERROR_AMOUNT_MUST_BE_POSITIVE);
         }
@@ -184,6 +192,7 @@ public class AccountService {
 
     @Transactional
     public Account withdraw(String accountNumber, double amount, String description) {
+        validateMoneyPrecision(amount);
         if (amount <= 0) {
             throw new InvalidAmountException(ERROR_AMOUNT_MUST_BE_POSITIVE);
         }
@@ -234,6 +243,8 @@ public class AccountService {
     }
 
     private void validateTransfer(Account sourceAccount, Account destinationAccount, double amount) {
+        validateMoneyPrecision(amount);
+
         // Validate transfer amount to be positive
         if (amount <= 0) throw new IllegalArgumentException(ERROR_AMOUNT_MUST_BE_POSITIVE);
 

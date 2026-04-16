@@ -11,6 +11,9 @@ import org.openqa.selenium.chrome.ChromeDriver;
 import org.openqa.selenium.support.ui.ExpectedConditions;
 import org.openqa.selenium.support.ui.WebDriverWait;
 import org.openqa.selenium.support.ui.Select;
+import org.openqa.selenium.JavascriptExecutor;
+import org.openqa.selenium.interactions.Actions;
+
 
 import java.time.Duration;
 
@@ -124,7 +127,8 @@ public class TransferE2ETest {
      */
     private void fillAndSubmitTransferForm(String fromAccount, String toAccount, String amount) {
         // Seleccionar cuenta origen
-        Select fromAccountSelect = new Select(driver.findElement(By.id("fromAccount")));
+        WebElement fromSelectElement = wait.until(ExpectedConditions.elementToBeClickable(By.id("fromAccount")));
+        Select fromAccountSelect = new Select(fromSelectElement);
         fromAccountSelect.selectByValue(fromAccount);
 
         // Rellenar cuenta destino
@@ -138,7 +142,10 @@ public class TransferE2ETest {
         amountInput.sendKeys(amount);
 
         // Enviar formulario
-        driver.findElement(By.id("transferButton")).click();
+        WebElement button = wait.until(ExpectedConditions.presenceOfElementLocated(By.id("transferButton")));
+        ((JavascriptExecutor) driver).executeScript("arguments[0].scrollIntoView(true);", button);
+        wait.until(ExpectedConditions.elementToBeClickable(button));
+        ((JavascriptExecutor) driver).executeScript("arguments[0].click();", button);
     }
 
     /**
@@ -192,6 +199,15 @@ public class TransferE2ETest {
         }
     }
 
+    private String waitForErrorAlertText() {
+        WebElement errorAlert = wait.until(
+            ExpectedConditions.visibilityOfElementLocated(
+                By.cssSelector("div.alert.alert-danger.alert-dismissible.fade.show[role='alert']")
+            )
+        );
+        return errorAlert.getText().trim();
+    }
+
     /**
      * Obtiene el saldo actual de una cuenta desde el dashboard
      * Navega al dashboard y busca la fila con el número de cuenta
@@ -200,12 +216,11 @@ public class TransferE2ETest {
      */
     private double getAccountBalance(String accountNumber) {
         driver.get(BASE_URL + "/dashboard");
-        wait.until(ExpectedConditions.presenceOfElementLocated(By.xpath("//table | //div[@class='accounts']")));
-
+        
         try {
             // Buscar la fila con el número de cuenta y extraer el saldo
-            WebElement balanceCell = driver.findElement(
-                By.xpath("//tr[contains(., '" + accountNumber + "')]//td[last()]")
+            WebElement balanceCell = wait.until(
+                ExpectedConditions.visibilityOfElementLocated(By.id("balance-" + accountNumber))
             );
             String balanceText = balanceCell.getText();
             
@@ -326,7 +341,7 @@ public class TransferE2ETest {
     }
 
     /**
-     * Hecho por: [NOMBRE DEL AUTOR]
+     * Hecho por: Blas Vita Ramos
      * Caso 3: No se puede transferir a la misma cuenta
      * Given: Usuario admin autenticado
      * When: Intenta transferir a la misma cuenta de origen
@@ -336,15 +351,30 @@ public class TransferE2ETest {
     @DisplayName("3. transferSameAccount_Fail: No se puede transferir a la misma cuenta")
     void transferSameAccount_FailTest() {
         // Given
+        login(MARIA_USERNAME, MARIA_PASSWORD);
+        double initialBalance = getAccountBalance(MARIA_ACCOUNT_1);
+
+        navigateToTransferPage();
 
         // When (Intentar transferir a la misma cuenta)
+        fillAndSubmitTransferForm(MARIA_ACCOUNT_1, MARIA_ACCOUNT_1, "1");
 
-        // Then (Comprobar error)
+        // Then (Comprobar error y que no hubo transferencia)
+        String errorText = waitForErrorAlertText();
+        assertTrue(
+            errorText.contains("Cannot transfer to same account"),
+            "El texto del error debe corresponder a misma cuenta. Obtenido: " + errorText
+        );
 
+        double finalBalance = getAccountBalance(MARIA_ACCOUNT_1);
+        assertEquals(initialBalance, finalBalance, 0.01,
+            "No debe cambiar el saldo si la transferencia falla");
+
+        logout();
     }
 
     /**
-     * Hecho por: [NOMBRE DEL AUTOR]
+     * Hecho por: Blas Vita Ramos
      * Caso 4: No se puede transferir sin saldo suficiente
      * Given: Usuario admin autenticado
      * When: Intenta transferir una cantidad superior al saldo disponible
@@ -354,15 +384,36 @@ public class TransferE2ETest {
     @DisplayName("4. transferInsufficientBalance_Fail: No se puede transferir sin saldo suficiente")
     void transferInsufficientBalance_FailTest() {
         // Given
+        login(MARIA_USERNAME, MARIA_PASSWORD);
+        double initialSourceBalance = getAccountBalance(MARIA_ACCOUNT_1);
+        double initialDestinationBalance = getAccountBalance(MARIA_ACCOUNT_2);
 
-        // When (Intentar transferir cantidad muy grande)
+        navigateToTransferPage();
 
-        // Then (Comprobar error de saldo insuficiente)
+        // When (Intentar transferir una cantidad superior al saldo disponible)
+        String invalidAmount = String.valueOf(initialSourceBalance + 1);
+        fillAndSubmitTransferForm(MARIA_ACCOUNT_1, MARIA_ACCOUNT_2, invalidAmount);
 
+        // Then (Comprobar error y que no hubo trasnferencia)
+        String errorText = waitForErrorAlertText();
+        assertTrue(
+            errorText.contains("Insufficient funds"),
+            "El texto del error debe corresponder a saldo insuficiente. Obtenido: " + errorText
+        );
+
+        double finalSourceBalance = getAccountBalance(MARIA_ACCOUNT_1);
+        double finalDestinationBalance = getAccountBalance(MARIA_ACCOUNT_2);
+
+        assertEquals(initialSourceBalance, finalSourceBalance, 0.01,
+            "El saldo de origen no debe cambiar si la transferencia falla");
+        assertEquals(initialDestinationBalance, finalDestinationBalance, 0.01,
+            "El saldo de destino no debe cambiar si la transferencia falla");
+
+        logout();
     }
 
     /**
-     * Hecho por: [NOMBRE DEL AUTOR]
+     * Hecho por: Blas Vita Ramos
      * Caso 5: No se puede transferir cantidad negativa
      * Given: Usuario admin autenticado
      * When: Intenta transferir cantidad negativa
@@ -372,11 +423,31 @@ public class TransferE2ETest {
     @DisplayName("5. transferNegativeAmount_Fail: No se puede transferir cantidad negativa")
     void transferNegativeAmount_FailTest() {
         // Given
+        login(MARIA_USERNAME, MARIA_PASSWORD);
+        double initialSourceBalance = getAccountBalance(MARIA_ACCOUNT_1);
+        double initialDestinationBalance = getAccountBalance(MARIA_ACCOUNT_2);
+
+        navigateToTransferPage();
 
         // When (Intentar transferir cantidad negativa)
+        fillAndSubmitTransferForm(MARIA_ACCOUNT_1, MARIA_ACCOUNT_2, "-1");
 
-        // Then (Comprobar error)
+        // Then (Comprobar error y que no hubo transferencia)
+        String errorText = waitForErrorAlertText();
+        assertTrue(
+            errorText.contains("Amount must be positive"),
+            "El texto del error debe corresponder a cantidad positiva. Obtenido: " + errorText
+        );
 
+        double finalSourceBalance = getAccountBalance(MARIA_ACCOUNT_1);
+        double finalDestinationBalance = getAccountBalance(MARIA_ACCOUNT_2);
+
+        assertEquals(initialSourceBalance, finalSourceBalance, 0.01,
+            "El saldo de origen no debe cambiar si la transferencia falla");
+        assertEquals(initialDestinationBalance, finalDestinationBalance, 0.01,
+            "El saldo de destino no debe cambiar si la transferencia falla");
+
+        logout();
     }
 
     /**

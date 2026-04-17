@@ -36,46 +36,49 @@ import es.codeurjc.service.notifications.SmsNotificationService;
 /* PLAN DE PRUEBAS - AccountService
  * --- Métodos Básicos ---
  * 1. createAccount: Prueba que se genera un número, se asigna el usuario y se guarda.
- * 2. getAccount_Success: Prueba que devuelve la cuenta si existe.
- * 3. getAccount_NotFound: Prueba que lanza IllegalArgumentException si no existe.
- * 4. getUserAccounts: Prueba que devuelve la lista de cuentas del usuario.
- * 5. getBalance: Prueba que devuelve el saldo correcto.
- * 6. getTransactions: Prueba que devuelve la lista de transacciones ordenada.
- * 7. rm_Success: Prueba que elimina la cuenta si el saldo es 0.
- * 8. rm_HasBalance: Prueba que lanza IllegalArgumentException si el saldo != 0.
+ * 2. createAccount_Collision: Prueba que si falla 5 veces la generación, lanza excepción.
+ * 3. getAccount_Success: Prueba que devuelve la cuenta si existe.
+ * 4. getAccount_NotFound: Prueba que lanza IllegalArgumentException si no existe.
+ * 5. getUserAccounts: Prueba que devuelve la lista de cuentas del usuario.
+ * 6. getBalance: Prueba que devuelve el saldo correcto.
+ * 7. getTransactions: Prueba que devuelve la lista de transacciones ordenada.
+ * 8. rm_Success: Prueba que elimina la cuenta si el saldo es 0.
+ * 9. rm_HasBalance: Prueba que lanza IllegalArgumentException si el saldo != 0.
  * --- Deposit (Con descripción) ---
- * 9. deposit_ZeroAmount: Lanza excepción si amount == 0.
- * 10. deposit_NegativeAmount: Lanza excepción si amount < 0.
- * 11. deposit_Exceeds10k: Lanza excepción si amount > 10000.
- * 12. deposit_Exceeds50k: [INACCESSIBLE] Documentado. Nunca se llega aquí porque salta en > 10000.
- * 13. deposit_Success_Email: Ingreso válido y notificación por EMAIL.
- * 14. deposit_Success_Sms: Ingreso válido y notificación por SMS.
- * 15. deposit_Success_NoNotif: Ingreso válido donde no entra ni en EMAIL ni en SMS.
+ * 10. deposit_ZeroAmount: Lanza excepción si amount == 0.
+ * 11. deposit_NegativeAmount: Lanza excepción si amount < 0.
+ * 12. validateMoneyPrecision: Lanza excepción si el importe es NaN o Infinito.
+ * 13. deposit_Exceeds10k: Lanza excepción si amount > 10000.
+ * 14. deposit_Exceeds50k: [INACCESSIBLE] Documentado. Nunca se llega aquí porque salta en > 10000.
+ * 15. deposit_Success_Email: Ingreso válido y notificación por EMAIL.
+ * 16. deposit_Success_Sms: Ingreso válido y notificación por SMS.
+ * 17. deposit_Success_NoNotif: Ingreso válido donde no entra ni en EMAIL ni en SMS.
+ * 18. sendNotification_NullType: No hace nada si el tipo de notificación es null (Cobertura de rama).
  * --- Quick Deposit (Sin descripción) ---
- * 16. quickDeposit_ZeroAmount: Lanza excepción si amount == 0.
- * 17. quickDeposit_NegativeAmount: Lanza excepción si amount < 0.
- * 18. quickDeposit_Exceeds10k: Lanza excepción si amount > 10000.
- * 19. quickDeposit_Exceeds50k: [INACCESSIBLE] Documentado. Mismo caso que el anterior.
- * 20. quickDeposit_Success_Email: Ingreso válido y notificación por EMAIL.
- * 21. quickDeposit_Success_Sms: Ingreso válido y notificación por SMS.
- * 22. quickDeposit_Success_NoNotif: Ingreso válido sin notificación.
- * 23. quickDeposit_DefaultDescription: Verifica que el ingreso rápido guarda "Quick deposit" como descripción por defecto. * 
+ * 19. quickDeposit_ZeroAmount: Lanza excepción si amount == 0.
+ * 20. quickDeposit_NegativeAmount: Lanza excepción si amount < 0.
+ * 21. quickDeposit_Exceeds10k: Lanza excepción si amount > 10000.
+ * 22. quickDeposit_Exceeds50k: [INACCESSIBLE] Documentado. Mismo caso que el anterior.
+ * 23. quickDeposit_Success_Email: Ingreso válido y notificación por EMAIL.
+ * 24. quickDeposit_Success_Sms: Ingreso válido y notificación por SMS.
+ * 25. quickDeposit_Success_NoNotif: Ingreso válido sin notificación.
+ * 26. quickDeposit_DefaultDescription: Verifica que el ingreso rápido guarda "Quick deposit" como descripción por defecto.
  * --- Withdraw ---
- * 24. withdraw_NegativeOrZero: Lanza excepción si amount <= 0.
- * 25. withdraw_Exceeds5k: Lanza excepción si amount > 5000.
- * 26. withdraw_InsufficientFunds: Lanza excepción si saldo < amount.
- * 27. withdraw_Success_Email: Retiro válido y notificación EMAIL.
- * 28. withdraw_Success_Sms: Retiro válido y notificación SMS.
- * 29. withdraw_Success_NoNotif: Retiro válido sin notificación.
- * 30. withdraw_ExactBalance: Retiro válido por el saldo exacto, dejando la cuenta a 0.
+ * 27. withdraw_NegativeOrZero: Lanza excepción si amount <= 0.
+ * 28. withdraw_Exceeds5k: Lanza excepción si amount > 5000.
+ * 29. withdraw_InsufficientFunds: Lanza excepción si saldo < amount.
+ * 30. withdraw_Success_Email: Retiro válido y notificación EMAIL.
+ * 31. withdraw_Success_Sms: Retiro válido y notificación SMS.
+ * 32. withdraw_Success_NoNotif: Retiro válido sin notificación.
+ * 33. withdraw_ExactBalance: Retiro válido por el saldo exacto, dejando la cuenta a 0.
  * --- Transfer ---
- * 31. transfer_NegativeOrZero: Lanza excepción si amount <= 0.
- * 32. transfer_Exceeds20k: Lanza excepción si amount > 20000.
- * 33. transfer_SameAccount: Lanza excepción si origen y destino son la misma cuenta (Referencia ==).
- * 34. transfer_InsufficientFunds: Lanza excepción si saldo origen < amount.
- * 35. transfer_Success_Emails: Transferencia válida. Remitente EMAIL, Destinatario EMAIL.
- * 36. transfer_Success_Sms: Transferencia válida. Remitente SMS, Destinatario SMS.
- * 37. transfer_Success_NoNotifs: Transferencia válida sin notificaciones configuradas.
+ * 34. transfer_NegativeOrZero: Lanza excepción si amount <= 0.
+ * 35. transfer_Exceeds20k: Lanza excepción si amount > 20000.
+ * 36. transfer_SameAccount: Lanza excepción si origen y destino son la misma cuenta (Referencia ==).
+ * 37. transfer_InsufficientFunds: Lanza excepción si saldo origen < amount.
+ * 38. transfer_Success_Emails: Transferencia válida. Remitente EMAIL, Destinatario EMAIL.
+ * 39. transfer_Success_Sms: Transferencia válida. Remitente SMS, Destinatario SMS.
+ * 40. transfer_Success_NoNotifs: Transferencia válida sin notificaciones configuradas.
  */
 
 @ExtendWith(MockitoExtension.class)
@@ -124,7 +127,26 @@ public class AccountServiceTest {
 
     // Hecho por: Raúl Tejada Merinero
     @Test
-    @DisplayName("2. getAccount_Success: Prueba que devuelve la cuenta si existe")
+    @DisplayName("2. createAccount_Collision: Prueba que si falla 5 veces la generación, lanza excepción")
+    void createAccount_CollisionTest() {
+        // Given
+        User mockUser = new User("Ana", "Pass123", "USER");
+        // Configuramos el mock para que SIEMPRE encuentre una cuenta (colisión)
+        when(randomService.nextInt(anyInt())).thenReturn(123456);
+        when(accountRepository.findByAccountNumber(anyString())).thenReturn(Optional.of(new Account()));
+
+        // When & Then
+        assertThrows(AccountService.AccountNumberGenerationException.class, () -> {
+            accountService.createAccount(mockUser, Account.AccountType.CHECKING);
+        });
+        
+        // Verificamos que lo intentó 5 veces (el máximo configurado)
+        verify(accountRepository, times(5)).findByAccountNumber(anyString());
+    }
+
+    // Hecho por: Raúl Tejada Merinero
+    @Test
+    @DisplayName("3. getAccount_Success: Prueba que devuelve la cuenta si existe")
     void getAccount_SuccessTest() {
         // Given (Configurar accountRepository.findByAccountNumber para que devuelva un Optional con cuenta)
         Account mockAccount = new Account("ES12345", Account.AccountType.SAVINGS, 100);
@@ -141,7 +163,7 @@ public class AccountServiceTest {
 
     // Hecho por: Raúl Tejada Merinero
     @Test
-    @DisplayName("3. getAccount_NotFound: Prueba que lanza IllegalArgumentException si no existe")
+    @DisplayName("4. getAccount_NotFound: Prueba que lanza IllegalArgumentException si no existe")
     void getAccount_NotFoundTest() {
         // Given (Configurar accountRepository.findByAccountNumber para que devuelva Optional.empty())
         when(accountRepository.findByAccountNumber("ES99999")).thenReturn(Optional.empty());
@@ -157,7 +179,7 @@ public class AccountServiceTest {
 
     // Hecho por: Adrián Villalba Cuello de Oro
     @Test
-    @DisplayName("4. getUserAccounts: Prueba que devuelve la lista de cuentas del usuario")
+    @DisplayName("5. getUserAccounts: Prueba que devuelve la lista de cuentas del usuario")
     void getUserAccountsTest() {
         // Given (Preparar un User y configurar accountRepository.findByUser para devolver una lista)
         User mockUser = new User("Ana", "Pass123", "USER");
@@ -176,7 +198,7 @@ public class AccountServiceTest {
 
     // Hecho por: Adrián Villalba Cuello de Oro
     @Test
-    @DisplayName("5. getBalance: Prueba que devuelve el saldo correcto")
+    @DisplayName("6. getBalance: Prueba que devuelve el saldo correcto")
     void getBalanceTest() {
         // Given (Configurar accountRepository.findByAccountNumber para devolver una cuenta con saldo X)
         Account mockAccount = new Account();
@@ -196,7 +218,7 @@ public class AccountServiceTest {
 
     // Hecho por: Gonzalo
     @Test
-    @DisplayName("6. getTransactions: Prueba que devuelve la lista de transacciones ordenada")
+    @DisplayName("7. getTransactions: Prueba que devuelve la lista de transacciones ordenada")
     void getTransactionsTest() {
         // Given (Preparar cuenta y configurar transactionRepository.findByAccountOrderByTimestampDesc)
         Account account = new Account("ES12345", Account.AccountType.SAVINGS, 100);
@@ -216,7 +238,7 @@ public class AccountServiceTest {
 
     // Hecho por: Gonzalo
     @Test
-    @DisplayName("7. rm_Success: Prueba que elimina la cuenta si el saldo es 0")
+    @DisplayName("8. rm_Success: Prueba que elimina la cuenta si el saldo es 0")
     void rm_SuccessTest() {
         // Given (Configurar cuenta con saldo 0 y accountRepository.findByAccountNumber)
         Account account = new Account("ES12345", Account.AccountType.SAVINGS, 0);
@@ -232,7 +254,7 @@ public class AccountServiceTest {
 
     // Hecho por: Adrián Villalba Cuello de Oro
     @Test
-    @DisplayName("8. rm_HasBalance: Prueba que lanza IllegalArgumentException si el saldo != 0")
+    @DisplayName("9. rm_HasBalance: Prueba que lanza IllegalArgumentException si el saldo != 0")
     void rm_HasBalanceTest() {
         // Given (Configurar cuenta con saldo mayor a 0 y accountRepository.findByAccountNumber)
         Account mockAccount = new Account();
@@ -255,7 +277,7 @@ public class AccountServiceTest {
 
     // Hecho por: Adrián Villalba Cuello de Oro
     @Test
-    @DisplayName("9. deposit_ZeroAmount: Lanza excepción si amount == 0")
+    @DisplayName("10. deposit_ZeroAmount: Lanza excepción si amount == 0")
     void deposit_ZeroAmountTest() {
         // Given (No hacen falta mocks aquí, solo preparar variables: amount = 0)
 
@@ -271,7 +293,7 @@ public class AccountServiceTest {
 
     // Hecho por: Raúl Tejada Merinero
     @Test
-    @DisplayName("10. deposit_NegativeAmount: Lanza excepción si amount < 0")
+    @DisplayName("11. deposit_NegativeAmount: Lanza excepción si amount < 0")
     void deposit_NegativeAmountTest() {
         // Given (No hacen falta mocks, preparar variables: amount = -50)
 
@@ -285,9 +307,24 @@ public class AccountServiceTest {
 
     }
 
+    // Hecho por: Raúl Tejada Merinero
+    @Test
+    @DisplayName("12. validateMoneyPrecision: Lanza excepción si el importe es NaN o Infinito")
+    void validateMoneyPrecision_SpecialValuesTest() {
+        // Probar con NaN
+        assertThrows(AccountService.InvalidAmountException.class, () -> {
+            accountService.deposit("ES123", Double.NaN);
+        });
+        
+        // Probar con Infinito
+        assertThrows(AccountService.InvalidAmountException.class, () -> {
+            accountService.withdraw("ES123", Double.POSITIVE_INFINITY, "test");
+        });
+    }
+
     // Hecho por: Gonzalo
     @Test
-    @DisplayName("11. deposit_Exceeds10k: Lanza excepción si amount > 10000")
+    @DisplayName("13. deposit_Exceeds10k: Lanza excepción si amount > 10000")
     void deposit_Exceeds10kTest() {
         // Given (No hacen falta mocks, preparar variables: amount = 15000)
         double amount = 15000.0;
@@ -303,7 +340,7 @@ public class AccountServiceTest {
 
     // Hecho por: Gonzalo
     @Test
-    @DisplayName("12. deposit_Exceeds50k: [INACCESSIBLE] La rama de > 50000 nunca se alcanza porque salta en 10000")
+    @DisplayName("14. deposit_Exceeds50k: [INACCESSIBLE] La rama de > 50000 nunca se alcanza porque salta en 10000")
     void deposit_Exceeds50kTest() {
         // Given (Comentar que esta rama es inalcanzable, preparar amount = 60000)
         double amount = 60000.0;
@@ -322,7 +359,7 @@ public class AccountServiceTest {
 
     // Hecho por: Blas
     @Test
-    @DisplayName("13. deposit_Success_Email: Ingreso válido y notificación por EMAIL")
+    @DisplayName("15. deposit_Success_Email: Ingreso válido y notificación por EMAIL")
     void deposit_Success_EmailTest() {
         // Given (Configurar User con NotificationType.EMAIL, configurar Mocks de BD)
         User user = new User();
@@ -357,7 +394,7 @@ public class AccountServiceTest {
 
     // Hecho por: Blas
     @Test
-    @DisplayName("14. deposit_Success_Sms: Ingreso válido y notificación por SMS")
+    @DisplayName("16. deposit_Success_Sms: Ingreso válido y notificación por SMS")
     void deposit_Success_SmsTest() {
         // Given (Configurar User con NotificationType.SMS, configurar Mocks de BD)
         User user = new User();
@@ -391,7 +428,7 @@ public class AccountServiceTest {
 
     // Hecho por: Raúl Tejada Merinero
     @Test
-    @DisplayName("15. deposit_Success_NoNotif: Ingreso válido donde no entra ni en EMAIL ni en SMS")
+    @DisplayName("17. deposit_Success_NoNotif: Ingreso válido donde no entra ni en EMAIL ni en SMS")
     void deposit_Success_NoNotifTest() {
         // Given (Configurar User con NotificationType nulo o distinto, configurar Mocks de BD)
         User user = new User();
@@ -412,9 +449,29 @@ public class AccountServiceTest {
         verifyNoInteractions(smsService);   // Verifica que NO se mandó SMS
     }
 
+    // Hecho por: Raúl Tejada Merinero
+    @Test
+    @DisplayName("18. sendNotification_NullType: No hace nada si el tipo de notificación es null")
+    void sendNotification_NullTypeTest() {
+        // Given
+        User user = new User();
+        user.setNotificationType(null); // Caso null
+        Account account = new Account("ES123", Account.AccountType.CHECKING, 100);
+        account.setUser(user);
+        when(accountRepository.findByAccountNumber("ES123")).thenReturn(Optional.of(account));
+        when(accountRepository.save(any(Account.class))).thenReturn(account);
+
+        // When
+        accountService.deposit("ES123", 50);
+
+        // Then
+        // Si el test pasa sin NullPointerException y no llama a los servicios, la rama está cubierta
+        verifyNoInteractions(emailService, smsService);
+    }
+
     // Hecho por: Gonzalo
     @Test
-    @DisplayName("16. quickDeposit_ZeroAmount: Lanza excepción si amount == 0")
+    @DisplayName("19. quickDeposit_ZeroAmount: Lanza excepción si amount == 0")
     void quickDeposit_ZeroAmountTest() {
         // Given (Preparar variables: amount = 0, sin descripción)
         double amount = 0.0;
@@ -430,7 +487,7 @@ public class AccountServiceTest {
 
     // Hecho por: Gonzalo
     @Test
-    @DisplayName("17. quickDeposit_NegativeAmount: Lanza excepción si amount < 0")
+    @DisplayName("20. quickDeposit_NegativeAmount: Lanza excepción si amount < 0")
     void quickDeposit_NegativeAmountTest() {
         // Given (Preparar variables: amount = -10, sin descripción)
         double amount = -10.0;
@@ -446,7 +503,7 @@ public class AccountServiceTest {
 
     // Hecho por: Gonzalo
     @Test
-    @DisplayName("18. quickDeposit_Exceeds10k: Lanza excepción si amount > 10000")
+    @DisplayName("21. quickDeposit_Exceeds10k: Lanza excepción si amount > 10000")
     void quickDeposit_Exceeds10kTest() {
         // Given (Preparar variables: amount = 20000, sin descripción)
         double amount = 20000.0;
@@ -462,7 +519,7 @@ public class AccountServiceTest {
 
     // Hecho por: Blas
     @Test
-    @DisplayName("19. quickDeposit_Exceeds50k: [INACCESSIBLE] Rama inalcanzable")
+    @DisplayName("22. quickDeposit_Exceeds50k: [INACCESSIBLE] Rama inalcanzable")
     void quickDeposit_Exceeds50kTest() {
         // Given (Comentar que esta rama es inalcanzable igual que la 12)
         double depositAmount = 50001.0;
@@ -483,7 +540,7 @@ public class AccountServiceTest {
 
     // Hecho por: Blas
     @Test
-    @DisplayName("20. quickDeposit_Success_Email: Ingreso rápido y notificación por EMAIL")
+    @DisplayName("23. quickDeposit_Success_Email: Ingreso rápido y notificación por EMAIL")
     void quickDeposit_Success_EmailTest() {
         // Given (Configurar User con EMAIL, configurar Mocks de BD)
         User user = new User();
@@ -516,7 +573,7 @@ public class AccountServiceTest {
 
     // Hecho por: Blas
     @Test
-    @DisplayName("21. quickDeposit_Success_Sms: Ingreso rápido y notificación por SMS")
+    @DisplayName("24. quickDeposit_Success_Sms: Ingreso rápido y notificación por SMS")
     void quickDeposit_Success_SmsTest() {
         // Given (Configurar User con SMS, configurar Mocks de BD)
         User user = new User();
@@ -549,7 +606,7 @@ public class AccountServiceTest {
 
     // Hecho por: Blas
     @Test
-    @DisplayName("22. quickDeposit_Success_NoNotif: Ingreso rápido sin notificación")
+    @DisplayName("25. quickDeposit_Success_NoNotif: Ingreso rápido sin notificación")
     void quickDeposit_Success_NoNotifTest() {
         // Given (Configurar User sin notificaciones configuradas, configurar Mocks de BD)
         User user = new User();
@@ -576,7 +633,7 @@ public class AccountServiceTest {
 
     // Hecho por: Adrián Varea Fernández
     @Test
-    @DisplayName("23. quickDeposit_DefaultDescription: El ingreso rápido guarda la descripción por defecto")
+    @DisplayName("26. quickDeposit_DefaultDescription: El ingreso rápido guarda la descripción por defecto")
     void quickDeposit_DefaultDescriptionTest() {
         // Given (Cuenta válida y captura de la transacción persistida)
         User user = new User();
@@ -604,7 +661,7 @@ public class AccountServiceTest {
 
     // Hecho por: Adrián Villalba Cuello de Oro
     @Test
-    @DisplayName("24. withdraw_NegativeOrZero: Lanza excepción si amount <= 0")
+    @DisplayName("27. withdraw_NegativeOrZero: Lanza excepción si amount <= 0")
     void withdraw_NegativeOrZeroTest() {
         // Given (Preparar cantidad inválida <= 0)
         String accountNumber = "ES0000123456";
@@ -622,7 +679,7 @@ public class AccountServiceTest {
 
     // Hecho por: Arturo Vinuesa Domínguez
     @Test
-    @DisplayName("25. withdraw_Exceeds5k: Lanza excepción si amount > 5000")
+    @DisplayName("28. withdraw_Exceeds5k: Lanza excepción si amount > 5000")
     void withdraw_Exceeds5kTest() {
         // Given (Preparar cantidad inválida > 5000)
         double amount = 6000.0;
@@ -639,7 +696,7 @@ public class AccountServiceTest {
 
     // Hecho por: Raúl Tejada Merinero
     @Test
-    @DisplayName("26. withdraw_InsufficientFunds: Lanza excepción si saldo < amount")
+    @DisplayName("29. withdraw_InsufficientFunds: Lanza excepción si saldo < amount")
     void withdraw_InsufficientFundsTest() {
         // Given (Configurar Mock de BD para devolver cuenta con saldo menor que el retiro solicitado)
         Account account = new Account("ES123", Account.AccountType.CHECKING, 50); // Solo tiene 50€
@@ -657,7 +714,7 @@ public class AccountServiceTest {
 
     // Hecho por: Arturo Vinuesa Domínguez
     @Test
-    @DisplayName("27. withdraw_Success_Email: Retiro válido y notificación EMAIL")
+    @DisplayName("30. withdraw_Success_Email: Retiro válido y notificación EMAIL")
     void withdraw_Success_EmailTest() {
         // Given (Configurar cuenta con fondos, User con EMAIL, Mocks de BD)
         User user = new User();
@@ -690,7 +747,7 @@ public class AccountServiceTest {
 
     // Hecho por: Blas
     @Test
-    @DisplayName("28. withdraw_Success_Sms: Retiro válido y notificación SMS")
+    @DisplayName("31. withdraw_Success_Sms: Retiro válido y notificación SMS")
     void withdraw_Success_SmsTest() {
         // Given (Configurar cuenta con fondos, User con SMS, Mocks de BD)
         User user = new User();
@@ -723,7 +780,7 @@ public class AccountServiceTest {
 
     // Hecho por: Arturo Vinuesa Domínguez
     @Test
-    @DisplayName("29. withdraw_Success_NoNotif: Retiro válido sin notificación")
+    @DisplayName("32. withdraw_Success_NoNotif: Retiro válido sin notificación")
     void withdraw_Success_NoNotifTest() {
         // Given (Configurar cuenta con fondos, User sin notificación, Mocks de BD)
         User user = new User();
@@ -748,7 +805,7 @@ public class AccountServiceTest {
 
     // Hecho por: Adrián Varea Fernández
     @Test
-    @DisplayName("30. withdraw_ExactBalance: retirar el saldo exacto deja la cuenta a 0")
+    @DisplayName("33. withdraw_ExactBalance: retirar el saldo exacto deja la cuenta a 0")
     void withdraw_ExactBalanceTest() {
         // Given (Cuenta con fondos exactos y sin notificaciones)
         User user = new User();
@@ -776,7 +833,7 @@ public class AccountServiceTest {
 
     // Hecho por: Adrián Villalba Cuello de Oro
     @Test
-    @DisplayName("31. transfer_NegativeOrZero: Lanza excepción si amount <= 0")
+    @DisplayName("34. transfer_NegativeOrZero: Lanza excepción si amount <= 0")
     void transfer_NegativeOrZeroTest() {
         // Given (Preparar amount <= 0)
         String fromAccountNumber = "ES0000123456";
@@ -795,7 +852,7 @@ public class AccountServiceTest {
 
     // Hecho por: Arturo Vinuesa Domínguez
     @Test
-    @DisplayName("32. transfer_Exceeds20k: Lanza excepción si amount > 20000")
+    @DisplayName("35. transfer_Exceeds20k: Lanza excepción si amount > 20000")
     void transfer_Exceeds20kTest() {
         // Given (Preparar amount > 20000)
         double amount = 25000.0;
@@ -812,7 +869,7 @@ public class AccountServiceTest {
 
     // Hecho por: Raúl Tejada Merinero
     @Test
-    @DisplayName("33. transfer_SameAccount: Lanza excepción si origen y destino son la misma cuenta")
+    @DisplayName("36. transfer_SameAccount: Lanza excepción si origen y destino son la misma cuenta")
     void transfer_SameAccountTest() {
         // Given (Mock BD devuelve la misma instancia de cuenta para origen y destino)
         Account account = new Account("ES123", Account.AccountType.CHECKING, 500);
@@ -831,7 +888,7 @@ public class AccountServiceTest {
 
     // Hecho por: Arturo Vinuesa Domínguez
     @Test
-    @DisplayName("34. transfer_InsufficientFunds: Lanza excepción si saldo origen < amount")
+    @DisplayName("37. transfer_InsufficientFunds: Lanza excepción si saldo origen < amount")
     void transfer_InsufficientFundsTest() {
         // Given (Mock BD devuelve cuenta origen sin fondos y cuenta destino normal)
         User user = new User();
@@ -858,7 +915,7 @@ public class AccountServiceTest {
 
     // Hecho por: Arturo Vinuesa Domínguez
     @Test
-    @DisplayName("35. transfer_Success_Emails: Transferencia válida. Remitente EMAIL, Destinatario EMAIL")
+    @DisplayName("38. transfer_Success_Emails: Transferencia válida. Remitente EMAIL, Destinatario EMAIL")
     void transfer_Success_EmailsTest() {
         // Given (Mock BD devuelve cuentas válidas con User en EMAIL)
         User sourceUser = new User();
@@ -901,7 +958,7 @@ public class AccountServiceTest {
 
     // Hecho por: Arturo Vinuesa Domínguez
     @Test
-    @DisplayName("36. transfer_Success_Sms: Transferencia válida. Remitente SMS, Destinatario SMS")
+    @DisplayName("39. transfer_Success_Sms: Transferencia válida. Remitente SMS, Destinatario SMS")
     void transfer_Success_SmsTest() {
         // Given (Mock BD devuelve cuentas válidas con User en SMS)
         User sourceUser = new User();
@@ -943,7 +1000,7 @@ public class AccountServiceTest {
 
     // Hecho por: Raúl Tejada Merinero
     @Test
-    @DisplayName("37. transfer_Success_NoNotifs: Transferencia válida sin notificaciones configuradas")
+    @DisplayName("40. transfer_Success_NoNotifs: Transferencia válida sin notificaciones configuradas")
     void transfer_Success_NoNotifsTest() {
         // Given (Mock BD devuelve cuentas válidas con User sin notificaciones)
         User user = new User();

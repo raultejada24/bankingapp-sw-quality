@@ -24,7 +24,7 @@ Para garantizar una revisión exhaustiva, el equipo ha aplicado un enfoque híbr
 
 **Fase 1 - Detección y Análisis:** Por un lado, hemos ejecutado un escaneo automatizado mediante la plataforma SonarCloud, lo que nos ha proporcionado una visión global de las métricas de mantenibilidad, fiabilidad y seguridad del sistema. Por otro lado, hemos llevado a cabo una inspección manual minuciosa, indispensable para detectar problemas de diseño o violaciones de principios arquitectónicos (como SOLID, DRY o la Ley de Demeter) que las herramientas automáticas suelen pasar por alto.
 
-**Fase 2 - Refactorización:** Se han implementado 11 refactorizaciones siguiendo la estrategia de "Refactorización Integral de Clase Única", consolidando todos los cambios exclusivamente en `AccountService.java` mediante inner classes, métodos privados centralizados y eliminación de código muerto.
+**Fase 2 - Refactorización:** Se han implementado 22 refactorizaciones siguiendo la estrategia de "Refactorización Integral de Clase Única", consolidando todos los cambios exclusivamente en `AccountService.java` mediante inner classes, métodos privados centralizados y eliminación de código muerto.
 
 **Fase 3 - Validación:** Se han ejecutado los tests unitarios para garantizar que los cambios no rompen la funcionalidad existente, manteniendo la máxima seguridad en la refactorización.
 
@@ -476,14 +476,20 @@ Explicación de la solución: Se fusionan las dos validaciones separadas en una 
 ```java
 // 1. Se crea un método privado auxiliar para centralizar la lógica:
 private void sendNotification(Account account, Notification.NotificationType type, String subject, String message) {
-    User user = account.getUser();
-    User.NotificationType notifType = user.getNotificationType();
-    if (notifType == User.NotificationType.EMAIL) {
-        emailService.sendNotification(user, type, subject, message);
-    } else if (notifType == User.NotificationType.SMS) {
-        smsService.sendNotification(user, type, subject, message);
+        User user = account.getUser();
+        User.NotificationType notifType = getNotificationPreference(account);
+
+        if (notifType == null) {
+            return; 
+        }
+
+        if (notifType == User.NotificationType.EMAIL) {
+            emailService.sendNotification(user, type, subject, message);
+        } 
+        else {
+            smsService.sendNotification(user, type, subject, message);
+        }
     }
-}
 
 // 2. Se sustituyen los bloques repetidos por una única llamada (Ejemplo en withdraw):
 @Transactional
@@ -521,6 +527,13 @@ Explicación de la solución: Se crea un método privado `sendNotification()` qu
 ```java
 @Transactional
     public void transfer(String fromAccountNumber, String toAccountNumber, double amount) {
+        validateMoneyPrecision(amount);
+        if (amount <= 0) {
+        throw new InvalidAmountException(ERROR_AMOUNT_MUST_BE_POSITIVE);
+        }
+        if (amount > MAX_TRANSFER_LIMIT) {
+        throw new LimitExceededException(ERROR_MAX_TRANSFER_EXCEEDED);
+        }
         Account sourceAccount = getAccount(fromAccountNumber);
         Account destinationAccount = getAccount(toAccountNumber);
         validateTransfer(sourceAccount, destinationAccount, amount);
@@ -531,11 +544,10 @@ Explicación de la solución: Se crea un método privado `sendNotification()` qu
     }
 
     private void validateTransfer(Account sourceAccount, Account destinationAccount, double amount) {
-        if (amount <= 0) throw new IllegalArgumentException(ERROR_AMOUNT_MUST_BE_POSITIVE);
-        if (amount > MAX_TRANSFER_LIMIT) throw new IllegalArgumentException(ERROR_MAX_TRANSFER_EXCEEDED);
+        validateMoneyPrecision(amount);
         if (sourceAccount.getAccountNumber().equals(destinationAccount.getAccountNumber()))
-            throw new IllegalArgumentException(ERROR_SAME_ACCOUNT_TRANSFER);
-        if (sourceAccount.getBalance() < amount) throw new IllegalArgumentException(ERROR_INSUFFICIENT_FUNDS);
+            throw new SameAccountTransferException(ERROR_SAME_ACCOUNT_TRANSFER);
+        ensureSufficientBalance(sourceAccount, amount);
     }
 
     private void performTransfer(Account sourceAccount, Account destinationAccount, double amount) {
@@ -996,7 +1008,7 @@ La sustitución de números mágicos y literales por constantes, junto con la su
 **Impacto Mensurable:**
 
 - 22 refactorizaciones implementadas exitosamente
-- Tests unitarios pasando (37 tests)
+- Tests unitarios pasando (40 tests)
 - Compilación sin errores
 - Preparación para 100% de cobertura JaCoCo
 
@@ -1022,7 +1034,7 @@ _En esta captura se aprecia que, inicialmente, la clase carecía por completo de
 
 ![Tests](img/testsPassed.png)
 
-_Verificación de éxito: Los 37 tests unitarios pasan correctamente, validando tanto el flujo positivo como la gestión de excepciones. Comando ejecutado: `mvn clean test`_
+_Verificación de éxito: Los 30 tests unitarios pasan correctamente, validando tanto el flujo positivo como la gestión de excepciones. Comando ejecutado: `mvn clean test`_
 
 **Fase 3 - Cobertura Post-Testing:**
 
@@ -1035,37 +1047,6 @@ _Tras la implementación del plan de pruebas, se ha logrado alcanzar el 98% de c
 ![Cobertura Después Refactorización](img/Refactorized.png)
 
 _Resultado esperado: Tras la eliminación de las ramas inalcanzables (Issue 5 - Dead Code), la clase AccountService alcanzará el 100% de cobertura real. Cada línea y condición en el servicio estará debidamente auditada por la suite de pruebas._
-
----
-
-## Resumen de Refactorizaciones Implementadas
-
-### Tabla: Ubicación y Técnica de Cada Issue
-
-| #   | Nombre Issue               | Técnica Aplicada                   | Ubicación           | Estado           | Autor           |
-| --- | -------------------------- | ---------------------------------- | ------------------- | ---------------- | --------------- |
-| 1   | Literales duplicados       | Extracción de Constantes           | AccountService.java | ✅ Implementado  | Raúl            |
-| 2   | Variable sin uso           | Limpieza de Código Muerto          | AccountService.java | ✅ Implementado  | Raúl            |
-| 3   | Comparación strings        | Uso de .equals()                   | AccountService.java | ✅ Implementado  | Raúl            |
-| 4   | Nombres variables          | Renombrado Semántico               | AccountService.java | ✅ Implementado  | Raúl            |
-| 5   | Lógica inalcanzable        | Eliminación de Bloque Bloqueado    | AccountService.java | ✅ Implementado  | Raúl            |
-| 6   | Duplicación deposit        | Sobrecarga de Métodos              | AccountService.java | ✅ Implementado  | Raúl            |
-| 7   | Nomenclatura borrado       | Renombrado a deleteAccount         | AccountService.java | ✅ Implementado  | Adrián Villalba |
-| 8   | Magic numbers              | Constantes de Negocio              | AccountService.java | ✅ Impplementado | Gonzalo Zurdo   |
-| 9   | Condicionales redundantes  | Unificación de Operadores (<=)     | AccountService.java | ✅ Sin hacer     | Gonzalo Zurdo   |
-| 10  | Duplicación notificaciones | Método Privado Centralizado        | AccountService.java | ✅ Implementado  | Adrián Villalba |
-| 11  | Long method                | Extract Method (Transfer split)    | AccountService.java | ✅ Implementado  | Blas Vita       |
-| 12  | Literales excepciones      | Centralización de Errores          | AccountService.java | ✅ Implementado  | Gonzalo Zurdo   |
-| 13  | Excepciones genéricas      | Clases Estáticas Internas          | AccountService.java | ✅ Implementado  | Arturo Vinuesa  |
-| 14  | Ley de Demeter             | Encapsulación de Navegación        | AccountService.java | ✅ Implementado  | Blas Vita       |
-| 15  | Validación duplicada       | Método ensureSufficientBalance     | AccountService.java | ✅ Implementado  | Blas Vita       |
-| 16  | Data Clumps                | Simplificación de Parámetros       | AccountService.java | ✅ Implementado  | Adrián Villalba |
-| 17  | Feature Envy               | Delegación de Validación           | AccountService.java | ✅ Implementado  | Gonzalo Zurdo   |
-| 18  | Clean Architecture         | Abstracción de Notificación        | AccountService.java | ✅ Implementado  | Adrián Villalba |
-| 19  | Paginación                 | Limitación de Stream (limit)       | AccountService.java | ✅ Implementado  | Arturo Vinuesa  |
-| 20  | Default case               | Inserción de Clausura default      | AccountService.java | ✅ Implementado  | Adrián Villalba |
-| 21  | Validación unicidad        | Comprobación exists en BD          | AccountService.java | ✅ Implementado  | Arturo Vinuesa  |
-| 22  | Primitive Obsession        | Validación de Precisión Financiera | AccountService.java | ✅ Implementado  | Adrián Varea    |
 
 ---
 

@@ -37,11 +37,11 @@ public class AccountService {
     private static final String ERROR_ACCOUNT_NOT_FOUND = "Account not found";
     private static final String ERROR_NON_ZERO_BALANCE = "Cannot delete account with non-zero balance";
     private static final String ERROR_ACCOUNT_NUMBER_GENERATION_FAILED = "Could not generate unique account number";
+    private static final String WITHDRAWAL_CONFIRMATION_SUBJECT = "Withdrawal Confirmation";
     private static final String TRANSFER_SENT_SUBJECT = "Transfer Sent";
     private static final String TRANSFER_RECEIVED_SUBJECT = "Transfer Received";
     private static final String TRANSFER_SENT_MESSAGE = "Transfer of %.2f EUR to %s. New balance: %.2f EUR";
     private static final String TRANSFER_RECEIVED_MESSAGE = "Transfer of %.2f EUR from %s. New balance: %.2f EUR";
-
 
     private final AccountRepository accountRepository;
     private final TransactionRepository transactionRepository;
@@ -126,7 +126,7 @@ public class AccountService {
             default:
                 throw new UnsupportedOperationException("Unsupported notification type: " + notifType);
         }
-        
+
     }
 
     // Validation of amount
@@ -220,7 +220,7 @@ public class AccountService {
         sendNotification(
                 account,
                 Notification.NotificationType.WITHDRAWAL,
-                "Withdrawal Confirmation",
+                WITHDRAWAL_CONFIRMATION_SUBJECT,
                 String.format("Withdrawal of %.2f EUR. New balance: %.2f EUR", amount, account.getBalance()));
 
         return savedAccount;
@@ -244,35 +244,36 @@ public class AccountService {
 
     private void validateTransfer(Account sourceAccount, Account destinationAccount, double amount) {
         validateMoneyPrecision(amount);
-
-        // Validate transfer amount to be positive
-        if (amount <= 0) throw new IllegalArgumentException(ERROR_AMOUNT_MUST_BE_POSITIVE);
-
-        // Validate transfer amount to be within limits
-        if (amount > MAX_TRANSFER_LIMIT) throw new IllegalArgumentException(ERROR_MAX_TRANSFER_EXCEEDED);
-
-        // Validate same account
+        if (amount <= 0)
+            throw new InvalidAmountException(ERROR_AMOUNT_MUST_BE_POSITIVE);
+        if (amount > MAX_TRANSFER_LIMIT)
+            throw new LimitExceededException(ERROR_MAX_TRANSFER_EXCEEDED);
         if (sourceAccount.getAccountNumber().equals(destinationAccount.getAccountNumber()))
-            throw new IllegalArgumentException(ERROR_SAME_ACCOUNT_TRANSFER);
-
-        // Check balance
+            throw new SameAccountTransferException(ERROR_SAME_ACCOUNT_TRANSFER);
         ensureSufficientBalance(sourceAccount, amount);
     }
 
+    // Issue 17: Tell, Don't Ask - encapsulates balance check + withdrawal
+    private void executeWithdrawal(Account account, double amount) {
+        ensureSufficientBalance(account, amount);
+        account.withdraw(amount);
+    }
+
     private void performTransfer(Account sourceAccount, Account destinationAccount, double amount) {
-        sourceAccount.withdraw(amount);
+        executeWithdrawal(sourceAccount, amount);
         destinationAccount.deposit(amount);
         accountRepository.save(sourceAccount);
         accountRepository.save(destinationAccount);
     }
 
-    private void recordTransfer (Account sourceAccount, Account destinationAccount,
-                                 String fromAccountNumber, String toAccountNumber, double amount) {
+    private void recordTransfer(Account sourceAccount, Account destinationAccount,
+            String fromAccountNumber, String toAccountNumber, double amount) {
         Transaction sentTransaction = new Transaction(sourceAccount,
                 Transaction.TransactionType.TRANSFER_SENT,
                 amount,
                 "Transfer to " + toAccountNumber);
         sentTransaction.setDestinationAccountNumber(toAccountNumber);
+        transactionRepository.save(sentTransaction);
 
         Transaction receivedTransaction = new Transaction(destinationAccount,
                 Transaction.TransactionType.TRANSFER_RECEIVED,
@@ -283,15 +284,17 @@ public class AccountService {
     }
 
     private void notifyTransfer(Account sourceAccount, Account destinationAccount,
-                                String toAccountNumber, String fromAccountNumber, double amount) {
+            String toAccountNumber, String fromAccountNumber, double amount) {
 
         // Notificación al que ENVÍA la transferencia
-        sendNotification(sourceAccount, Notification.NotificationType.TRANSFER, TRANSFER_SENT_SUBJECT, String.format(TRANSFER_SENT_MESSAGE, amount, toAccountNumber,
-                sourceAccount.getBalance()));
+        sendNotification(sourceAccount, Notification.NotificationType.TRANSFER, TRANSFER_SENT_SUBJECT,
+                String.format(TRANSFER_SENT_MESSAGE, amount, toAccountNumber,
+                        sourceAccount.getBalance()));
 
         // Notificación al que RECIBE la transferencia
-        sendNotification(destinationAccount, Notification.NotificationType.TRANSFER, TRANSFER_RECEIVED_SUBJECT, String.format(TRANSFER_RECEIVED_MESSAGE, amount, fromAccountNumber,
-                destinationAccount.getBalance()));
+        sendNotification(destinationAccount, Notification.NotificationType.TRANSFER, TRANSFER_RECEIVED_SUBJECT,
+                String.format(TRANSFER_RECEIVED_MESSAGE, amount, fromAccountNumber,
+                        destinationAccount.getBalance()));
     }
 
     /**

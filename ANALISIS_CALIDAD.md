@@ -1034,7 +1034,7 @@ _En esta captura se aprecia que, inicialmente, la clase carecía por completo de
 
 ![Tests](img/testsPassed.png)
 
-_Verificación de éxito: Los 30 tests unitarios pasan correctamente, validando tanto el flujo positivo como la gestión de excepciones. Comando ejecutado: `mvn clean test`_
+_Verificación de éxito: Los 40 tests unitarios pasan correctamente, validando tanto el flujo positivo como la gestión de excepciones. Comando ejecutado: `mvn clean test`_
 
 **Fase 3 - Cobertura Post-Testing:**
 

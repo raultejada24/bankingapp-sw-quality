@@ -8,6 +8,7 @@ import org.openqa.selenium.By;
 import org.openqa.selenium.WebDriver;
 import org.openqa.selenium.WebElement;
 import org.openqa.selenium.chrome.ChromeDriver;
+import org.openqa.selenium.chrome.ChromeOptions;
 import org.openqa.selenium.support.ui.ExpectedConditions;
 import org.openqa.selenium.support.ui.WebDriverWait;
 import org.openqa.selenium.support.ui.Select;
@@ -15,6 +16,8 @@ import org.openqa.selenium.JavascriptExecutor;
 import org.openqa.selenium.interactions.Actions;
 
 import java.time.Duration;
+import java.util.HashMap;
+import java.util.Map;
 
 import static org.junit.jupiter.api.Assertions.*;
 
@@ -68,8 +71,16 @@ public class TransferE2ETest {
 
     @BeforeEach
     void setUp() {
-        // Inicializar ChromeDriver
-        driver = new ChromeDriver();
+        // Desactivar gestor de contraseñas y advertencias para evitar que roben el foco
+        ChromeOptions options = new ChromeOptions();
+        options.addArguments("--incognito");
+        Map<String, Object> prefs = new HashMap<>();
+        prefs.put("credentials_enable_service", false);
+        prefs.put("profile.password_manager_enabled", false);
+        options.setExperimentalOption("prefs", prefs);
+
+        // Inicializar ChromeDriver con opciones
+        driver = new ChromeDriver(options);
         wait = new WebDriverWait(driver, Duration.ofSeconds(TIMEOUT_SECONDS));
         driver.manage().timeouts().pageLoadTimeout(Duration.ofSeconds(TIMEOUT_SECONDS));
     }
@@ -136,12 +147,12 @@ public class TransferE2ETest {
         fromAccountSelect.selectByValue(fromAccount);
 
         // Rellenar cuenta destino
-        WebElement toAccountInput = driver.findElement(By.id("toAccount"));
+        WebElement toAccountInput = wait.until(ExpectedConditions.elementToBeClickable(By.id("toAccount")));
         toAccountInput.clear();
         toAccountInput.sendKeys(toAccount);
 
         // Rellenar monto
-        WebElement amountInput = driver.findElement(By.id("amount"));
+        WebElement amountInput = wait.until(ExpectedConditions.elementToBeClickable(By.id("amount")));
         amountInput.clear();
         amountInput.sendKeys(amount);
 
@@ -488,7 +499,7 @@ public class TransferE2ETest {
     }
 
     /**
-     * Hecho por: [NOMBRE DEL AUTOR]
+     * Hecho por: Gonzalo Andrés Zurdo
      * Caso 7: No se puede transferir a cuenta inexistente
      * Given: Usuario admin autenticado
      * When: Intenta transferir a un número de cuenta que no existe
@@ -498,15 +509,29 @@ public class TransferE2ETest {
     @DisplayName("7. transferInvalidAccount_Fail: No se puede transferir a cuenta inexistente")
     void transferInvalidAccount_FailTest() {
         // Given
+        login(MARIA_USERNAME, MARIA_PASSWORD);
+        double initialBalance = getAccountBalance(MARIA_ACCOUNT_1);
+
+        navigateToTransferPage();
 
         // When (Intentar transferir a cuenta inexistente)
+        fillAndSubmitTransferForm(MARIA_ACCOUNT_1, "ES9999999999", "100");
 
-        // Then (Comprobar error)
+        // Then (Comprobar error y que el saldo no cambió)
+        String errorText = waitForErrorAlertText();
+        assertTrue(
+                errorText.contains("Account not found"),
+                "El texto del error debe indicar que la cuenta no existe. Obtenido: " + errorText);
 
+        double finalBalance = getAccountBalance(MARIA_ACCOUNT_1);
+        assertEquals(initialBalance, finalBalance, 0.01,
+                "El saldo no debe cambiar si la cuenta destino no existe");
+
+        logout();
     }
 
     /**
-     * Hecho por: [NOMBRE DEL AUTOR]
+     * Hecho por: Gonzalo Andrés Zurdo
      * Caso 8: No se puede transferir cantidad cero
      * Given: Usuario admin autenticado
      * When: Intenta transferir €0
@@ -516,10 +541,29 @@ public class TransferE2ETest {
     @DisplayName("8. transferZeroAmount_Fail: No se puede transferir €0")
     void transferZeroAmount_FailTest() {
         // Given
+        login(MARIA_USERNAME, MARIA_PASSWORD);
+        double initialSourceBalance = getAccountBalance(MARIA_ACCOUNT_1);
+        double initialDestinationBalance = getAccountBalance(MARIA_ACCOUNT_2);
+
+        navigateToTransferPage();
 
         // When (Intentar transferir 0€)
+        fillAndSubmitTransferForm(MARIA_ACCOUNT_1, MARIA_ACCOUNT_2, "0");
 
         // Then (Comprobar error)
+        String errorText = waitForErrorAlertText();
+        assertTrue(
+                errorText.contains("Amount must be positive"),
+                "El texto del error debe corresponder a cantidad positiva. Obtenido: " + errorText);
 
+        double finalSourceBalance = getAccountBalance(MARIA_ACCOUNT_1);
+        double finalDestinationBalance = getAccountBalance(MARIA_ACCOUNT_2);
+
+        assertEquals(initialSourceBalance, finalSourceBalance, 0.01,
+                "El saldo de origen no debe cambiar si la transferencia falla");
+        assertEquals(initialDestinationBalance, finalDestinationBalance, 0.01,
+                "El saldo de destino no debe cambiar si la transferencia falla");
+
+        logout();
     }
 }

@@ -17,8 +17,6 @@
 
 # Registro de Participación - Práctica 2 y 3
 
-**Grupo 7**
-
 ## Índice
 1. [Participación Práctica 2: Análisis y Testing Unitario](#participación-práctica-2-análisis-y-testing-unitario)
 2. [Participación Práctica 3: Testing, Refactorización y Evaluación](#participación-práctica-3-testing-refactorización-y-evaluación)

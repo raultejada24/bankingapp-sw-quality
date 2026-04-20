@@ -499,7 +499,7 @@ public class TransferE2ETest {
     }
 
     /**
-     * Hecho por:
+     * Hecho por: Gonzalo Andrés Zurdo
      * Caso 7: No se puede transferir a cuenta inexistente
      * Given: Usuario admin autenticado
      * When: Intenta transferir a un número de cuenta que no existe
@@ -508,11 +508,30 @@ public class TransferE2ETest {
     @Test
     @DisplayName("7. transferInvalidAccount_Fail: No se puede transferir a cuenta inexistente")
     void transferInvalidAccount_FailTest() {
+        // Given
+        login(MARIA_USERNAME, MARIA_PASSWORD);
+        double initialBalance = getAccountBalance(MARIA_ACCOUNT_1);
 
+        navigateToTransferPage();
+
+        // When (Intentar transferir a cuenta inexistente)
+        fillAndSubmitTransferForm(MARIA_ACCOUNT_1, "ES9999999999", "100");
+
+        // Then (Comprobar error y que el saldo no cambió)
+        String errorText = waitForErrorAlertText();
+        assertTrue(
+                errorText.contains("Account not found"),
+                "El texto del error debe indicar que la cuenta no existe. Obtenido: " + errorText);
+
+        double finalBalance = getAccountBalance(MARIA_ACCOUNT_1);
+        assertEquals(initialBalance, finalBalance, 0.01,
+                "El saldo no debe cambiar si la cuenta destino no existe");
+
+        logout();
     }
 
     /**
-     * Hecho por: Gonzalo Andrés Zurdo
+     * Hecho por: Arturo VInuesa Domínguez
      * Caso 8: No se puede transferir cantidad cero
      * Given: Usuario admin autenticado
      * When: Intenta transferir €0

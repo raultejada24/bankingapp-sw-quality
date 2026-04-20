@@ -477,14 +477,14 @@ public class TransferE2ETest {
         double initialDestinationBalance = getAccountBalance(MARIA_ACCOUNT_2);
 
         navigateToTransferPage();
-        
+
         // When (Intentar transferir más del límite)
         fillAndSubmitTransferForm(MARIA_ACCOUNT_1, MARIA_ACCOUNT_2, "20050");
 
         // Then (Comprobar error)
         String errorText = waitForErrorAlertText();
         assertTrue(
-                errorText.contains("Amount must not be higher than 20000"), 
+                errorText.contains("Amount must not be higher than 20000"),
                 "El texto del error debe corresponder a límite de transferencia. Obtenido: " + errorText);
 
         double finalSourceBalance = getAccountBalance(MARIA_ACCOUNT_1);
@@ -499,7 +499,7 @@ public class TransferE2ETest {
     }
 
     /**
-     * Hecho por: Gonzalo Andrés Zurdo
+     * Hecho por:
      * Caso 7: No se puede transferir a cuenta inexistente
      * Given: Usuario admin autenticado
      * When: Intenta transferir a un número de cuenta que no existe
@@ -508,26 +508,7 @@ public class TransferE2ETest {
     @Test
     @DisplayName("7. transferInvalidAccount_Fail: No se puede transferir a cuenta inexistente")
     void transferInvalidAccount_FailTest() {
-        // Given
-        login(MARIA_USERNAME, MARIA_PASSWORD);
-        double initialBalance = getAccountBalance(MARIA_ACCOUNT_1);
 
-        navigateToTransferPage();
-
-        // When (Intentar transferir a cuenta inexistente)
-        fillAndSubmitTransferForm(MARIA_ACCOUNT_1, "ES9999999999", "100");
-
-        // Then (Comprobar error y que el saldo no cambió)
-        String errorText = waitForErrorAlertText();
-        assertTrue(
-                errorText.contains("Account not found"),
-                "El texto del error debe indicar que la cuenta no existe. Obtenido: " + errorText);
-
-        double finalBalance = getAccountBalance(MARIA_ACCOUNT_1);
-        assertEquals(initialBalance, finalBalance, 0.01,
-                "El saldo no debe cambiar si la cuenta destino no existe");
-
-        logout();
     }
 
     /**

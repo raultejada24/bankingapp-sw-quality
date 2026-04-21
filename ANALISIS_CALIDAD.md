@@ -19,17 +19,19 @@ Adrián Varea Fernández, Adrián Villalba Cuello de Oro, Arturo Vinuesa Domíng
 
 ## 1. Introducción y objetivo
 
-En el presente documento se detalla el análisis integral de calidad de software realizado sobre el repositorio del proyecto `banking-app-2026`. Nuestro objetivo principal ha sido identificar, clasificar, documentar y **refactorizar** los "bad smells" (malos olores) presentes en el código base, prestando especial atención a la clase `AccountService.java`.
+En el presente documento se detalla el análisis integral de calidad de software realizado sobre el repositorio del proyecto `banking-app-2026`. Nuestro objetivo principal ha sido identificar, clasificar, documentar y **refactorizar** los "bad smells" (malos olores) presentes en el código base, prestando especial atención a la clase `AccountService.java`, culminando con la automatización completa de sus pruebas funcionales.
 
-Para garantizar una revisión exhaustiva, el equipo ha aplicado un enfoque híbrido basado en tres fases:
+Para garantizar un control de calidad exhaustivo y profesional, el equipo ha aplicado un enfoque estructurado en cuatro fases principales:
 
-**Fase 1 - Detección y Análisis:** Por un lado, hemos ejecutado un escaneo automatizado mediante la plataforma SonarCloud, lo que nos ha proporcionado una visión global de las métricas de mantenibilidad, fiabilidad y seguridad del sistema. Por otro lado, hemos llevado a cabo una inspección manual minuciosa, indispensable para detectar problemas de diseño o violaciones de principios arquitectónicos (como SOLID, DRY o la Ley de Demeter) que las herramientas automáticas suelen pasar por alto.
+**Fase 1 - Detección y Análisis:** Por un lado, hemos ejecutado un escaneo automatizado mediante la plataforma SonarCloud, obteniendo una visión global de las métricas de mantenibilidad y seguridad. Por otro lado, hemos llevado a cabo una inspección manual minuciosa, indispensable para detectar problemas de diseño o violaciones de principios arquitectónicos (como SOLID, DRY o la Ley de Demeter) que las herramientas automáticas suelen pasar por alto.
 
-**Fase 2 - Refactorización:** Se han implementado 22 refactorizaciones siguiendo la estrategia de "Refactorización Integral de Clase Única", consolidando todos los cambios exclusivamente en `AccountService.java` mediante inner classes, métodos privados centralizados y eliminación de código muerto.
+**Fase 2 - Implementación de Pruebas Unitarias:** Antes de modificar el código de producción, se ha construido una sólida red de seguridad mediante 40 tests unitarios aislados con Mockito, logrando certificar un 100% de cobertura de ramas ejecutables en JaCoCo.
 
-**Fase 3 - Validación:** Se han ejecutado los tests unitarios para garantizar que los cambios no rompen la funcionalidad existente, manteniendo la máxima seguridad en la refactorización.
+**Fase 3 - Refactorización de Negocio:** Apoyados en la red de seguridad anterior, se han implementado 22 refactorizaciones bajo la estrategia de "Refactorización Integral de Clase Única", consolidando los cambios en `AccountService.java` mediante métodos privados centralizados, constantes y eliminación de código muerto.
 
-Este informe documenta el proceso completo: desde la identificación de problemas hasta su resolución, proporcionando evidencia de cómo el Clean Code y los principios SOLID transforman el código de "funcional" a "profesional".
+**Fase 4 - Pruebas de Sistema Web (E2E):** Finalmente, se ha automatizado la validación del flujo completo de negocio desde la perspectiva del usuario final mediante **Selenium WebDriver**, asegurando la correcta integración entre la interfaz gráfica (DOM), la lógica de servidor y la persistencia en base de datos.
+
+Este informe documenta el proceso completo, proporcionando evidencia de cómo la aplicación de Clean Code, metodologías de testing y principios SOLID transforman un código meramente "funcional" en un producto de software robusto y profesional.
 
 ---
 
@@ -1006,6 +1008,10 @@ Al eliminar el Dead Code (Issue 5) y centralizar las validaciones de saldo y uni
 
 La sustitución de números mágicos y literales por constantes, junto con la subdivisión del método transfer en submétodos cohesivos, ha reducido la carga cognitiva necesaria para entender el servicio. Bajo la estrategia de "Refactorización Integral de Clase Única", todos los cambios se han consolidado en un único archivo, mantiendo máxima cohesión.
 
+**4. La Automatización E2E Cierra el Ciclo de Calidad**
+
+Más allá de las pruebas unitarias que validan la lógica de forma aislada (con *mocks*), la implementación de Selenium WebDriver nos ha demostrado que las pruebas *End-to-End* son el paso definitivo para garantizar la calidad. Asegurar que el servidor levanta dinámicamente, que las sesiones se aíslan correctamente (borrado de cookies) y que el DOM refleja los cálculos matemáticos exactos en la base de datos, proporciona una confianza total en el producto antes de su pase a producción.
+
 **Impacto Mensurable:**
 
 - 22 refactorizaciones implementadas exitosamente.
@@ -1058,8 +1064,7 @@ _En esta captura se aprecia que, inicialmente, la clase carecía por completo de
 
 ![Tests](img/tests.png)
 
-_Verificación de éxito: Los 49 tests unitarios pasan correctamente, validando tanto el flujo positivo como la gestión de excepciones. Comando ejecutado: `mvn clean test`_
-
+_Verificación de éxito: La suite completa de 49 tests automáticos (40 tests unitarios y 9 tests de sistema E2E) pasa correctamente, validando tanto el flujo positivo como la gestión de excepciones y la interfaz web. Comando ejecutado: `mvn clean test`_
 **Fase 3 - Cobertura Post-Testing:**
 
 ![Cobertura JaCoCo Después](img/TestCoverageAccountServiceAfter.png)

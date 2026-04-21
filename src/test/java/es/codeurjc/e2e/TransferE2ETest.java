@@ -510,6 +510,7 @@ public class TransferE2ETest {
     void transferAtExactLimit_SuccessTest() {
         // Given
         login(MARIA_USERNAME, MARIA_PASSWORD);
+<<<<<<< HEAD
         
         double initialSourceBalance = getAccountBalance(MARIA_ACCOUNT_2);
         double initialDestinationBalance = getAccountBalance(MARIA_ACCOUNT_1);
@@ -527,6 +528,23 @@ public class TransferE2ETest {
 
         double finalSourceBalance = getAccountBalance(MARIA_ACCOUNT_2);
         double finalDestinationBalance = getAccountBalance(MARIA_ACCOUNT_1);
+=======
+        double initialSourceBalance = getAccountBalance(MARIA_ACCOUNT_1);
+        double initialDestinationBalance = getAccountBalance(MARIA_ACCOUNT_2);
+
+        navigateToTransferPage();
+
+        // When
+        fillAndSubmitTransferForm(MARIA_ACCOUNT_1, MARIA_ACCOUNT_2, "20000");
+
+        // Then
+        String message = waitForMessage();
+        assertEquals("Transfer completed successfully", message,
+                "El mensaje debe ser el de éxito esperado");
+
+        double finalSourceBalance = getAccountBalance(MARIA_ACCOUNT_1);
+        double finalDestinationBalance = getAccountBalance(MARIA_ACCOUNT_2);
+>>>>>>> b9437936b59223c17b13952d2612e141405f1ef8
 
         assertEquals(initialSourceBalance - 20000, finalSourceBalance, 0.01,
                 "El saldo de origen debe disminuir exactamente €20.000");

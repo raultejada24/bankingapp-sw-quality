@@ -129,11 +129,15 @@ Mi participación en la práctica ha sido transversal, abarcando desde la arquit
 
 ### **Alumno 3 - Adrián Varea Fernández**
 
-[Descripción de las tareas realizadas: refactorización de código, desarrollo de pruebas Selenium/E2E, o evaluación de métricas finales].
+Mi participación ha consistido principalmente en implementar en cada una de las fases los test y refactorizaciones correspondientes.
 
 | Nº  | Commits                             |
 | :-: | :---------------------------------- |
-|  1  | [Título del commit](URL_del_commit) |
+|  1  | [tests: implemented tests numbers 36 and 37](https://github.com/AdrianVillalba26/cs-2026-grupo-7/commit/50c68f1b5d8cd2b9640d54efa596d710a0d8a635) |
+|  2  | [Refactor for issue 22 implemented](https://github.com/AdrianVillalba26/cs-2026-grupo-7/commit/9b4b69a9eeee9a39759cecbc3f5448b22418b034) |
+|  3  | [test 9 : add transferAtExactLimit_Success](https://github.com/AdrianVillalba26/cs-2026-grupo-7/commit/25c6e3a0ed53636f9f392a5053f6edf7b71036a5) |
+
+
 
 ---
 

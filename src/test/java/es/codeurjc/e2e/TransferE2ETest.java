@@ -48,6 +48,7 @@ import static org.junit.jupiter.api.Assertions.*;
  * 6. transferExceedsLimit_Fail: No se puede transferir > €20.000
  * 7. transferInvalidAccount_Fail: No se puede transferir a cuenta inexistente
  * 8. transferZeroAmount_Fail: No se puede transferir cantidad cero (bonus)
+ * 9. transferAtExactLimit_Success: Se permite transferir exactamente €20.000
  */
 public class TransferE2ETest {
 
@@ -566,4 +567,41 @@ public class TransferE2ETest {
 
         logout();
     }
+
+    /**
+     * Hecho por: Adrián Varea Fernández
+     * Caso 9: Se permite transferir exactamente el límite máximo (€20.000)
+     * Given: Usuario maria autenticado con saldo suficiente
+     * When: Realiza una transferencia de exactamente €20.000
+     * Then: La transferencia se completa y ambos saldos se actualizan correctamente
+     */
+    @Test
+    @DisplayName("9. transferAtExactLimit_Success: Se permite transferir exactamente €20.000")
+    void transferAtExactLimit_SuccessTest() {
+        // Given
+        login(MARIA_USERNAME, MARIA_PASSWORD);
+        double initialSourceBalance = getAccountBalance(MARIA_ACCOUNT_1);
+        double initialDestinationBalance = getAccountBalance(MARIA_ACCOUNT_2);
+
+        navigateToTransferPage();
+
+        // When
+        fillAndSubmitTransferForm(MARIA_ACCOUNT_1, MARIA_ACCOUNT_2, "20000");
+
+        // Then
+        String message = waitForMessage();
+        assertEquals("Transfer completed successfully", message,
+                "El mensaje debe ser el de éxito esperado");
+
+        double finalSourceBalance = getAccountBalance(MARIA_ACCOUNT_1);
+        double finalDestinationBalance = getAccountBalance(MARIA_ACCOUNT_2);
+
+        assertEquals(initialSourceBalance - 20000, finalSourceBalance, 0.01,
+                "El saldo de origen debe disminuir exactamente €20.000");
+        assertEquals(initialDestinationBalance + 20000, finalDestinationBalance, 0.01,
+                "El saldo de destino debe aumentar exactamente €20.000");
+
+        logout();
+    }
+
 }

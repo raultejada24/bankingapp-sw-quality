@@ -130,8 +130,10 @@ Mi participación en la práctica ha sido transversal, abarcando desde la arquit
 
 | Nº | Commits |
 |:---:|:--- |
-| 1 | [Título del commit](URL_del_commit) |
-
+| 1 | [Remaining deposit tests, quick deposit exception and mailnotification tests implemented](https://github.com/AdrianVillalba26/cs-2026-grupo-7/commit/09f96b96282cfb28c9eecfe45bf92bbdc53cc299) |
+| 2 | [Quick deposit succes SMS and nonotification, withdraw success with SMS tests implemented](https://github.com/AdrianVillalba26/cs-2026-grupo-7/commit/07dd82cfa624f800d9303bf37d63dec4280fa294) |
+| 3 | [Refactors for issues 11, 14 and 15](https://github.com/AdrianVillalba26/cs-2026-grupo-7/commit/a182cd9b94ffd806690165b851baed3a48239871) |
+| 4 | [Added fail tests 3 4 and 5](https://github.com/AdrianVillalba26/cs-2026-grupo-7/commit/282ba87592d0f38977c7a74865739b8aeaf37427) |
 ---
 
 ### **Alumno 5 - Adrián Villalba Cuello de Oro**

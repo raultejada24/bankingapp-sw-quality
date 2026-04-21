@@ -151,8 +151,9 @@ Mi participación en la práctica se ha centrado en la realización de las prueb
 ---
 
 ### **Alumno 6 - Arturo Vinuesa Domínguez**
-[Descripción de las tareas realizadas: refactorización de código, desarrollo de pruebas Selenium/E2E, o evaluación de métricas finales].
-
+Mi participación se ha basado en completar en cada fase los test y refactorizaciones correspondientes.
 | Nº | Commits |
 |:---:|:--- |
-| 1 | [Título del commit](URL_del_commit) |
+| 1 | [Test](https://github.com/AdrianVillalba26/cs-2026-grupo-7/commit/4f27e0450f777d26230ceb2b60150888c59fbe69) |
+| 2 | [Refactorizaciones de las issues 13, 19 y 21](https://github.com/AdrianVillalba26/cs-2026-grupo-7/commit/4de18088b7d94d07beff83cad33855bf4d04c44f) |
+| 3 | [test: update Selenium dependency to version 4.42.0 and enhance transferInvalidAccount_Fail test case](https://github.com/AdrianVillalba26/cs-2026-grupo-7/commit/f681d5050cf6425dde02cd8528396bef4de5c2f9) |

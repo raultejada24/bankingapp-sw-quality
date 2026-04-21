@@ -1056,7 +1056,7 @@ _En esta captura se aprecia que, inicialmente, la clase carecía por completo de
 
 **Fase 2 - Ejecución de Tests:**
 
-![Tests](img/test.png)
+![Tests](img/tests.png)
 
 _Verificación de éxito: Los 49 tests unitarios pasan correctamente, validando tanto el flujo positivo como la gestión de excepciones. Comando ejecutado: `mvn clean test`_
 

@@ -104,11 +104,15 @@ Mi aportación ha consistido en realizar una inspección manual profunda de la c
 ---
 
 ### **Alumno 2 - Raúl Tejada Merinero**
-[Descripción de las tareas realizadas: refactorización de código, desarrollo de pruebas Selenium/E2E, o evaluación de métricas finales].
+Mi participación en la práctica ha sido transversal, abarcando desde la arquitectura de pruebas hasta la refactorización. He liderado el plan de pruebas implementando gran parte de la suite unitaria con Mockito, lo que nos permitió alcanzar un 100% de cobertura en JaCoCo. Apoyándome en esta base segura, he refactorizado la lógica de AccountService.java para resolver Bad Smells críticos y eliminar código muerto. Finalmente, he desarrollado varias de las pruebas automáticas End-to-End con Selenium WebDriver.
 
 | Nº | Commits |
 |:---:|:--- |
-| 1 | [Título del commit](URL_del_commit) |
+| 1 | [test: add base structure, dependencies, and test format for AccountServiceTest.](https://github.com/AdrianVillalba26/cs-2026-grupo-7/commit/30c730d8e69e38d53994e00922364986d739d00d) |
+| 2 | [test: Implement 2 tests cases. Add end-to-end tests for transfer functionality with Selenium WebDriver](https://github.com/AdrianVillalba26/cs-2026-grupo-7/commit/631ceefbd4a0dfb96ed50081ef6f7540784ba11b) |
+| 3 | [Refactor AccountService methods to improve readability and maintainability by centralizing validation logic, using descriptive method names, and encapsulating notification handling.](https://github.com/AdrianVillalba26/cs-2026-grupo-7/commit/976f0377f87f41d0850ad36232b70beea0995b88) |
+| 4 | [docs: Prepare ANALISIS_CALIDAD.md and fix all unit tests format for my team.](https://github.com/AdrianVillalba26/cs-2026-grupo-7/commit/8a5d223c710504e34c2773c83bbee5e1d32e591d#diff-236eef4ec2bfa3b517490d14d60c375e7169b7dabfc0eb0f5f91f13f8b096b3a) |
+| 5 | [refactor: update notification handling and validation in AccountService; enhance test coverage](https://github.com/AdrianVillalba26/cs-2026-grupo-7/commit/474a9045bd275e2c49b81f40a334872fd4b3041a) |
 
 ---
 

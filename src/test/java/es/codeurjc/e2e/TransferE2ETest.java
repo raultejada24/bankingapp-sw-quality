@@ -100,9 +100,7 @@ public class TransferE2ETest {
     }
 
     // ======================== UTILITY METHODS (Reutilización de código) //
-    // ========================
-
-    // ======================== UTILITY METHODS ========================
+    
 
     private String getBaseUrl() {
         return "http://localhost:" + port;

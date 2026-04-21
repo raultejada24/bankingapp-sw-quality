@@ -751,7 +751,7 @@ Explicación de la solución: Para evitar modificar clases de dominio fuera de n
 - Descripción: La validación de saldo suficiente se realiza múltiples veces en AccountService: `if (account.getBalance() < amount)`. Esta lógica se repite en `withdraw()` y `transfer()`, cuando en realidad es responsabilidad de Account validar su propio estado.
 - Justificación: Es un problema real de encapsulación. El objeto Account debería ser responsable de verificar si tiene fondos suficientes. Repetir esta validación en múltiples lugares crea duplicación y viola el patrón "Tell, Don't Ask" - AccountService debería decirle a Account "valida tu saldo" en lugar de hacer la comprobación externamente.
 
-#### Refactorización realizada - Hecho por: [Nombre]
+#### Refactorización realizada - Hecho por: Blas Vita Ramos
 
 ```java
 // DESPUÉS (Encapsulando la lógica de validación en un método privado del servicio)
@@ -1006,7 +1006,7 @@ Al eliminar el Dead Code (Issue 5) y centralizar las validaciones de saldo y uni
 
 **3. Mantenibilidad a través de la Consolidación**
 
-La sustitución de números mágicos y literales por constantes, junto con la subdivisión del método transfer en submétodos cohesivos, ha reducido la carga cognitiva necesaria para entender el servicio. Bajo la estrategia de "Refactorización Integral de Clase Única", todos los cambios se han consolidado en un único archivo, mantiendo máxima cohesión.
+La sustitución de números mágicos y literales por constantes, junto con la subdivisión del método transfer en submétodos cohesivos, ha reducido la carga cognitiva necesaria para entender el servicio. Bajo la estrategia de "Refactorización Integral de Clase Única", todos los cambios se han consolidado en un único archivo, manteniendo máxima cohesión.
 
 **4. La Automatización E2E Cierra el Ciclo de Calidad**
 
@@ -1065,6 +1065,7 @@ _En esta captura se aprecia que, inicialmente, la clase carecía por completo de
 ![Tests](img/tests.png)
 
 _Verificación de éxito: La suite completa de 49 tests automáticos (40 tests unitarios y 9 tests de sistema E2E) pasa correctamente, validando tanto el flujo positivo como la gestión de excepciones y la interfaz web. Comando ejecutado: `mvn clean test`_
+
 **Fase 3 - Cobertura Post-Testing:**
 
 ![Cobertura JaCoCo Después](img/TestCoverageAccountServiceAfter.png)

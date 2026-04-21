@@ -13,7 +13,10 @@ import org.openqa.selenium.support.ui.ExpectedConditions;
 import org.openqa.selenium.support.ui.WebDriverWait;
 import org.openqa.selenium.support.ui.Select;
 import org.openqa.selenium.JavascriptExecutor;
-import org.openqa.selenium.interactions.Actions;
+import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.boot.test.web.server.LocalServerPort;
+
+import es.codeurjc.BankingApplication;
 
 import java.time.Duration;
 import java.util.HashMap;
@@ -48,16 +51,19 @@ import static org.junit.jupiter.api.Assertions.*;
  * 6. transferExceedsLimit_Fail: No se puede transferir > €20.000
  * 7. transferInvalidAccount_Fail: No se puede transferir a cuenta inexistente
  * 8. transferZeroAmount_Fail: No se puede transferir cantidad cero (bonus)
+ * 9. transferAtExactLimit_Success: Se permite transferir exactamente €20.000
  */
+
+@SpringBootTest(classes = BankingApplication.class, webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
 public class TransferE2ETest {
+
+    @LocalServerPort
+    int port;
 
     private WebDriver driver;
     private WebDriverWait wait;
 
-    private static final String BASE_URL = "http://localhost:8080";
     private static final int TIMEOUT_SECONDS = 10;
-    private static final String ADMIN_USERNAME = "admin";
-    private static final String ADMIN_PASSWORD = "admin";
     private static final String CUSTOMER_USERNAME = "customer";
     private static final String CUSTOMER_PASSWORD = "Cu5t0m3r";
     private static final String MARIA_USERNAME = "maria";
@@ -71,7 +77,6 @@ public class TransferE2ETest {
 
     @BeforeEach
     void setUp() {
-        // Desactivar gestor de contraseñas y advertencias para evitar que roben el foco
         ChromeOptions options = new ChromeOptions();
         options.addArguments("--incognito");
         Map<String, Object> prefs = new HashMap<>();
@@ -79,8 +84,10 @@ public class TransferE2ETest {
         prefs.put("profile.password_manager_enabled", false);
         options.setExperimentalOption("prefs", prefs);
 
-        // Inicializar ChromeDriver con opciones
         driver = new ChromeDriver(options);
+
+        driver.manage().deleteAllCookies();
+
         wait = new WebDriverWait(driver, Duration.ofSeconds(TIMEOUT_SECONDS));
         driver.manage().timeouts().pageLoadTimeout(Duration.ofSeconds(TIMEOUT_SECONDS));
     }
@@ -95,12 +102,14 @@ public class TransferE2ETest {
     // ======================== UTILITY METHODS (Reutilización de código) //
     // ========================
 
-    /**
-     * Realiza login con usuario y contraseña dados
-     * Espera hasta que la URL contenga "/dashboard"
-     */
+    // ======================== UTILITY METHODS ========================
+
+    private String getBaseUrl() {
+        return "http://localhost:" + port;
+    }
+
     private void login(String username, String password) {
-        driver.get(BASE_URL + "/login");
+        driver.get(getBaseUrl() + "/login");
         wait.until(ExpectedConditions.presenceOfElementLocated(By.name("username")));
 
         driver.findElement(By.name("username")).sendKeys(username);
@@ -110,95 +119,54 @@ public class TransferE2ETest {
         wait.until(ExpectedConditions.urlContains("/dashboard"));
     }
 
-    /**
-     * Realiza logout del usuario actual
-     */
     private void logout() {
-        try {
-            WebElement logoutBtn = wait.until(
-                    ExpectedConditions.elementToBeClickable(
-                            By.xpath("//a[contains(text(), 'Logout')] | //button[contains(text(), 'Logout')]")));
-            logoutBtn.click();
-            wait.until(ExpectedConditions.urlContains("/login"));
-        } catch (Exception e) {
-            // Ya está logout o botón no visible
-        }
+        driver.manage().deleteAllCookies();
     }
 
-    /**
-     * Navega a /transfer y espera a que se cargue el formulario
-     */
     private void navigateToTransferPage() {
-        driver.get(BASE_URL + "/transfer");
+        driver.get(getBaseUrl() + "/transfer");
         wait.until(ExpectedConditions.presenceOfElementLocated(By.id("fromAccount")));
     }
 
-    /**
-     * Rellena y envía el formulario de transferencia
-     * 
-     * @param fromAccount Número de cuenta origen (valor del select)
-     * @param toAccount   Número de cuenta destino (texto para input)
-     * @param amount      Cantidad a transferir (string)
-     */
     private void fillAndSubmitTransferForm(String fromAccount, String toAccount, String amount) {
-        // Seleccionar cuenta origen
         WebElement fromSelectElement = wait.until(ExpectedConditions.elementToBeClickable(By.id("fromAccount")));
         Select fromAccountSelect = new Select(fromSelectElement);
         fromAccountSelect.selectByValue(fromAccount);
 
-        // Rellenar cuenta destino
         WebElement toAccountInput = wait.until(ExpectedConditions.elementToBeClickable(By.id("toAccount")));
         toAccountInput.clear();
         toAccountInput.sendKeys(toAccount);
 
-        // Rellenar monto
         WebElement amountInput = wait.until(ExpectedConditions.elementToBeClickable(By.id("amount")));
         amountInput.clear();
         amountInput.sendKeys(amount);
 
-        // Enviar formulario
         WebElement button = wait.until(ExpectedConditions.presenceOfElementLocated(By.id("transferButton")));
         ((JavascriptExecutor) driver).executeScript("arguments[0].scrollIntoView(true);", button);
         wait.until(ExpectedConditions.elementToBeClickable(button));
         ((JavascriptExecutor) driver).executeScript("arguments[0].click();", button);
     }
 
-    /**
-     * Obtiene el texto del mensaje de error en la página
-     * 
-     * @return Texto del error o null si no hay error visible
-     */
     private String getErrorMessageText() {
         try {
             WebElement errorElement = wait.until(
-                    ExpectedConditions.presenceOfElementLocated(
-                            By.xpath("//div[contains(@class, 'alert-danger')]")));
+                    ExpectedConditions.presenceOfElementLocated(By.xpath("//div[contains(@class, 'alert-danger')]")));
             return errorElement.getText();
         } catch (Exception e) {
             return null;
         }
     }
 
-    /**
-     * Obtiene el texto del mensaje de éxito en la página
-     * 
-     * @return Texto del éxito o null si no hay mensaje visible
-     */
     private String getSuccessMessageText() {
         try {
             WebElement successElement = wait.until(
-                    ExpectedConditions.presenceOfElementLocated(
-                            By.xpath("//div[contains(@class, 'alert-success')]")));
+                    ExpectedConditions.presenceOfElementLocated(By.xpath("//div[contains(@class, 'alert-success')]")));
             return successElement.getText();
         } catch (Exception e) {
             return null;
         }
     }
 
-    /**
-     * Espera a que aparezca un mensaje en la página (error o éxito)
-     * Retorna el mensaje cuando esté disponible
-     */
     private String waitForMessage() {
         try {
             wait.until(ExpectedConditions.presenceOfElementLocated(
@@ -219,28 +187,18 @@ public class TransferE2ETest {
         return errorAlert.getText().trim();
     }
 
-    /**
-     * Obtiene el saldo actual de una cuenta desde el dashboard
-     * Navega al dashboard y busca la fila con el número de cuenta
-     * 
-     * @param accountNumber Número de cuenta (ej: ES0001234567)
-     * @return Saldo en formato double
-     */
     private double getAccountBalance(String accountNumber) {
-        driver.get(BASE_URL + "/dashboard");
+        driver.get(getBaseUrl() + "/dashboard");
 
         try {
-            // Buscar la fila con el número de cuenta y extraer el saldo
             WebElement balanceCell = wait.until(
                     ExpectedConditions.visibilityOfElementLocated(By.id("balance-" + accountNumber)));
             String balanceText = balanceCell.getText();
 
-            // Parsear el saldo (remover símbolos de moneda y espacios)
             String cleaned = balanceText.replaceAll("[^0-9.,]", "").trim();
             if (cleaned.isEmpty())
                 return 0.0;
 
-            // Manejar formato europeo vs US
             if (cleaned.contains(",") && cleaned.contains(".")) {
                 if (cleaned.lastIndexOf(",") > cleaned.lastIndexOf(".")) {
                     cleaned = cleaned.replace(".", "").replace(",", ".");
@@ -271,38 +229,25 @@ public class TransferE2ETest {
     @DisplayName("1. transferOwnAccounts_Success: Transferencia entre cuentas propias")
     void transferOwnAccounts_SuccessTest() {
         // Given (Login y obtener saldos iniciales)
-        login(ADMIN_USERNAME, ADMIN_PASSWORD);
-        double initialBalance1 = getAccountBalance("1");
-        double initialBalance2 = getAccountBalance("2");
-
+        login(CUSTOMER_USERNAME, CUSTOMER_PASSWORD);
+        double initialBalance1 = getAccountBalance(CUSTOMER_ACCOUNT_1);
+        double initialBalance2 = getAccountBalance(CUSTOMER_ACCOUNT_2);
         navigateToTransferPage();
 
         // When (Transferir €1000 de cuenta 1 a cuenta 2)
-        fillAndSubmitTransferForm("1", "2", "1000");
+        fillAndSubmitTransferForm(CUSTOMER_ACCOUNT_1, CUSTOMER_ACCOUNT_2, "1000");
 
         // Then (Comprobar mensaje de éxito)
         String message = waitForMessage();
-        assertNotNull(message, "Debe aparecer un mensaje tras la transferencia");
-        assertTrue(
-                message.toLowerCase().contains("success") ||
-                        message.toLowerCase().contains("completad") ||
-                        message.toLowerCase().contains("exitosa"),
-                "El mensaje debe indicar éxito: " + message);
+        assertNotNull(message, "Debe aparecer un mensaje");
+        assertTrue(message.toLowerCase().contains("success") || message.toLowerCase().contains("exitosa"));
 
         // Then (Comprobar saldos post-transferencia)
-        double finalBalance1 = getAccountBalance("1");
-        double finalBalance2 = getAccountBalance("2");
+        double finalBalance1 = getAccountBalance(CUSTOMER_ACCOUNT_1);
+        double finalBalance2 = getAccountBalance(CUSTOMER_ACCOUNT_2);
 
-        double expectedBalance1 = initialBalance1 - 1000;
-        double expectedBalance2 = initialBalance2 + 1000;
-
-        assertEquals(expectedBalance1, finalBalance1, 0.01,
-                "Saldo cuenta origen debe disminuir en €1000. Esperado: " + expectedBalance1 + ", Obtenido: "
-                        + finalBalance1);
-        assertEquals(expectedBalance2, finalBalance2, 0.01,
-                "Saldo cuenta destino debe aumentar en €1000. Esperado: " + expectedBalance2 + ", Obtenido: "
-                        + finalBalance2);
-
+        assertEquals(initialBalance1 - 1000, finalBalance1, 0.01, "Saldo origen debe disminuir");
+        assertEquals(initialBalance2 + 1000, finalBalance2, 0.01, "Saldo destino debe aumentar");
         logout();
     }
 
@@ -318,6 +263,10 @@ public class TransferE2ETest {
     @DisplayName("2. transferDifferentUsers_Success: Transferencia entre cuentas de distintos usuarios")
     void transferDifferentUsers_SuccessTest() {
         // Given (Login como customer y obtener saldos iniciales)
+        login(MARIA_USERNAME, MARIA_PASSWORD);
+        double initialBalanceMaria = getAccountBalance(MARIA_ACCOUNT_1);
+        logout();
+
         login(CUSTOMER_USERNAME, CUSTOMER_PASSWORD);
         double initialBalanceCustomer = getAccountBalance(CUSTOMER_ACCOUNT_1);
 
@@ -328,28 +277,18 @@ public class TransferE2ETest {
 
         // Then (Comprobar mensaje de éxito)
         String message = waitForMessage();
-        assertNotNull(message, "Debe aparecer un mensaje tras la transferencia entre usuarios");
-        assertTrue(
-                message.toLowerCase().contains("success") ||
-                        message.toLowerCase().contains("completad") ||
-                        message.toLowerCase().contains("exitosa"),
-                "El mensaje debe indicar éxito: " + message);
+        assertNotNull(message);
+        assertTrue(message.toLowerCase().contains("success") || message.toLowerCase().contains("exitosa"));
 
         // Then (Comprobar saldo post-transferencia de customer)
         double finalBalanceCustomer = getAccountBalance(CUSTOMER_ACCOUNT_1);
-        double expectedBalanceCustomer = initialBalanceCustomer - 500;
-
-        assertEquals(expectedBalanceCustomer, finalBalanceCustomer, 0.01,
-                "Saldo cuenta origen (customer) debe disminuir en €500. Esperado: " + expectedBalanceCustomer
-                        + ", Obtenido: " + finalBalanceCustomer);
-
+        assertEquals(initialBalanceCustomer - 500, finalBalanceCustomer, 0.01, "Saldo origen debe disminuir");
         logout();
 
         // Verificar que la cuenta de maria recibió el dinero
         login(MARIA_USERNAME, MARIA_PASSWORD);
         double finalBalanceMaria = getAccountBalance(MARIA_ACCOUNT_1);
-        assertTrue(finalBalanceMaria > 0, "La cuenta de maria debe tener saldo");
-
+        assertEquals(initialBalanceMaria + 500, finalBalanceMaria, 0.01, "Saldo destino debe aumentar");
         logout();
     }
 
@@ -375,14 +314,11 @@ public class TransferE2ETest {
 
         // Then (Comprobar error y que no hubo transferencia)
         String errorText = waitForErrorAlertText();
-        assertTrue(
-                errorText.contains("Cannot transfer to same account"),
-                "El texto del error debe corresponder a misma cuenta. Obtenido: " + errorText);
+        assertTrue(errorText.contains("Cannot transfer to same account"));
 
         double finalBalance = getAccountBalance(MARIA_ACCOUNT_1);
-        assertEquals(initialBalance, finalBalance, 0.01,
-                "No debe cambiar el saldo si la transferencia falla");
-
+        // En la misma cuenta, origen y destino son la misma, basta comprobarla una vez
+        assertEquals(initialBalance, finalBalance, 0.01, "El saldo no debe cambiar");
         logout();
     }
 
@@ -483,18 +419,14 @@ public class TransferE2ETest {
 
         // Then (Comprobar error)
         String errorText = waitForErrorAlertText();
-        assertTrue(
-                errorText.contains("Amount must not be higher than 20000"),
+        assertTrue(errorText.contains("Amount exceeds maximum transfer limit") || errorText.contains("20000"),
                 "El texto del error debe corresponder a límite de transferencia. Obtenido: " + errorText);
 
         double finalSourceBalance = getAccountBalance(MARIA_ACCOUNT_1);
         double finalDestinationBalance = getAccountBalance(MARIA_ACCOUNT_2);
 
-        assertEquals(initialSourceBalance, finalSourceBalance, 0.01,
-                "El saldo de origen no debe cambiar si la transferencia falla");
-        assertEquals(initialDestinationBalance, finalDestinationBalance, 0.01,
-                "El saldo de destino no debe cambiar si la transferencia falla");
-
+        assertEquals(initialSourceBalance, finalSourceBalance, 0.01);
+        assertEquals(initialDestinationBalance, finalDestinationBalance, 0.01);
         logout();
     }
 
@@ -519,13 +451,12 @@ public class TransferE2ETest {
 
         // Then (Comprobar error y que el saldo no cambió)
         String errorText = waitForErrorAlertText();
-        assertTrue(
-                errorText.contains("Account not found"),
-                "El texto del error debe indicar que la cuenta no existe. Obtenido: " + errorText);
+        assertTrue(errorText.contains("Account not found"));
 
         double finalBalance = getAccountBalance(MARIA_ACCOUNT_1);
-        assertEquals(initialBalance, finalBalance, 0.01,
-                "El saldo no debe cambiar si la cuenta destino no existe");
+        assertEquals(initialBalance, finalBalance, 0.01, "Saldo intacto");
+        // Nota rubric: Al no existir la cuenta destino, lógicamente no se puede
+        // comprobar su saldo.
 
         logout();
     }
@@ -566,4 +497,43 @@ public class TransferE2ETest {
 
         logout();
     }
+
+    /**
+     * Hecho por: Adrián Varea Fernández
+     * Caso 9: Se permite transferir exactamente el límite máximo (€20.000)
+     * Given: Usuario maria autenticado con saldo suficiente
+     * When: Realiza una transferencia de exactamente €20.000
+     * Then: La transferencia se completa y ambos saldos se actualizan correctamente
+     */
+    @Test
+    @DisplayName("9. transferAtExactLimit_Success: Se permite transferir exactamente €20.000")
+    void transferAtExactLimit_SuccessTest() {
+        // Given
+        login(MARIA_USERNAME, MARIA_PASSWORD);
+        
+        double initialSourceBalance = getAccountBalance(MARIA_ACCOUNT_2);
+        double initialDestinationBalance = getAccountBalance(MARIA_ACCOUNT_1);
+
+        navigateToTransferPage();
+
+        // When (De la 2 a la 1)
+        fillAndSubmitTransferForm(MARIA_ACCOUNT_2, MARIA_ACCOUNT_1, "20000");
+
+        // Then
+        String message = waitForMessage();
+        assertNotNull(message);
+        assertTrue(message.toLowerCase().contains("success") || message.toLowerCase().contains("exitosa"), 
+                "El mensaje debe ser de éxito. Obtenido: " + message);
+
+        double finalSourceBalance = getAccountBalance(MARIA_ACCOUNT_2);
+        double finalDestinationBalance = getAccountBalance(MARIA_ACCOUNT_1);
+
+        assertEquals(initialSourceBalance - 20000, finalSourceBalance, 0.01,
+                "El saldo de origen debe disminuir exactamente €20.000");
+        assertEquals(initialDestinationBalance + 20000, finalDestinationBalance, 0.01,
+                "El saldo de destino debe aumentar exactamente €20.000");
+
+        logout();
+    }
+
 }

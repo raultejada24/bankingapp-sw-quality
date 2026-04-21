@@ -12,7 +12,8 @@ Adrián Varea Fernández, Adrián Villalba Cuello de Oro, Arturo Vinuesa Domíng
 2. [Captura de Pantalla del Overview de SonarQube](#2-captura-de-pantalla-del-overview-de-sonarqube)
 3. [Resultados del análisis automático y manual](#3-resultados-del-análisis-automático-y-manual)
 4. [Conclusiones](#4-conclusiones)
-5. [Anexos y capturas](#5-anexos-y-capturas)
+5. [Pruebas de Sistema Web (Selenium E2E)](#5-pruebas-de-sistema-web-selenium-e2e)
+6. [Anexos y capturas](#6-anexos-y-capturas)
 
 ---
 
@@ -1007,10 +1008,10 @@ La sustitución de números mágicos y literales por constantes, junto con la su
 
 **Impacto Mensurable:**
 
-- 22 refactorizaciones implementadas exitosamente
-- Tests unitarios pasando (40 tests)
-- Compilación sin errores
-- Preparación para 100% de cobertura JaCoCo
+- 22 refactorizaciones implementadas exitosamente.
+- 49 tests automáticos pasando con éxito (40 unitarios + 9 End-to-End).
+- Compilación sin errores y entorno de integración continua estabilizado.
+- 100% de cobertura de código verificada mediante JaCoCo en la clase de negocio.
 
 **Conclusión final:**
 
@@ -1018,7 +1019,30 @@ Este trabajo demuestra que el Clean Code no es un lujo estético, sino una neces
 
 ---
 
-## 5. Anexos y capturas
+## 5. Pruebas de Sistema Web (Selenium E2E)
+
+Para validar el comportamiento de la aplicación desde la perspectiva del usuario final y dar cumplimiento a la Tarea 4, se ha desarrollado una suite robusta de pruebas *End-to-End* utilizando **Selenium WebDriver** (`TransferE2ETest.java`).
+
+**Arquitectura de las pruebas:**
+- **Arranque dinámico del SUT:** Siguiendo la teoría de la asignatura, los tests inician automáticamente el contexto de Spring Boot en un puerto aleatorio (`SpringBootTest.WebEnvironment.RANDOM_PORT`), permitiendo una ejecución aislada e independiente en entornos de Integración Continua.
+- **Aislamiento de estado:** Se garantiza la independencia de las pruebas mediante el borrado de *cookies* de sesión (`driver.manage().deleteAllCookies()`) en cada ciclo de vida (`@BeforeEach`).
+- **Sincronización explícita:** Se ha evitado por completo el anti-patrón `Thread.sleep()`, implementando en su lugar barreras de sincronización explícitas con `WebDriverWait` e interacciones del DOM seguras.
+- **Auditoría matemática de saldos:** En lugar de validaciones booleanas simples, el sistema captura los saldos iniciales de ambos extremos de la transacción (origen y destino) y realiza aserciones aritméticas estrictas para garantizar la exactitud financiera en cada escenario.
+
+**Casos de negocio validados (9 escenarios):**
+1. Transferencia exitosa entre cuentas propias.
+2. Transferencia exitosa entre cuentas de distintos usuarios.
+3. Rechazo de transferencia con origen y destino idénticos.
+4. Rechazo de transferencia por fondos insuficientes.
+5. Rechazo de transferencia con importes negativos.
+6. Rechazo de transferencia por exceso de límite operativo (>20.000€).
+7. Rechazo de transferencia a identificadores de cuenta inexistentes.
+8. Rechazo de transferencia de valor nulo (0€).
+9. Verificación de éxito operando en el límite exacto permitido (20.000€).
+
+--
+
+## 6. Anexos y capturas
 
 ### Estado de la Cobertura de Código (JaCoCo)
 
@@ -1032,9 +1056,9 @@ _En esta captura se aprecia que, inicialmente, la clase carecía por completo de
 
 **Fase 2 - Ejecución de Tests:**
 
-![Tests](img/testsPassed.png)
+![Tests](img/test.png)
 
-_Verificación de éxito: Los 40 tests unitarios pasan correctamente, validando tanto el flujo positivo como la gestión de excepciones. Comando ejecutado: `mvn clean test`_
+_Verificación de éxito: Los 49 tests unitarios pasan correctamente, validando tanto el flujo positivo como la gestión de excepciones. Comando ejecutado: `mvn clean test`_
 
 **Fase 3 - Cobertura Post-Testing:**
 

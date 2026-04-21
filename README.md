@@ -135,11 +135,17 @@ Mi participación en la práctica ha sido transversal, abarcando desde la arquit
 ---
 
 ### **Alumno 5 - Adrián Villalba Cuello de Oro**
-[Descripción de las tareas realizadas: refactorización de código, desarrollo de pruebas Selenium/E2E, o evaluación de métricas finales].
+Mi participación en la práctica se ha centrado en la realización de las pruebas unitarias 1, 5, 6, 9, 10, 27 y 34, cubriendo distintos escenarios para cubrir el correcto funcionamiento del sistema. También he contribuido con la refactorización del código en los issues 7, 10, 16, 18 y 20, mejorando su calidad y mantenibilidad. Además, me he encargado de hacer la prueba de sistema 6, verificando que no se permitan transferencias superiores a 20000 €, garantizando el cumplimiento de la restricción impuesta.
 
 | Nº | Commits |
 |:---:|:--- |
-| 1 | [Título del commit](URL_del_commit) |
+
+| 1 | [Refactor withdrawal method by removing unused variable](https://github.com/AdrianVillalba26/cs-2026-grupo-7/commit/2b7badb) |
+| 2 | [Addition of some refactorizations](https://github.com/AdrianVillalba26/cs-2026-grupo-7/commit/863c872) |
+| 3 | [Addition of some refactorizations v2](https://github.com/AdrianVillalba26/cs-2026-grupo-7/commit/0f72fde) |
+| 4 | [Realization of unit testing](https://github.com/AdrianVillalba26/cs-2026-grupo-7/commit/db20c15) |
+| 5 | [5 refactorings implemented](https://github.com/AdrianVillalba26/cs-2026-grupo-7/commit/eb0973a) |
+| 6 | [System Test 6](https://github.com/AdrianVillalba26/cs-2026-grupo-7/commit/2bde0a0) |
 
 ---
 

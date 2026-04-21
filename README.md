@@ -139,7 +139,6 @@ Mi participación en la práctica se ha centrado en la realización de las prueb
 
 | Nº | Commits |
 |:---:|:--- |
-
 | 1 | [Refactor withdrawal method by removing unused variable](https://github.com/AdrianVillalba26/cs-2026-grupo-7/commit/2b7badb) |
 | 2 | [Addition of some refactorizations](https://github.com/AdrianVillalba26/cs-2026-grupo-7/commit/863c872) |
 | 3 | [Addition of some refactorizations v2](https://github.com/AdrianVillalba26/cs-2026-grupo-7/commit/0f72fde) |

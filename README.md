@@ -143,7 +143,7 @@ Mi participación ha consistido principalmente en implementar en cada una de las
 
 ### **Alumno 4 - Blas Vita Ramos**
 
-[Descripción de las tareas realizadas: refactorización de código, desarrollo de pruebas Selenium/E2E, o evaluación de métricas finales].
+Mi participación en esta parte práctica de la asignatura ha sido integral, similarmente a la de otros compañeros, abarcando desde la aplicación de refactorizaciones como las 11 14 y 15 para poner solución a los bad smells en el código, hasta tests (tanto unitarios como E2E) con el fin de poder asegurar un buen funcionamiento de la aplicación a largo plazo.
 
 | Nº  | Commits                                                                                                                                                                                         |
 | :-: | :---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |

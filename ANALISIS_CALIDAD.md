@@ -1082,10 +1082,6 @@ _Resultado esperado: Tras la eliminación de las ramas inalcanzables (Issue 5 - 
 
 ### Referencias y Documentación
 
-**Documentos de referencia:**
-
-- [CS - Tema 2.1 – Bad Smells](https://github.com/user-attachments/files/26079919/CS.-.Tema.2.1.Bad.Smells.docx.pdf) - Material teórico base para la identificación de code smells
-
 **Herramientas utilizadas:**
 
 - [SonarQube Cloud](https://www.sonarsource.com/products/sonarqube/) - Análisis automático de calidad de código

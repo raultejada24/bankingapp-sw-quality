@@ -21,7 +21,7 @@
 
 1. [Participación Práctica 2: Análisis y Testing Unitario](#participación-práctica-2-análisis-y-testing-unitario)
 2. [Participación Práctica 3: Testing, Refactorización y Evaluación](#participación-práctica-3-testing-refactorización-y-evaluación)
-3. [Participación Práctica 4: CD/CD](#participación-práctica-4-ci-cd)
+3. [Participación Práctica 4: CD/CD](#asignación-de-tareas)
 
 ---
 
@@ -212,7 +212,50 @@ Clonamos el repositorio
 $ git clone git@github.com:codigus-formacion-se/banking-app-2026.git
 ```
 
-> Inserta aquí todos los comandos que has utilizado para crear la rama, implementar la funcionalidad, hacer el commit y push a GitHub, crear el pull request y hacer el merge a main. Acompaña cada comando con una breve explicación de lo que has hecho.
+## Flujo de Trabajo con Git
+
+### 1. Crear una nueva rama para la funcionalidad (Feature Branch)
+
+Creamos y nos movemos a una rama aislada para desarrollar la nueva feature sin afectar a la rama principal (`main`).
+
+```bash
+git checkout -b feature-nueva-funcionalidad
+```
+
+### 2. Desarrollo y registro de cambios (Commits)
+
+Una vez implementada la funcionalidad (por ejemplo, mostrar la versión en el login), añadimos los archivos modificados al staging area y creamos un commit con un mensaje descriptivo.
+
+```bash
+git add .
+git commit -m "feat: mostrar versión de la app en la pantalla de login"
+```
+
+### 3. Subir la rama al repositorio remoto
+
+Empujamos nuestra rama local a GitHub para que el resto del equipo pueda verla y se ejecuten las comprobaciones de CI/CD.
+
+```bash
+git push origin feature-nueva-funcionalidad
+```
+
+### 4. Creación del Pull Request (PR) y validación
+
+A través de la interfaz web de GitHub, abrimos un Pull Request desde nuestra rama `feature-nueva-funcionalidad` hacia `main`. Esto dispara automáticamente el Workflow 2 (pruebas unitarias y de sistema E2E). Solicitamos la revisión de un compañero (Code Review).
+
+### 5. Integración (Merge a main)
+
+Una vez que el Workflow 2 pasa en verde y el código está aprobado, pulsamos el botón **"Merge pull request"** en la interfaz web de GitHub. Al integrarse en `main`, esto lanza automáticamente el Workflow 3 (construcción de imagen Docker y despliegue en Azure).
+
+### 6. Sincronización y limpieza del repositorio local
+
+Volvemos a nuestra rama principal local, descargamos los últimos cambios integrados (el merge) y borramos la rama de la feature que ya no necesitamos para mantener el repositorio limpio.
+
+```bash
+git checkout main
+git pull origin main
+git branch -d feature-nueva-funcionalidad
+```
 
 ## Workflow 4
 

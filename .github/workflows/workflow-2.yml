@@ -21,8 +21,8 @@ jobs:
           java-version: '21'
           
       - name: Run Unit Tests
-        run: mvn test -Dtest="es.codeurjc.unit.**.*Test"
+        run: mvn test -Dtest="es.codeurjc.unit.*Test"
         
       - name: Run System / E2E Tests
-        # Se lanzan en un step separado. Recuerda poner options.addArguments("--headless") en el Java
-        run: mvn test -Dtest="es.codeurjc.e2e.**.*Test"
+        # Se lanzan en un step separado.
+        run: mvn test -Dtest="es.codeurjc.e2e.*Test"

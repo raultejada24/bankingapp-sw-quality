@@ -77,17 +77,41 @@ public class TransferE2ETest {
 
     @BeforeEach
     void setUp() {
-        ChromeOptions options = new ChromeOptions();
-        options.addArguments("--incognito");
-        Map<String, Object> prefs = new HashMap<>();
-        prefs.put("credentials_enable_service", false);
-        prefs.put("profile.password_manager_enabled", false);
-        options.setExperimentalOption("prefs", prefs);
+        // Lee el navegador que pide el Workflow (por defecto chrome si no se le pasa nada)
+        String browser = System.getProperty("browser", "chrome").toLowerCase();
 
-        driver = new ChromeDriver(options);
+        switch (browser) {
+            case "firefox":
+                org.openqa.selenium.firefox.FirefoxOptions firefoxOptions = new org.openqa.selenium.firefox.FirefoxOptions();
+                firefoxOptions.addArguments("-headless");
+                driver = new org.openqa.selenium.firefox.FirefoxDriver(firefoxOptions);
+                break;
+            case "edge":
+                org.openqa.selenium.edge.EdgeOptions edgeOptions = new org.openqa.selenium.edge.EdgeOptions();
+                edgeOptions.addArguments("--headless");
+                driver = new org.openqa.selenium.edge.EdgeDriver(edgeOptions);
+                break;
+            case "safari":
+                // Safari no soporta headless igual que los demás, pero el runner de MacOS lo
+                // ejecuta bien en background
+                driver = new org.openqa.selenium.safari.SafariDriver();
+                break;
+            case "chrome":
+            default:
+                ChromeOptions chromeOptions = new ChromeOptions();
+                chromeOptions.addArguments("--incognito");
+                chromeOptions.addArguments("--headless");
+
+                Map<String, Object> prefs = new HashMap<>();
+                prefs.put("credentials_enable_service", false);
+                prefs.put("profile.password_manager_enabled", false);
+                chromeOptions.setExperimentalOption("prefs", prefs);
+
+                driver = new ChromeDriver(chromeOptions);
+                break;
+        }
 
         driver.manage().deleteAllCookies();
-
         wait = new WebDriverWait(driver, Duration.ofSeconds(TIMEOUT_SECONDS));
         driver.manage().timeouts().pageLoadTimeout(Duration.ofSeconds(TIMEOUT_SECONDS));
     }
@@ -100,9 +124,14 @@ public class TransferE2ETest {
     }
 
     // ======================== UTILITY METHODS (Reutilización de código) //
-    
 
     private String getBaseUrl() {
+        // Lee la variable que le manda el Workflow
+        String appUrl = System.getProperty("app.url");
+        if (appUrl != null && !appUrl.isEmpty()) {
+            return appUrl; // Usa la URL de Azure (u otra)
+        }
+        // Si no hay variable, usa el entorno local
         return "http://localhost:" + port;
     }
 
@@ -507,7 +536,7 @@ public class TransferE2ETest {
     @DisplayName("9. transferAtExactLimit_Success: Se permite transferir exactamente €20.000")
     void transferAtExactLimit_SuccessTest() {
         // Given
-        login(MARIA_USERNAME, MARIA_PASSWORD);        
+        login(MARIA_USERNAME, MARIA_PASSWORD);
         double initialSourceBalance = getAccountBalance(MARIA_ACCOUNT_2);
         double initialDestinationBalance = getAccountBalance(MARIA_ACCOUNT_1);
 
@@ -519,7 +548,7 @@ public class TransferE2ETest {
         // Then
         String message = waitForMessage();
         assertNotNull(message);
-        assertTrue(message.toLowerCase().contains("success") || message.toLowerCase().contains("exitosa"), 
+        assertTrue(message.toLowerCase().contains("success") || message.toLowerCase().contains("exitosa"),
                 "El mensaje debe ser de éxito. Obtenido: " + message);
 
         double finalSourceBalance = getAccountBalance(MARIA_ACCOUNT_2);

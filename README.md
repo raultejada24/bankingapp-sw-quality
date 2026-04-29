@@ -190,6 +190,7 @@ Mi participación se ha basado en completar en cada fase los test y refactorizac
 ### Captura del dashboard de Azure con la última versión desplegada
 > Inserta aquí una captura del dashboard de Azure. La captura debe mostrar lo mismo que aparece en la diapositiva 26 de "Anexo -Despliegue de aplicaciones en Azure"
 
+![Captura Aplicación en Azure](URL_captura_dashboard_azure_2)
 
 ## Desarrollo con GitHubFlow
 
@@ -215,7 +216,11 @@ $ git clone git@github.com:codigus-formacion-se/banking-app-2026.git
 
 ## Workflow 4
 
-Todos los días a las XX:XX se ejecuta el job de Nightly que ...
+Todos los días a las 02:00 AM UTC se ejecuta el job de Nightly que:
+1) Utiliza una matriz de ejecución (strategy: matrix) para lanzar las pruebas de sistema (E2E) de forma cruzada en distintos sistemas operativos y navegadores: Chrome y Firefox (en Linux, Windows y MacOS), Edge (solo en Windows) y Safari (solo en MacOS).
+2) Si todas estas pruebas cruzadas finalizan con éxito, un segundo job empaqueta la aplicación web en una imagen Docker.
+3) Genera un tag dinámico basado en la fecha actual utilizando el formato nightly-YYYYMMDD (por ejemplo, nightly-20260429).
+4) Sube la imagen probada y con el tag correspondiente al registro público de DockerHub.
 
 - [ÚLTIMA EJECUCIÓN](URL_ultima_ejecucion_workflow_4)
 

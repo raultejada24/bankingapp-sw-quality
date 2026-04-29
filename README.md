@@ -1,4 +1,4 @@
-# Praćtica 2 y 3 - Control de calidad de una aplicación web
+# Praćticas 2, 3 y 4 - Control de calidad de una aplicación web
 
 **Grupo 7**
 
@@ -15,12 +15,13 @@
 
 ---
 
-# Registro de Participación - Práctica 2 y 3
+# Registro de Participación - Práctica 2, 3 y 4
 
 ## Índice
 
 1. [Participación Práctica 2: Análisis y Testing Unitario](#participación-práctica-2-análisis-y-testing-unitario)
 2. [Participación Práctica 3: Testing, Refactorización y Evaluación](#participación-práctica-3-testing-refactorización-y-evaluación)
+3. [Participación Práctica 4: CD/CD](#participación-práctica-4-ci-cd)
 
 ---
 
@@ -177,3 +178,44 @@ Mi participación se ha basado en completar en cada fase los test y refactorizac
 | 1 | [Test](https://github.com/AdrianVillalba26/cs-2026-grupo-7/commit/4f27e0450f777d26230ceb2b60150888c59fbe69) |
 | 2 | [Refactorizaciones de las issues 13, 19 y 21](https://github.com/AdrianVillalba26/cs-2026-grupo-7/commit/4de18088b7d94d07beff83cad33855bf4d04c44f) |
 | 3 | [test: update Selenium dependency to version 4.42.0 and enhance transferInvalidAccount_Fail test case](https://github.com/AdrianVillalba26/cs-2026-grupo-7/commit/f681d5050cf6425dde02cd8528396bef4de5c2f9) |
+
+# Praćtica 4 - Implementación de pipelines de CI-CD y desarrollo colaborativo 
+
+### Captura de la aplicación desplegada en Azure
+> Inserta aquí una captura dela aplicación desplegada. Debe aparecer la URL de la aplicación desplegada y el número de versión desplegada (pantalla de login)
+
+![Captura Aplicación en Azure](URL_captura_dashboard_azure)
+
+
+### Captura del dashboard de Azure con la última versión desplegada
+> Inserta aquí una captura del dashboard de Azure. La captura debe mostrar lo mismo que aparece en la diapositiva 26 de "Anexo -Despliegue de aplicaciones en Azure"
+
+
+## Desarrollo con GitHubFlow
+
+### Asignación de tareas
+
+| Tarea | Alumno/es asignado/s | Commits asociado |
+|:--- |:--- |:--- |
+| feature-1 | [Nombre 1], [Nombre 2] | [Commit 1](URL_commit_1), [Commit 2](URL_commit_2) |
+| feature-2 | [Nombre 3], [Nombre 4] | [Commit 3](URL_commit_3), [Commit 4](URL_commit_4) |
+| refactoring-1 | [Nombre 5] | [Commit 5](URL_commit_5) ... |
+
+### Pasos seguidos
+
+Una vez creados los workflows y funcionando estos, pasamos a crear la nueva funcionalidad utilizando GithubFlow:
+
+Clonamos el repositorio
+
+```
+$ git clone git@github.com:codigus-formacion-se/banking-app-2026.git
+```
+
+> Inserta aquí todos los comandos que has utilizado para crear la rama, implementar la funcionalidad, hacer el commit y push a GitHub, crear el pull request y hacer el merge a main. Acompaña cada comando con una breve explicación de lo que has hecho.
+
+## Workflow 4
+
+Todos los días a las XX:XX se ejecuta el job de Nightly que ...
+
+- [ÚLTIMA EJECUCIÓN](URL_ultima_ejecucion_workflow_4)
+

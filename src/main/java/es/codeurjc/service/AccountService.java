@@ -315,11 +315,6 @@ public class AccountService {
         accountRepository.delete(account);
     }
 
-    @Deprecated
-    public void rm(String accountNumber) {
-        deleteAccount(accountNumber);
-    }
-
     /**
      * Get account balance
      */

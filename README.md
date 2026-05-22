@@ -179,91 +179,150 @@ Mi participación se ha basado en completar en cada fase los test y refactorizac
 | 2 | [Refactorizaciones de las issues 13, 19 y 21](https://github.com/AdrianVillalba26/cs-2026-grupo-7/commit/4de18088b7d94d07beff83cad33855bf4d04c44f) |
 | 3 | [test: update Selenium dependency to version 4.42.0 and enhance transferInvalidAccount_Fail test case](https://github.com/AdrianVillalba26/cs-2026-grupo-7/commit/f681d5050cf6425dde02cd8528396bef4de5c2f9) |
 
-# Praćtica 4 - Implementación de pipelines de CI-CD y desarrollo colaborativo 
-
+-- 
+# Práctica 4 - Implementación de pipelines de CI-CD y desarrollo colaborativo
+ 
 ### Captura de la aplicación desplegada en Azure
-> Inserta aquí una captura dela aplicación desplegada. Debe aparecer la URL de la aplicación desplegada y el número de versión desplegada (pantalla de login)
-
-![Captura Aplicación en Azure](URL_captura_dashboard_azure)
-
-
+> Inserta aquí una captura de la aplicación desplegada. Debe aparecer la URL de la aplicación desplegada y el número de versión desplegada (pantalla de login)
+ 
+![Captura Aplicación en Azure]([AÑADIR_URL_CAPTURA_LOGIN_CON_VERSION])
+ 
 ### Captura del dashboard de Azure con la última versión desplegada
-> Inserta aquí una captura del dashboard de Azure. La captura debe mostrar lo mismo que aparece en la diapositiva 26 de "Anexo -Despliegue de aplicaciones en Azure"
-
-![Captura Aplicación en Azure](URL_captura_dashboard_azure_2)
-
-## Desarrollo con GitHubFlow
-
+> Inserta aquí una captura del dashboard de Azure. La captura debe mostrar lo mismo que aparece en la diapositiva 26 de "Anexo - Despliegue de aplicaciones en Azure"
+ 
+![Captura Aplicación en Azure]([AÑADIR_URL_CAPTURA_DASHBOARD_AZURE])
+ 
+---
+ 
+## Tarea 1: Preparación del repositorio
+ 
+Se realizaron los cambios iniciales exigidos en el proyecto antes de comenzar el desarrollo de pipelines y flujos colaborativos:
+ 
+- Transición a un sistema de versionado SemVer, estableciendo la versión base estable `1.0.0` en el archivo `pom.xml`.
+- Aplicación del cambio correspondiente en el código fuente para reflejar la versión dinámica del sistema en la vista de la pantalla de login.
+- Creación y configuración manual de la infraestructura en Azure para desplegar la aplicación de manera aislada bajo el nombre específico de `banking-app-production`.
+---
+ 
+## Tarea 2: Definición de flujos de trabajo (Pipelines CI/CD)
+ 
+Se implementaron y configuraron una serie de flujos de trabajo automatizados con GitHub Actions, utilizando secretos de entorno (`DOCKERHUB_USERNAME`, `DOCKERHUB_TOKEN`) y credenciales federadas para Azure:
+ 
+- **Workflow 1: Por cada commit en una rama que no sea main**
+  - **Qué hace:** Se encarga de aislar el código en desarrollo y ejecutar las pruebas unitarias del sistema de manera automática en runners `ubuntu-latest`.
+  - [Enlace a ejecución del Workflow 1]([AÑADIR_URL_CON_FORMATO_MARKDOWN])
+- **Workflow 2: Cada vez que se termine una feature y antes de integrarse en la rama de producción (main)**
+  - **Qué hace:** Al abrir un Pull Request, ejecuta de forma exhaustiva tanto la suite de pruebas unitarias como las pruebas de sistema E2E implementadas en la práctica anterior para asegurar la estabilidad física de la rama.
+  - [Enlace a ejecución del Workflow 2]([AÑADIR_URL_CON_FORMATO_MARKDOWN])
+- **Workflow 3: Al integrar con la rama de producción (main)**
+  - **Qué hace:** Consta de dos jobs principales ejecutados de manera secuencial:
+    - **build:** Construye el artefacto Docker (`banking-app`) sin ejecutar tests, recuperando el tag numérico del `pom.xml`. Lanza el contenedor en segundo plano dentro del runner, ejecuta una prueba de humo (SmokeTest con Selenium) para comprobar que levanta en el puerto local y publica la imagen verificada en DockerHub.
+    - **deploy:** Actualiza de forma automática el servicio en la nube de Azure (`banking-app-production`) y ejecuta una prueba de humo final comprobando la consistencia de la versión en la URL pública.
+  - [Enlace a ejecución del Workflow 3]([AÑADIR_URL_CON_FORMATO_MARKDOWN])
+  - [Imagen de producción en DockerHub]([AÑADIR_URL_DOCKERHUB])
+---
+ 
+## Tarea 3: Desarrollo colaborativo con GitHubFlow
+ 
 ### Asignación de tareas
-
-| Tarea | Alumno/es asignado/s | Commits asociado |
-|:--- |:--- |:--- |
-| feature-1 | [Nombre 1], [Nombre 2] | [Commit 1](URL_commit_1), [Commit 2](URL_commit_2) |
-| feature-2 | [Nombre 3], [Nombre 4] | [Commit 3](URL_commit_3), [Commit 4](URL_commit_4) |
-| refactoring-1 | [Nombre 5] | [Commit 5](URL_commit_5) ... |
-
-### Pasos seguidos
-
-Una vez creados los workflows y funcionando estos, pasamos a crear la nueva funcionalidad utilizando GithubFlow:
-
-Clonamos el repositorio
-
-```
-$ git clone git@github.com:codigus-formacion-se/banking-app-2026.git
-```
-
-## Flujo de Trabajo con Git
-
-### 1. Crear una nueva rama para la funcionalidad (Feature Branch)
-
-Creamos y nos movemos a una rama aislada para desarrollar la nueva feature sin afectar a la rama principal (`main`).
-
+ 
+| Tarea | Alumno/es asignado/s | Commits asociados |
+| :--- | :--- | :--- |
+| **feature-1** | Raúl Tejada Merinero, Blas Vita Ramos | [Commit Funcionalidad](https://github.com/AdrianVillalba26/cs-2026-grupo-7/commit/fa18349), [Commit Pruebas]([AÑADIR_URL_COMMIT_BLAS]) |
+| **feature-2** | Adrián Varea Fernández, Adrián Villalba Cuello de Oro | [Commit Funcionalidad]([AÑADIR_URL]), [Commit Pruebas]([AÑADIR_URL]) |
+| **feature-3** | Arturo Vinuesa Domínguez, Gonzalo Andrés Zurdo Patino | [Commit Funcionalidad]([AÑADIR_URL]), [Commit Pruebas]([AÑADIR_URL]) |
+| **refactoring-1** | Raúl Tejada Merinero | [Commit CS1](https://github.com/AdrianVillalba26/cs-2026-grupo-7/commit/8b1e213) ... [Commit Bump v1.0.1](https://github.com/AdrianVillalba26/cs-2026-grupo-7/commit/d056918) |
+ 
+### Pasos seguidos (Flujo de Trabajo General con Git)
+ 
+Para simular el mantenimiento colaborativo del software, el equipo trabajó de forma paralela en ramas aisladas partiendo de la versión `1.0.0` y siguiendo la metodología GitHubFlow:
+ 
 ```bash
+# 1. Sincronizar el entorno local y crear una rama aislada para la tarea
+git checkout main
+git pull origin main
 git checkout -b feature-nueva-funcionalidad
-```
-
-### 2. Desarrollo y registro de cambios (Commits)
-
-Una vez implementada la funcionalidad (por ejemplo, mostrar la versión en el login), añadimos los archivos modificados al staging area y creamos un commit con un mensaje descriptivo.
-
-```bash
+ 
+# 2. Desarrollo, registro atómico de cambios y actualización de versión SemVer en el pom.xml
 git add .
-git commit -m "feat: mostrar versión de la app en la pantalla de login"
-```
-
-### 3. Subir la rama al repositorio remoto
-
-Empujamos nuestra rama local a GitHub para que el resto del equipo pueda verla y se ejecuten las comprobaciones de CI/CD.
-
-```bash
+git commit -m "feat: descripción del cambio o regla de negocio"
+ 
+# 3. Subida al repositorio remoto para activar los flujos automatizados de validación
 git push origin feature-nueva-funcionalidad
 ```
-
-### 4. Creación del Pull Request (PR) y validación
-
-A través de la interfaz web de GitHub, abrimos un Pull Request desde nuestra rama `feature-nueva-funcionalidad` hacia `main`. Esto dispara automáticamente el Workflow 2 (pruebas unitarias y de sistema E2E). Solicitamos la revisión de un compañero (Code Review).
-
-### 5. Integración (Merge a main)
-
-Una vez que el Workflow 2 pasa en verde y el código está aprobado, pulsamos el botón **"Merge pull request"** en la interfaz web de GitHub. Al integrarse en `main`, esto lanza automáticamente el Workflow 3 (construcción de imagen Docker y despliegue en Azure).
-
-### 6. Sincronización y limpieza del repositorio local
-
-Volvemos a nuestra rama principal local, descargamos los últimos cambios integrados (el merge) y borramos la rama de la feature que ya no necesitamos para mantener el repositorio limpio.
-
+ 
+- **Validación:** Apertura de Pull Request (PR) en GitHub que dispara automáticamente el Workflow 2.
+- **Integración:** Tras la verificación en verde del pipeline y la resolución de conflictos del `pom.xml` en local si se diera el caso, se ejecuta el merge hacia main, disparando el despliegue automático del Workflow 3.
+- **Limpieza:** Se vuelve a la rama principal local actualizando el espacio de trabajo y eliminando la rama residual.
+### Detalle de Implementación Individual y por Parejas
+ 
+#### 1. Feature 1: Límite de 5000€ en 24h para retiradas (Trabajo en Pareja)
+ 
+**Alumnos asignados:** Raúl Tejada Merinero (Desarrollo) y Blas Vita Ramos (Testing).
+ 
+**Pasos seguidos (Desarrollo - Raúl):**
+ 
+- Se creó la rama colaborativa `feature-1` partiendo del código base actualizado.
+- Se generó la excepción personalizada `DailyWithdrawalLimitExceededException` para controlar de manera específica las cancelaciones lógicas del sistema.
+- Se modificó `AccountService.java` agregando constantes y un método privado que, mediante flujos de datos (Streams), filtra el historial de transacciones de la cuenta para calcular el monto acumulado de retiradas en las últimas 24 horas basándose en su timestamp.
+- Se modificó el método principal `withdraw` para invocar esta validación antes de ejecutar la transacción, bloqueando la operación si se supera el límite.
 ```bash
 git checkout main
 git pull origin main
-git branch -d feature-nueva-funcionalidad
+git checkout -b feature-1
+git add src/main/java/es/codeurjc/service/DailyWithdrawalLimitExceededException.java src/main/java/es/codeurjc/service/AccountService.java
+git commit -m "feat: Implementar límite de retiro de 5000€ en 24 horas"
+git push origin feature-1
 ```
-
-## Workflow 4
-
-Todos los días a las 02:00 AM UTC se ejecuta el job de Nightly que:
-1) Utiliza una matriz de ejecución (strategy: matrix) para lanzar las pruebas de sistema (E2E) de forma cruzada en distintos sistemas operativos y navegadores: Chrome y Firefox (en Linux, Windows y MacOS), Edge (solo en Windows) y Safari (solo en MacOS).
-2) Si todas estas pruebas cruzadas finalizan con éxito, un segundo job empaqueta la aplicación web en una imagen Docker.
-3) Genera un tag dinámico basado en la fecha actual utilizando el formato nightly-YYYYMMDD (por ejemplo, nightly-20260429).
-4) Sube la imagen probada y con el tag correspondiente al registro público de DockerHub.
-
-- [ÚLTIMA EJECUCIÓN](URL_ultima_ejecucion_workflow_4)
-
+ 
+**Pasos seguidos (Testing, Versionado y PR - Blas):**
+ 
+[AÑADIR PASOS DE BLAS, SU COMMIT DE TESTS UNITARIOS, EL BUMP DE VERSIÓN A 1.1.0 EN EL POM Y SUS COMANDOS GIT]
+ 
+#### 2. Feature 2: Atributo Banned (Trabajo en Pareja)
+ 
+**Alumnos asignados:** Adrián Varea Fernández (Desarrollo) y Adrián Villalba Cuello de Oro (Testing).
+ 
+**Pasos seguidos:** [AÑADIR BREVE EXPLICACIÓN DE PASOS Y COMANDOS DE GIT UTILIZADOS]
+ 
+#### 3. Feature 3: Restricción a Menores de 18 Años (Trabajo en Pareja)
+ 
+**Alumnos asignados:** Arturo Vinuesa Domínguez (Desarrollo) y Gonzalo Andrés Zurdo Patino (Testing).
+ 
+**Pasos seguidos:** [AÑADIR BREVE EXPLICACIÓN DE PASOS Y COMANDOS DE GIT UTILIZADOS]
+ 
+#### 4. Refactorización de Código (Tarea Individual - Raúl Tejada)
+ 
+**Pasos seguidos:**
+ 
+- Se creó la rama de trabajo individual `refactoring-raul`.
+- Se corrigieron un total de 6 Code Smells mediante cambios mínimos y atómicos (1 import incorrecto en `EuriborService`, 1 wrapper innecesario/deprecated en `AccountService` y 4 dependencias de Magic Numbers e índices harcodeados en `AccountService`, `Loan`, `LoanService` y `User` sustituidos por constantes semánticas).
+- Siguiendo SemVer, al no añadir funcionalidad, se incrementó únicamente el número de parche (PATCH) en el `pom.xml`, variando de `1.0.0` a `1.0.1`.
+- Se abrió el Pull Request hacia main comprobando el estado de los tests en el Workflow 2.
+```bash
+git checkout main
+git pull origin main
+git checkout -b refactoring-raul
+git add .
+git commit -m "Refactor: Corrección Code Smell..." # Ejecutado uno de manera independiente por cada hallazgo resuelto
+git add pom.xml
+git commit -m "chore: Bump version to 1.0.1 for refactoring"
+git push origin refactoring-raul
+```
+ 
+---
+ 
+## Workflow 4 (Nightly)
+ 
+Todos los días a las 02:00 AM UTC se ejecuta de forma programada el pipeline de comprobación multiplataforma nocturna:
+ 
+- Utiliza una matriz de ejecución (`strategy: matrix`) para lanzar de forma paralela la suite de pruebas de sistema (E2E) simulando transferencias entre cuentas propias en entornos cruzados: Chrome y Firefox (bajo Linux, Windows y MacOS), Edge (en Windows) y Safari (en MacOS), reduciendo la duplicación de código en la infraestructura de la pipeline.
+- Si la totalidad de los jobs de la matriz finalizan con éxito, se desencadena un job secundario encargado de empaquetar la aplicación web en una imagen Docker.
+- El flujo calcula la fecha en tiempo de ejecución para estampar un tag dinámico bajo el patrón `nightly-YYYYMMDD` (por ejemplo, `nightly-20260522`).
+- Sube el artefacto empaquetado directamente al registro público de DockerHub.
+[Enlace a la última ejecución del Workflow Nightly]
+ 
+---
+ 
+## Tarea 4: Realización de la Memoria
+ 
+La presente documentación ha sido redactada de forma directa sobre la rama main por los miembros del equipo. Con el objetivo de garantizar una correcta optimización de los recursos de computación y evitar el consumo innecesario de minutos gratuitos dentro de las cuotas de GitHub Actions, se ha configurado la instrucción de exclusión `paths-ignore` en los ficheros YAML. Esto asegura que las modificaciones exclusivas sobre archivos de documentación o Markdown (`*.md`, `README.md`) no activen los disparadores automáticos de las pipelines.

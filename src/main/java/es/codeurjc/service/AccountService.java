@@ -12,6 +12,7 @@ import es.codeurjc.service.notifications.SmsNotificationService;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.time.LocalDateTime;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -25,6 +26,8 @@ public class AccountService {
     private static final double MAX_DEPOSIT_LIMIT = 10000.0;
     private static final double MAX_WITHDRAWAL_LIMIT = 5000.0;
     private static final double MAX_TRANSFER_LIMIT = 20000.0;
+    private static final double DAILY_WITHDRAWAL_LIMIT = 5000.0;
+    private static final int HOURS_IN_24 = 24;
     private static final int MAX_ACCOUNT_NUMBER_GENERATION_ATTEMPTS = 5;
     private static final int MAX_TRANSACTIONS_HISTORY_RESULTS = 100;
     private static final String DEPOSIT_CONFIRMATION_SUBJECT = "Deposit Confirmation";
@@ -32,6 +35,7 @@ public class AccountService {
     private static final String ERROR_MAX_DEPOSIT_EXCEEDED = "Amount exceeds maximum deposit limit";
     private static final String ERROR_MAX_WITHDRAWAL_EXCEEDED = "Amount exceeds maximum withdrawal limit";
     private static final String ERROR_MAX_TRANSFER_EXCEEDED = "Amount exceeds maximum transfer limit";
+    private static final String ERROR_DAILY_WITHDRAWAL_LIMIT_EXCEEDED = "Daily withdrawal limit of 5000 EUR exceeded";
     private static final String ERROR_INSUFFICIENT_FUNDS = "Insufficient funds";
     private static final String ERROR_SAME_ACCOUNT_TRANSFER = "Cannot transfer to same account";
     private static final String ERROR_ACCOUNT_NOT_FOUND = "Account not found";
@@ -190,6 +194,42 @@ public class AccountService {
         }
     }
 
+    /**
+     * Calculate total withdrawals in the last 24 hours for an account.
+     * 
+     * @param account the account to check
+     * @return total amount withdrawn in the last 24 hours
+     */
+    private double calculateDailyWithdrawals(Account account) {
+        LocalDateTime twentyFourHoursAgo = LocalDateTime.now().minusHours(HOURS_IN_24);
+        
+        return account.getTransactions().stream()
+                .filter(transaction -> transaction.getType() == Transaction.TransactionType.WITHDRAWAL)
+                .filter(transaction -> transaction.getTimestamp().isAfter(twentyFourHoursAgo))
+                .mapToDouble(Transaction::getAmount)
+                .sum();
+    }
+
+    /**
+     * Validate daily withdrawal limit (5000 EUR in 24 hours).
+     * 
+     * @param account the account attempting withdrawal
+     * @param amount the amount to withdraw
+     * @throws DailyWithdrawalLimitExceededException if the daily limit would be exceeded
+     */
+    private void validateDailyWithdrawalLimit(Account account, double amount) {
+        double dailyWithdrawalsToday = calculateDailyWithdrawals(account);
+        double totalAfterWithdrawal = dailyWithdrawalsToday + amount;
+        
+        if (totalAfterWithdrawal > DAILY_WITHDRAWAL_LIMIT) {
+            throw new DailyWithdrawalLimitExceededException(
+                    ERROR_DAILY_WITHDRAWAL_LIMIT_EXCEEDED + 
+                    " (already withdrawn: " + dailyWithdrawalsToday + 
+                    " EUR, attempting: " + amount + " EUR)"
+            );
+        }
+    }
+
     @Transactional
     public Account withdraw(String accountNumber, double amount, String description) {
         validateMoneyPrecision(amount);
@@ -205,6 +245,9 @@ public class AccountService {
 
         // Check balance
         ensureSufficientBalance(account, amount);
+
+        // Validate daily withdrawal limit (5000 EUR in 24 hours)
+        validateDailyWithdrawalLimit(account, amount);
 
         account.withdraw(amount);
 

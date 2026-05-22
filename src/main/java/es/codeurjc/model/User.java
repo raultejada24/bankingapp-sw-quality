@@ -11,6 +11,9 @@ import java.util.List;
 @Entity
 @Table(name = "users")
 public class User {
+
+    private static final int NO_YEARS_WITH_BANK = 0;
+    private static final int MINIMUM_PRODUCTS_FOR_MULTIPLE = 1;
     
     public enum NotificationType {
         EMAIL, SMS
@@ -189,11 +192,11 @@ public class User {
     }
     
     public long getYearsWithBank() {
-        if (registrationDate == null) return 0;
+        if (registrationDate == null) return NO_YEARS_WITH_BANK;
         return LocalDate.now().getYear() - registrationDate.getYear();
     }
     
     public boolean hasMultipleProducts() {
-        return accounts != null && accounts.size() > 1;
+        return accounts != null && accounts.size() > MINIMUM_PRODUCTS_FOR_MULTIPLE;
     }
 }

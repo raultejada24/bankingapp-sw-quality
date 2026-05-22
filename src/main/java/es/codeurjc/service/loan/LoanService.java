@@ -23,6 +23,8 @@ import java.util.List;
 @Service
 public class LoanService {
 
+    private static final int PRIMARY_ACCOUNT_INDEX = 0;
+
     private final LoanRepository loanRepository;
     private final AccountRepository accountRepository;
     private final EmailNotificationService emailService;
@@ -61,7 +63,7 @@ public class LoanService {
         // Get account info (assuming first account)
         List<Account> accounts = accountRepository.findByUser(user);
         if (!accounts.isEmpty()) {
-            request.setCustomerBalance(accounts.get(0).getBalance());
+            request.setCustomerBalance(accounts.get(PRIMARY_ACCOUNT_INDEX).getBalance());
         }
 
         // Evaluate
@@ -103,7 +105,7 @@ public class LoanService {
         if (accounts.isEmpty()) {
             return rejectLoan(loanId, "No account found for user");
         }
-        Account account = accounts.get(0);
+        Account account = accounts.get(PRIMARY_ACCOUNT_INDEX);
 
         // Use values from evaluation result
         loan.setStatus(Loan.LoanStatus.APPROVED);

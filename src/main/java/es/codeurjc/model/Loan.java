@@ -10,6 +10,9 @@ import java.time.LocalDateTime;
 @Table(name = "loans")
 public class Loan {
 
+    private static final int NO_PAYMENTS_MADE = 0;
+    private static final double PERCENTAGE_MULTIPLIER = 100.0;
+
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
@@ -213,9 +216,9 @@ public class Loan {
      * @return percentage of late payments
      */
     public double getDelinquencyRate() {
-        if (paidPayments == 0) {
+        if (paidPayments == NO_PAYMENTS_MADE) {
             return 0.0;
         }
-        return (double) latePayments / paidPayments * 100;
+        return (double) latePayments / paidPayments * PERCENTAGE_MULTIPLIER;
     }
 }

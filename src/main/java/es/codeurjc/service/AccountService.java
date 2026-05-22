@@ -27,6 +27,7 @@ public class AccountService {
     private static final double MAX_TRANSFER_LIMIT = 20000.0;
     private static final int MAX_ACCOUNT_NUMBER_GENERATION_ATTEMPTS = 5;
     private static final int MAX_TRANSACTIONS_HISTORY_RESULTS = 100;
+    private static final double MINIMUM_BALANCE_FOR_DELETION = 0.0;
     private static final String DEPOSIT_CONFIRMATION_SUBJECT = "Deposit Confirmation";
     private static final String ERROR_AMOUNT_MUST_BE_POSITIVE = "Amount must be positive";
     private static final String ERROR_MAX_DEPOSIT_EXCEEDED = "Amount exceeds maximum deposit limit";
@@ -307,7 +308,7 @@ public class AccountService {
     public void deleteAccount(String accountNumber) {
         Account account = getAccount(accountNumber);
 
-        if (account.getBalance() != 0) {
+        if (account.getBalance() != MINIMUM_BALANCE_FOR_DELETION) {
             throw new NonZeroBalanceException(ERROR_NON_ZERO_BALANCE);
         }
 

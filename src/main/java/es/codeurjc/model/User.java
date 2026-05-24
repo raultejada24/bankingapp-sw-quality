@@ -36,6 +36,7 @@ public class User {
     private String phone;
     private LocalDate registrationDate;
     private double monthlyIncome;
+    private boolean banned = false;
     
     @Enumerated(EnumType.STRING)
     private NotificationType notificationType = NotificationType.EMAIL;
@@ -195,5 +196,15 @@ public class User {
     
     public boolean hasMultipleProducts() {
         return accounts != null && accounts.size() > 1;
+    }
+
+
+
+    public boolean isBanned() {
+        return banned;
+    }
+
+    public void setBanned(boolean banned) {
+        this.banned = banned;
     }
 }

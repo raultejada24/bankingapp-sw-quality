@@ -228,7 +228,7 @@ Se implementaron y configuraron una serie de flujos de trabajo automatizados con
 | Tarea | Alumno/es asignado/s | Commits asociados |
 | :--- | :--- | :--- |
 | **feature-1** | Raúl Tejada Merinero, Blas Vita Ramos | [Commit Funcionalidad](https://github.com/AdrianVillalba26/cs-2026-grupo-7/commit/fa18349), [Commit Pruebas]([AÑADIR_URL_COMMIT_BLAS]) |
-| **feature-2** | Adrián Varea Fernández, Adrián Villalba Cuello de Oro | [Commit Funcionalidad]([AÑADIR_URL]), [Commit Pruebas]([AÑADIR_URL]) |
+| **feature-2** | Adrián Villalba Cuello de Oro, Adrián Varea Fernández | [Commit Funcionalidad]([https://github.com/AdrianVillalba26/cs-2026-grupo-7/commit/ced107a5d64e64e22f4c5f133d73f7b6dd029fc6]), [Commit Pruebas]([AÑADIR_URL]) |
 | **feature-3** | Arturo Vinuesa Domínguez, Gonzalo Andrés Zurdo Patino | [Commit Funcionalidad]([AÑADIR_URL]), [Commit Pruebas]([AÑADIR_URL]) |
 | **refactoring-1** | Raúl Tejada Merinero | [Commit CS1](https://github.com/AdrianVillalba26/cs-2026-grupo-7/commit/8b1e213) ... [Commit Bump v1.0.1](https://github.com/AdrianVillalba26/cs-2026-grupo-7/commit/d056918) |
  
@@ -280,10 +280,28 @@ git push origin feature-1
  
 #### 2. Feature 2: Atributo Banned (Trabajo en Pareja)
  
-**Alumnos asignados:** Adrián Varea Fernández (Desarrollo) y Adrián Villalba Cuello de Oro (Testing).
+**Alumnos asignados:** Adrián Villalba Cuello de Oro (Desarrollo) y Adrián Varea Fernández (Testing).
  
-**Pasos seguidos:** [AÑADIR BREVE EXPLICACIÓN DE PASOS Y COMANDOS DE GIT UTILIZADOS]
+**Pasos seguidos (Desarrollo - Adrián Villalba):** 
+
+- Se creó la rama colaborativa `feature-2` partiendo del código base actualizado de `main`.
+- Se modificó la entidad `User.java` para incorporar el atributo `banned` (de tipo booleano inicializado en `false`) junto con sus respectivos métodos getter(`isBanned`) y setter (`setBanned`) para permitir la consulta y modificación del estado de baneo.
+- Se modificó `AccountService.java` para actualizar los métodos `deposit`, `withdraw` y `transfer`, añadiendo controles o condiciones que comprueben el estado del usuario antes de realizar cualquier operación.
+- En las actualizaciones de los métodos anteriores, se lanza una excepción de tipo `IllegalStateException` con un mensaje descriptivo si el usuario se encuentra en estado baneado, abortando la operación que se iba a realizar.
+
+```bash
+git checkout main
+git pull origin main
+git checkout -b feature-2
+git add src/main/java/es/codeurjc/model/User.java src/main/java/es/codeurjc/service/AccountService.java
+git commit -m "feat: Añadir atributo banned a User y restringir operaciones en AccountService"
+git push origin feature-2
+```
+
+**Pasos seguidos (Testing, Versionado y PR - Adrián Varea):**
  
+[AÑADIR PASOS DE ADRIÁN, SU COMMIT DE TESTS UNITARIOS, EL BUMP DE VERSIÓN A 1.2.0 EN EL POM Y SUS COMANDOS GIT]
+
 #### 3. Feature 3: Restricción a Menores de 18 Años (Trabajo en Pareja)
  
 **Alumnos asignados:** Arturo Vinuesa Domínguez (Desarrollo) y Gonzalo Andrés Zurdo Patino (Testing).

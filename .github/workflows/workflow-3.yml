@@ -83,6 +83,4 @@ jobs:
         run: sleep 30
         
       - name: Run SmokeTest against Azure
-        # DEBEMOS DE ACTUALIZAR AQUI LUEGO LA URL CUANDO TENGAMOS EL CONTAINER APP DESPLEGADO.
-        # Sustituye la URL cuando tengáis el Container App desplegado
-        run: mvn test -Dtest="es.codeurjc.e2e.SmokeTest" -Dapp.url="https://banking-app-production.kindtree-da544092.spaincentral.azurecontainerapps.io/"
+        run: mvn test -Dtest="es.codeurjc.e2e.SmokeTest" -Dapp.url="https://banking-app-production.kindtree-da544092.spaincentral.azurecontainerapps.io"

@@ -29,7 +29,7 @@ jobs:
           
       - name: Run E2E System Tests
         shell: bash
-        run: mvn test -Dtest="es.codeurjc.e2e.TransferE2ETest" -Dbrowser=${{ matrix.browser }} -Dapp.url="https://bankingapp.azurewebsites.net"
+        run: mvn test -Dtest="es.codeurjc.e2e.TransferE2ETest" -Dbrowser=${{ matrix.browser }} -Dapp.url="https://banking-app-production.kindtree-da544092.spaincentral.azurecontainerapps.io"
 
   build-nightly:
     needs: system-tests

@@ -187,9 +187,7 @@ Mi participación se ha basado en completar en cada fase los test y refactorizac
  
 ![Captura Aplicación en Azure]([AÑADIR_URL_CAPTURA_LOGIN_CON_VERSION])
  
-### Captura del dashboard de Azure con la última versión desplegada
-> Inserta aquí una captura del dashboard de Azure. La captura debe mostrar lo mismo que aparece en la diapositiva 26 de "Anexo - Despliegue de aplicaciones en Azure"
- 
+### Captura del dashboard de Azure con la última versión desplegada 
 ![Captura Aplicación en Azure](img/capturas/dashboardAzure.png)
  
 ---
@@ -276,7 +274,19 @@ git push origin feature-1
  
 **Pasos seguidos (Testing, Versionado y PR - Blas):**
  
-[AÑADIR PASOS DE BLAS, SU COMMIT DE TESTS UNITARIOS, EL BUMP DE VERSIÓN A 1.1.0 EN EL POM Y SUS COMANDOS GIT]
+- Se amplió `AccountServiceTest.java` añadiendo pruebas de la nueva funcionalidad para retiro permitido sin exceso de límite, rechazado por exceso de límite y rechazado por antigüedad, utilizando la nueva excepción.
+- Se actualizó `pom.xml` con la nueva versión `1.1.1`, reflejada en el login de la aplicación desplegada
+- Se creó una Pull Request con los commits de funcionalidad, testing y versionado
+- Se resolvieron conflictos presentes y futuros y se mergeó a `main`
+```bash
+git checkout feature-1
+git pull origin feature-1
+git add src/test/java/es/codeurjc/unit/AccountServiceTest.java
+git commit -m "5000€ withdrawal within 24 hours unit tests implemented"
+git add pom.xml
+git commit -m "Bump version from 1.0.0 to 1.1.1"
+git push origin feature-1
+```
  
 #### 2. Feature 2: Atributo Banned (Trabajo en Pareja)
  

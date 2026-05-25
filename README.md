@@ -190,7 +190,7 @@ Mi participación se ha basado en completar en cada fase los test y refactorizac
 ### Captura del dashboard de Azure con la última versión desplegada
 > Inserta aquí una captura del dashboard de Azure. La captura debe mostrar lo mismo que aparece en la diapositiva 26 de "Anexo - Despliegue de aplicaciones en Azure"
  
-![Captura Aplicación en Azure]([AÑADIR_URL_CAPTURA_DASHBOARD_AZURE])
+![Captura Aplicación en Azure](img/capturas/dashboardAzure.png)
  
 ---
  
@@ -227,7 +227,7 @@ Se implementaron y configuraron una serie de flujos de trabajo automatizados con
  
 | Tarea | Alumno/es asignado/s | Commits asociados |
 | :--- | :--- | :--- |
-| **feature-1** | Raúl Tejada Merinero, Blas Vita Ramos | [Commit Funcionalidad](https://github.com/AdrianVillalba26/cs-2026-grupo-7/commit/fa18349), [Commit Pruebas]([AÑADIR_URL_COMMIT_BLAS]) |
+| **feature-1** | Raúl Tejada Merinero, Blas Vita Ramos | [Commit Funcionalidad](https://github.com/AdrianVillalba26/cs-2026-grupo-7/commit/fa18349), [Commit Pruebas](https://github.com/AdrianVillalba26/cs-2026-grupo-7/commit/3b53e12) |
 | **feature-2** | Adrián Varea Fernández, Adrián Villalba Cuello de Oro | [Commit Funcionalidad]([AÑADIR_URL]), [Commit Pruebas]([AÑADIR_URL]) |
 | **feature-3** | Arturo Vinuesa Domínguez, Gonzalo Andrés Zurdo Patino | [Commit Funcionalidad]([AÑADIR_URL]), [Commit Pruebas]([AÑADIR_URL]) |
 | **refactoring-1** | Raúl Tejada Merinero | [Commit CS1](https://github.com/AdrianVillalba26/cs-2026-grupo-7/commit/8b1e213) ... [Commit Bump v1.0.1](https://github.com/AdrianVillalba26/cs-2026-grupo-7/commit/d056918) |

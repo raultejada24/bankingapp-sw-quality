@@ -97,10 +97,10 @@ public class SmokeTest {
         // 3. Obtenemos todo el texto visible de la página web
         String pageText = driver.findElement(By.tagName("body")).getText();
 
-        // 4. Verificamos que la versión "1.0.0" aparece en algún lugar del texto
+        // 4. Verificamos que la versión "1.1.1" aparece en algún lugar del texto
         // Nota: Si el HTML de vuestra app tiene un ID específico para la versión (ej: id="app-version"),
         // podrías buscar ese elemento concreto, pero buscar en el texto de la página es la forma más a prueba de fallos.
-        assertTrue(pageText.contains("1.0.0") || pageText.contains("v1.0.0") || pageText.contains("DEV"), 
-            "¡Fallo crítico! No se encontró la versión esperada (1.0.0 o DEV) en la página de login.");
+        assertTrue(pageText.contains("1.1.1") || pageText.contains("v1.1.1") || pageText.contains("DEV"), 
+            "¡Fallo crítico! No se encontró la versión esperada (1.1.1 o DEV) en la página de login.");
     }
 }

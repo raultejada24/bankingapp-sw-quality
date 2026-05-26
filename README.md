@@ -364,7 +364,7 @@ git push origin refactoring-raul
  
 Todos los días a las 02:00 AM UTC se ejecuta de forma programada el pipeline de comprobación multiplataforma nocturna:
  
-- Utiliza una matriz de ejecución (`strategy: matrix`) para lanzar de forma paralela la suite de pruebas de sistema (E2E) simulando transferencias entre cuentas propias en entornos cruzados: Chrome y Firefox (bajo Linux, Windows y MacOS), Edge (en Windows) y Safari (en MacOS), reduciendo la duplicación de código en la infraestructura de la pipeline.
+- Utiliza una matriz de ejecución (`strategy: matrix`) para lanzar de forma paralela la suite de pruebas de sistema (E2E) simulando transferencias entre cuentas propias en entornos cruzados: Chrome y Firefox (bajo Linux, Windows y MacOS) y Edge (en Windows), reduciendo la duplicación de código en la infraestructura de la pipeline.
 - Si la totalidad de los jobs de la matriz finalizan con éxito, se desencadena un job secundario encargado de empaquetar la aplicación web en una imagen Docker.
 - El flujo calcula la fecha en tiempo de ejecución para estampar un tag dinámico bajo el patrón `nightly-YYYYMMDD` (por ejemplo, `nightly-20260522`).
 - Sube el artefacto empaquetado directamente al registro público de DockerHub.

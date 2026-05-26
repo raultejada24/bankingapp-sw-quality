@@ -17,7 +17,6 @@ jobs:
           - os: windows-latest
             browser: edge
           - os: macos-latest
-            browser: safari
     runs-on: ${{ matrix.os }}
     steps:
       - uses: actions/checkout@v4

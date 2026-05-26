@@ -219,6 +219,14 @@ Se implementaron y configuraron una serie de flujos de trabajo automatizados con
   - [Imagen de producción en DockerHub]([AÑADIR_URL_DOCKERHUB])
 ---
  
+> **Nota sobre el despliegue automático en Azure (Workflow 3):**
+> El pipeline de despliegue continuo (Workflow 3) ha sido configurado correctamente a nivel de código siguiendo el modelo de credenciales federadas (OIDC) sin contraseñas. Sin embargo, la ejecución final del job `deploy` falla en el entorno real debido a las fuertes restricciones de permisos en el *tenant* (Directorio) de la Universidad. 
+> 
+> Como estudiantes, carecemos de los privilegios administrativos necesarios para crear "Registros de Aplicaciones" en el Microsoft Entra ID institucional o gestionar asignaciones de roles (RBAC) cruzadas. Esto nos imposibilita generar e inyectar el `AZURE_CLIENT_ID` y `AZURE_TENANT_ID` requeridos por la acción `azure/login`. Hemos dejado la infraestructura en Azure y el archivo YAML completamente preparados y funcionales para demostrar la adquisición de los conocimientos de la asignatura, quedando su ejecución final bloqueada única y exclusivamente por las políticas de seguridad de la cuenta académica.
+
+
+---
+
 ## Tarea 3: Desarrollo colaborativo con GitHubFlow
  
 ### Asignación de tareas
@@ -350,13 +358,6 @@ git add pom.xml
 git commit -m "chore: Bump version to 1.0.1 for refactoring"
 git push origin refactoring-raul
 ```
----
-
-> **Nota sobre el despliegue automático en Azure (Workflow 3):**
-> El pipeline de despliegue continuo (Workflow 3) ha sido configurado correctamente a nivel de código siguiendo el modelo de credenciales federadas (OIDC) sin contraseñas. Sin embargo, la ejecución final del job `deploy` falla en el entorno real debido a las fuertes restricciones de permisos en el *tenant* (Directorio) de la Universidad. 
-> 
-> Como estudiantes, carecemos de los privilegios administrativos necesarios para crear "Registros de Aplicaciones" en el Microsoft Entra ID institucional o gestionar asignaciones de roles (RBAC) cruzadas. Esto nos imposibilita generar e inyectar el `AZURE_CLIENT_ID` y `AZURE_TENANT_ID` requeridos por la acción `azure/login`. Hemos dejado la infraestructura en Azure y el archivo YAML completamente preparados y funcionales para demostrar la adquisición de los conocimientos de la asignatura, quedando su ejecución final bloqueada única y exclusivamente por las políticas de seguridad de la cuenta académica.
-> 
 ---
  
 ## Workflow 4 (Nightly)

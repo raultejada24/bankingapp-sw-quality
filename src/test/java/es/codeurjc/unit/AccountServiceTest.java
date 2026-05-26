@@ -6,6 +6,7 @@ import java.time.LocalDate;
 import java.time.LocalDateTime;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.mockito.ArgumentMatchers.anyLong;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertThrows;
@@ -16,6 +17,7 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.ArgumentCaptor;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyInt;
+import static org.mockito.ArgumentMatchers.anyLong;
 import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.ArgumentMatchers.eq;
 import org.mockito.InjectMocks;
@@ -40,1218 +42,1217 @@ import es.codeurjc.service.notifications.EmailNotificationService;
 import es.codeurjc.service.notifications.SmsNotificationService;
 
 /* PLAN DE PRUEBAS - AccountService
- * --- Métodos Básicos ---
- * 1. createAccount: Prueba que se genera un número, se asigna el usuario y se guarda.
- * 2. createAccount_Collision: Prueba que si falla 5 veces la generación, lanza excepción.
- * 3. getAccount_Success: Prueba que devuelve la cuenta si existe.
- * 4. getAccount_NotFound: Prueba que lanza IllegalArgumentException si no existe.
- * 5. getUserAccounts: Prueba que devuelve la lista de cuentas del usuario.
- * 6. getBalance: Prueba que devuelve el saldo correcto.
- * 7. getTransactions: Prueba que devuelve la lista de transacciones ordenada.
- * 8. rm_Success: Prueba que elimina la cuenta si el saldo es 0.
- * 9. rm_HasBalance: Prueba que lanza IllegalArgumentException si el saldo != 0.
- * --- Deposit (Con descripción) ---
- * 10. deposit_ZeroAmount: Lanza excepción si amount == 0.
- * 11. deposit_NegativeAmount: Lanza excepción si amount < 0.
- * 12. validateMoneyPrecision: Lanza excepción si el importe es NaN o Infinito.
- * 13. deposit_Exceeds10k: Lanza excepción si amount > 10000.
- * 14. deposit_Exceeds50k: [INACCESSIBLE] Documentado. Nunca se llega aquí porque salta en > 10000.
- * 15. deposit_Success_Email: Ingreso válido y notificación por EMAIL.
- * 16. deposit_Success_Sms: Ingreso válido y notificación por SMS.
- * 17. deposit_Success_NoNotif: Ingreso válido donde no entra ni en EMAIL ni en SMS.
- * 18. sendNotification_NullType: No hace nada si el tipo de notificación es null (Cobertura de rama).
- * --- Quick Deposit (Sin descripción) ---
- * 19. quickDeposit_ZeroAmount: Lanza excepción si amount == 0.
- * 20. quickDeposit_NegativeAmount: Lanza excepción si amount < 0.
- * 21. quickDeposit_Exceeds10k: Lanza excepción si amount > 10000.
- * 22. quickDeposit_Exceeds50k: [INACCESSIBLE] Documentado. Mismo caso que el anterior.
- * 23. quickDeposit_Success_Email: Ingreso válido y notificación por EMAIL.
- * 24. quickDeposit_Success_Sms: Ingreso válido y notificación por SMS.
- * 25. quickDeposit_Success_NoNotif: Ingreso válido sin notificación.
- * 26. quickDeposit_DefaultDescription: Verifica que el ingreso rápido guarda "Quick deposit" como descripción por defecto.
- * --- Withdraw ---
- * 27. withdraw_NegativeOrZero: Lanza excepción si amount <= 0.
- * 28. withdraw_Exceeds5k: Lanza excepción si amount > 5000.
- * 29. withdraw_InsufficientFunds: Lanza excepción si saldo < amount.
- * 30. withdraw_Success_Email: Retiro válido y notificación EMAIL.
- * 31. withdraw_Success_Sms: Retiro válido y notificación SMS.
- * 32. withdraw_Success_NoNotif: Retiro válido sin notificación.
- * 33. withdraw_ExactBalance: Retiro válido por el saldo exacto, dejando la cuenta a 0.
- * --- Transfer ---
- * 34. transfer_NegativeOrZero: Lanza excepción si amount <= 0.
- * 35. transfer_Exceeds20k: Lanza excepción si amount > 20000.
- * 36. transfer_SameAccount: Lanza excepción si origen y destino son la misma cuenta (Referencia ==).
- * 37. transfer_InsufficientFunds: Lanza excepción si saldo origen < amount.
- * 38. transfer_Success_Emails: Transferencia válida. Remitente EMAIL, Destinatario EMAIL.
- * 39. transfer_Success_Sms: Transferencia válida. Remitente SMS, Destinatario SMS.
- * 40. transfer_Success_NoNotifs: Transferencia válida sin notificaciones configuradas.
- * --- Usuario Baneado ---
- * 41. banned_DefaultValue: isBanned() devuelve false por defecto.
- * 42. banned_SetTrue: setBanned(true) hace que isBanned() devuelva true.
- * 43. banned_SetFalse: setBanned(false) revierte el ban.
- * 44. deposit_BannedUser: Lanza IllegalStateException si el usuario está baneado al depositar.
- * 45. withdraw_BannedUser: Lanza IllegalStateException si el usuario está baneado al retirar.
- * 46. transfer_BannedSender: Lanza IllegalStateException si el emisor está baneado.
- * 47. transfer_BannedReceiver: Lanza IllegalStateException si el receptor está baneado.
- */
+ * --- Métodos Básicos ---
+ * 1. createAccount: Prueba que se genera un número, se asigna el usuario y se guarda.
+ * 2. createAccount_Collision: Prueba que si falla 5 veces la generación, lanza excepción.
+ * 3. getAccount_Success: Prueba que devuelve la cuenta si existe.
+ * 4. getAccount_NotFound: Prueba que lanza IllegalArgumentException si no existe.
+ * 5. getUserAccounts: Prueba que devuelve la lista de cuentas del usuario.
+ * 6. getBalance: Prueba que devuelve el saldo correcto.
+ * 7. getTransactions: Prueba que devuelve la lista de transacciones ordenada.
+ * 8. rm_Success: Prueba que elimina la cuenta si el saldo es 0.
+ * 9. rm_HasBalance: Prueba que lanza IllegalArgumentException si el saldo != 0.
+ * --- Deposit (Con descripción) ---
+ * 10. deposit_ZeroAmount: Lanza excepción si amount == 0.
+ * 11. deposit_NegativeAmount: Lanza excepción si amount < 0.
+ * 12. validateMoneyPrecision: Lanza excepción si el importe es NaN o Infinito.
+ * 13. deposit_Exceeds10k: Lanza excepción si amount > 10000.
+ * 14. deposit_Exceeds50k: [INACCESSIBLE] Documentado. Nunca se llega aquí porque salta en > 10000.
+ * 15. deposit_Success_Email: Ingreso válido y notificación por EMAIL.
+ * 16. deposit_Success_Sms: Ingreso válido y notificación por SMS.
+ * 17. deposit_Success_NoNotif: Ingreso válido donde no entra ni en EMAIL ni en SMS.
+ * 18. sendNotification_NullType: No hace nada si el tipo de notificación es null (Cobertura de rama).
+ * --- Quick Deposit (Sin descripción) ---
+ * 19. quickDeposit_ZeroAmount: Lanza excepción si amount == 0.
+ * 20. quickDeposit_NegativeAmount: Lanza excepción si amount < 0.
+ * 21. quickDeposit_Exceeds10k: Lanza excepción si amount > 10000.
+ * 22. quickDeposit_Exceeds50k: [INACCESSIBLE] Documentado. Mismo caso que el anterior.
+ * 23. quickDeposit_Success_Email: Ingreso válido y notificación por EMAIL.
+ * 24. quickDeposit_Success_Sms: Ingreso válido y notificación por SMS.
+ * 25. quickDeposit_Success_NoNotif: Ingreso válido sin notificación.
+ * 26. quickDeposit_DefaultDescription: Verifica que el ingreso rápido guarda "Quick deposit" como descripción por defecto.
+ * --- Withdraw ---
+ * 27. withdraw_NegativeOrZero: Lanza excepción si amount <= 0.
+ * 28. withdraw_Exceeds5k: Lanza excepción si amount > 5000.
+ * 29. withdraw_InsufficientFunds: Lanza excepción si saldo < amount.
+ * 30. withdraw_Success_Email: Retiro válido y notificación EMAIL.
+ * 31. withdraw_Success_Sms: Retiro válido y notificación SMS.
+ * 32. withdraw_Success_NoNotif: Retiro válido sin notificación.
+ * 33. withdraw_ExactBalance: Retiro válido por el saldo exacto, dejando la cuenta a 0.
+ * --- Transfer ---
+ * 34. transfer_NegativeOrZero: Lanza excepción si amount <= 0.
+ * 35. transfer_Exceeds20k: Lanza excepción si amount > 20000.
+ * 36. transfer_SameAccount: Lanza excepción si origen y destino son la misma cuenta (Referencia ==).
+ * 37. transfer_InsufficientFunds: Lanza excepción si saldo origen < amount.
+ * 38. transfer_Success_Emails: Transferencia válida. Remitente EMAIL, Destinatario EMAIL.
+ * 39. transfer_Success_Sms: Transferencia válida. Remitente SMS, Destinatario SMS.
+ * 40. transfer_Success_NoNotifs: Transferencia válida sin notificaciones configuradas.
+ * --- Usuario Baneado ---
+ * 41. banned_DefaultValue: isBanned() devuelve false por defecto.
+ * 42. banned_SetTrue: setBanned(true) hace que isBanned() devuelva true.
+ * 43. banned_SetFalse: setBanned(false) revierte el ban.
+ * 44. deposit_BannedUser: Lanza IllegalStateException si el usuario está baneado al depositar.
+ * 45. withdraw_BannedUser: Lanza IllegalStateException si el usuario está baneado al retirar.
+ * 46. transfer_BannedSender: Lanza IllegalStateException si el emisor está baneado.
+ * 47. transfer_BannedReceiver: Lanza IllegalStateException si el receptor está baneado.
+ */
 
 @ExtendWith(MockitoExtension.class)
 public class AccountServiceTest {
 
-    // ==========================================
-    // MOCKS DE DEPENDENCIAS EXTERNAS
-    // ==========================================
-    @Mock
-    private AccountRepository accountRepository;
-    @Mock
-    private TransactionRepository transactionRepository;
-    @Mock
-    private EmailNotificationService emailService;
-    @Mock
-    private SmsNotificationService smsService;
-    @Mock
-    private RandomService randomService;
-    @Mock
-    private UserService userService;
-
-    // INYECCIÓN DE MOCKS EN EL SERVICIO A PROBAR
-    @InjectMocks
-    private AccountService accountService;
-
-    private User adultUser(long id, User.NotificationType notificationType) {
-        User user = new User();
-        user.setId(id);
-        user.setBirthDate(LocalDate.now().minusYears(20));
-        user.setNotificationType(notificationType);
-        return user;
-    }
-
-    private User minorUser(long id, User.NotificationType notificationType) {
-        User user = new User();
-        user.setId(id);
-        user.setBirthDate(LocalDate.now().minusYears(17));
-        user.setNotificationType(notificationType);
-        return user;
-    }
-
-
-    // CRUD y CONSULTAS
-
-    // Hecho por: Adrián Villalba Cuello de Oro
-    @Test
-    @DisplayName("1. createAccount: Prueba que genera un número, se asigna al usuario y se guarda")
-    void createAccountTest() {
-        // Given (Preparar datos del User, configurar el mock de randomService y accountRepository.save)
-        User mockUser = new User("Ana", "Pass123", "USER");
-        when(randomService.nextInt(anyInt())).thenReturn(123456);
-        when(accountRepository.save(any(Account.class))).thenAnswer(invocation -> invocation.getArgument(0)); // Devuelve la cuenta que se le dio
-
-        // When (Llamar a accountService.createAccount)
-        Account newAccount = accountService.createAccount(mockUser, Account.AccountType.CHECKING);
-
-        // Then (Hacer asserts para comprobar la cuenta devuelta y usar verify para ver que se guardó)
-        assertNotNull(newAccount);
-        assertEquals("ES0000123456", newAccount.getAccountNumber());
-        assertEquals(mockUser, newAccount.getUser());
-        assertEquals(0.0, newAccount.getBalance());
-        verify(accountRepository, times(1)).save(any(Account.class));
-    }
-
-    // Hecho por: Raúl Tejada Merinero
-    @Test
-    @DisplayName("2. createAccount_Collision: Prueba que si falla 5 veces la generación, lanza excepción")
-    void createAccount_CollisionTest() {
-        // Given
-        User mockUser = new User("Ana", "Pass123", "USER");
-        // Configuramos el mock para que SIEMPRE encuentre una cuenta (colisión)
-        when(randomService.nextInt(anyInt())).thenReturn(123456);
-        when(accountRepository.findByAccountNumber(anyString())).thenReturn(Optional.of(new Account()));
-
-        // When & Then
-        assertThrows(AccountService.AccountNumberGenerationException.class, () -> {
-            accountService.createAccount(mockUser, Account.AccountType.CHECKING);
-        });
-        
-        // Verificamos que lo intentó 5 veces (el máximo configurado)
-        verify(accountRepository, times(5)).findByAccountNumber(anyString());
-    }
-
-    // Hecho por: Raúl Tejada Merinero
-    @Test
-    @DisplayName("3. getAccount_Success: Prueba que devuelve la cuenta si existe")
-    void getAccount_SuccessTest() {
-        // Given (Configurar accountRepository.findByAccountNumber para que devuelva un Optional con cuenta)
-        Account mockAccount = new Account("ES12345", Account.AccountType.SAVINGS, 100);
-        when(accountRepository.findByAccountNumber("ES12345")).thenReturn(Optional.of(mockAccount));
-
-        // When (Llamar a accountService.getAccount)
-        Account result = accountService.getAccount("ES12345");
-
-        // Then (Comprobar con assertNotNull o assertEquals que devuelve la cuenta correcta)
-        assertNotNull(result);
-        assertEquals("ES12345", result.getAccountNumber());
-        verify(accountRepository, times(1)).findByAccountNumber("ES12345");
-    }
-
-    // Hecho por: Raúl Tejada Merinero
-    @Test
-    @DisplayName("4. getAccount_NotFound: Prueba que lanza IllegalArgumentException si no existe")
-    void getAccount_NotFoundTest() {
-        // Given (Configurar accountRepository.findByAccountNumber para que devuelva Optional.empty())
-        when(accountRepository.findByAccountNumber("ES99999")).thenReturn(Optional.empty());
-
-        // When (Llamar a accountService.getAccount usando assertThrows para capturar la excepción)
-        IllegalArgumentException exception = assertThrows(IllegalArgumentException.class, () -> {
-            accountService.getAccount("ES99999");
-        });
-        
-        // Then (Comprobar que el mensaje de la excepción es "Account not found")
-        assertEquals("Account not found", exception.getMessage());
-    }
-
-    // Hecho por: Adrián Villalba Cuello de Oro
-    @Test
-    @DisplayName("5. getUserAccounts: Prueba que devuelve la lista de cuentas del usuario")
-    void getUserAccountsTest() {
-        // Given (Preparar un User y configurar accountRepository.findByUser para devolver una lista)
-        User mockUser = new User("Ana", "Pass123", "USER");
-        List <Account> listAccounts = List.of(new Account(), new Account());
-        when (accountRepository.findByUser(mockUser)).thenReturn(listAccounts);
-
-        // When (Llamar a accountService.getUserAccounts)
-        List <Account> myAccounts = accountService.getUserAccounts(mockUser);
-
-        // Then (Comprobar que la lista devuelta no está vacía y tiene el tamaño esperado)
-        assertNotNull(myAccounts);
-        assertEquals(2, myAccounts.size());
-        verify(accountRepository, times(1)).findByUser(mockUser);
-
-    }
-
-    // Hecho por: Adrián Villalba Cuello de Oro
-    @Test
-    @DisplayName("6. getBalance: Prueba que devuelve el saldo correcto")
-    void getBalanceTest() {
-        // Given (Configurar accountRepository.findByAccountNumber para devolver una cuenta con saldo X)
-        Account mockAccount = new Account();
-        mockAccount.setAccountNumber("ES0000123456");
-        mockAccount.setBalance(500.0);
-        when(accountRepository.findByAccountNumber("ES0000123456")).thenReturn(Optional.of(mockAccount));
-
-        // When (Llamar a accountService.getBalance)
-        double myBalance = accountService.getBalance("ES0000123456");
-
-        // Then (Comprobar con assertEquals que el saldo devuelto es X)
-        assertNotNull(myBalance);
-        assertEquals(500.0, myBalance, 0.001);
-        verify(accountRepository, times(1)).findByAccountNumber("ES0000123456");
-
-    }
-
-    // Hecho por: Gonzalo
-    @Test
-    @DisplayName("7. getTransactions: Prueba que devuelve la lista de transacciones ordenada")
-    void getTransactionsTest() {
-        // Given (Preparar cuenta y configurar transactionRepository.findByAccountOrderByTimestampDesc)
-        Account account = new Account("ES12345", Account.AccountType.SAVINGS, 100);
-        when(accountRepository.findByAccountNumber("ES12345")).thenReturn(Optional.of(account));
-        Transaction t1 = new Transaction(account, Transaction.TransactionType.DEPOSIT, 100, "Deposit");
-        java.util.List<Transaction> transactions = java.util.List.of(t1);
-        when(transactionRepository.findByAccountOrderByTimestampDesc(account)).thenReturn(transactions);
-
-        // When (Llamar a accountService.getTransactions)
-        java.util.List<Transaction> result = accountService.getTransactions("ES12345");
-
-        // Then (Verificar que devuelve la lista de transacciones esperada)
-        assertEquals(transactions, result);
-        verify(accountRepository, times(1)).findByAccountNumber("ES12345");
-        verify(transactionRepository, times(1)).findByAccountOrderByTimestampDesc(account);
-    }
-
-    // Hecho por: Gonzalo
-    @Test
-    @DisplayName("8. rm_Success: Prueba que elimina la cuenta si el saldo es 0")
-    void rm_SuccessTest() {
-        // Given (Configurar cuenta con saldo 0 y accountRepository.findByAccountNumber)
-        Account account = new Account("ES12345", Account.AccountType.SAVINGS, 0);
-        when(accountRepository.findByAccountNumber("ES12345")).thenReturn(Optional.of(account));
-
-        // When (Llamar a accountService.rm)
-        accountService.rm("ES12345");
-
-        // Then (Verificar con verify que se llamó a accountRepository.delete)
-        verify(accountRepository, times(1)).findByAccountNumber("ES12345");
-        verify(accountRepository, times(1)).delete(account);
-    }
-
-    // Hecho por: Adrián Villalba Cuello de Oro
-    @Test
-    @DisplayName("9. rm_HasBalance: Prueba que lanza IllegalArgumentException si el saldo != 0")
-    void rm_HasBalanceTest() {
-        // Given (Configurar cuenta con saldo mayor a 0 y accountRepository.findByAccountNumber)
-        Account mockAccount = new Account();
-        mockAccount.setAccountNumber("ES0000123456");
-        mockAccount.setBalance(500.0);
-        when(accountRepository.findByAccountNumber("ES0000123456")).thenReturn(Optional.of(mockAccount));
-
-        // When (Llamar a accountService.rm usando assertThrows)
-        IllegalArgumentException exception = assertThrows(IllegalArgumentException.class, () -> {
-            accountService.rm("ES0000123456");
-        });
-
-        // Then (Comprobar el mensaje "Cannot delete account with non-zero balance")
-        assertEquals("Cannot delete account with non-zero balance", exception.getMessage());
-
-    }
-
-
-    // FALLOS DEPOSIT
-
-    // Hecho por: Adrián Villalba Cuello de Oro
-    @Test
-    @DisplayName("10. deposit_ZeroAmount: Lanza excepción si amount == 0")
-    void deposit_ZeroAmountTest() {
-        // Given (No hacen falta mocks aquí, solo preparar variables: amount = 0)
-
-        // When (Llamar a accountService.deposit usando assertThrows)
-        IllegalArgumentException exception = assertThrows(IllegalArgumentException.class, () -> {
-            accountService.deposit("ES0000123456", 0.0, "Ingreso de prueba");
-        });
-
-        // Then (Comprobar el mensaje de excepción correspondiente)
-        assertEquals("Amount must be positive", exception.getMessage());
-
-    }
-
-    // Hecho por: Raúl Tejada Merinero
-    @Test
-    @DisplayName("11. deposit_NegativeAmount: Lanza excepción si amount < 0")
-    void deposit_NegativeAmountTest() {
-        // Given (No hacen falta mocks, preparar variables: amount = -50)
-
-        // When (Llamar a accountService.deposit usando assertThrows)
-        IllegalArgumentException exception = assertThrows(IllegalArgumentException.class, () -> {
-            accountService.deposit("ES12345", -50.0, "Ingreso nómina");
-        });
-        
-        // Then (Comprobar el mensaje de excepción correspondiente)
-        assertEquals("Amount must be positive", exception.getMessage());
-
-    }
-
-    // Hecho por: Raúl Tejada Merinero
-    @Test
-    @DisplayName("12. validateMoneyPrecision: Lanza excepción si el importe es NaN o Infinito")
-    void validateMoneyPrecision_SpecialValuesTest() {
-        // Probar con NaN
-        assertThrows(AccountService.InvalidAmountException.class, () -> {
-            accountService.deposit("ES123", Double.NaN);
-        });
-        
-        // Probar con Infinito
-        assertThrows(AccountService.InvalidAmountException.class, () -> {
-            accountService.withdraw("ES123", Double.POSITIVE_INFINITY, "test");
-        });
-    }
-
-    // Hecho por: Gonzalo
-    @Test
-    @DisplayName("13. deposit_Exceeds10k: Lanza excepción si amount > 10000")
-    void deposit_Exceeds10kTest() {
-        // Given (No hacen falta mocks, preparar variables: amount = 15000)
-        double amount = 15000.0;
-
-        // When (Llamar a accountService.deposit usando assertThrows)
-        IllegalArgumentException exception = assertThrows(IllegalArgumentException.class, () -> {
-            accountService.deposit("ES12345", amount, "Deposito grande");
-        });
-
-        // Then (Comprobar el mensaje de excepción correspondiente)
-        assertEquals("Amount exceeds maximum deposit limit", exception.getMessage());
-    }
-
-    // Hecho por: Gonzalo
-    @Test
-    @DisplayName("14. deposit_Exceeds50k: [INACCESSIBLE] La rama de > 50000 nunca se alcanza porque salta en 10000")
-    void deposit_Exceeds50kTest() {
-        // Given (Comentar que esta rama es inalcanzable, preparar amount = 60000)
-        double amount = 60000.0;
-
-        // When (Llamar a accountService.deposit usando assertThrows)
-        IllegalArgumentException exception = assertThrows(IllegalArgumentException.class, () -> {
-            accountService.deposit("ES12345", amount, "Deposito enorme");
-        });
-
-        // Then (Comprobar que falla por el límite de 10k, documentando el bad smell)
-        // Documentamos el bad smell: la condicion > 50000 es inalcanzable (dead code) ya que todo > 10000 lanza la excepción previa.
-        assertEquals("Amount exceeds maximum deposit limit", exception.getMessage());
-    }
-
-    // ÉXITOS DEPOSIT
-
-    // Hecho por: Blas
-    @Test
-    @DisplayName("15. deposit_Success_Email: Ingreso válido y notificación por EMAIL")
-    void deposit_Success_EmailTest() {
-        // Given (Configurar User con NotificationType.EMAIL, configurar Mocks de BD)
-        User user = new User();
-
-        user.setNotificationType(User.NotificationType.EMAIL);
-        Account userAccount = new Account("ES123", Account.AccountType.CHECKING, 100);
-        userAccount.setUser(user);
-
-        // When (Llamar a accountService.deposit con cantidad válida)
-        when(accountRepository.findByAccountNumber("ES123")).thenReturn(Optional.of(userAccount));
-        when(accountRepository.save(any(Account.class))).thenReturn(userAccount);
-
-        // Deposit
-        accountService.deposit("ES123", 50, "Ingreso nómina");
-
-        // Then (Verificar guardado en BD y verificar que se llamó a emailService.sendNotification)
-        assertEquals(150, userAccount.getBalance());
-
-        verify(accountRepository, times(1)).findByAccountNumber("ES123");
-        verify(accountRepository, times(1)).findByAccountNumber("ES123");
-        verify(transactionRepository, times(1)).save(any(Transaction.class));
-        verify(accountRepository, times(1)).save(userAccount);
-        verify(emailService, times(1)).sendNotification(
-            eq(user),
-            eq(Notification.NotificationType.DEPOSIT),
-            anyString(),
-            anyString()
-        );
-
-        verifyNoInteractions(smsService);
-    }
-
-    // Hecho por: Blas
-    @Test
-    @DisplayName("16. deposit_Success_Sms: Ingreso válido y notificación por SMS")
-    void deposit_Success_SmsTest() {
-        // Given (Configurar User con NotificationType.SMS, configurar Mocks de BD)
-        User user = new User();
-        user.setNotificationType(User.NotificationType.SMS);
-        Account userAccount = new Account("ES123", Account.AccountType.SAVINGS, 200);
-        userAccount.setUser(user);
-
-        // When (Llamar a accountService.deposit con cantidad válida)
-        when(accountRepository.findByAccountNumber("ES123")).thenReturn(Optional.of(userAccount));
-        when(accountRepository.save(any(Account.class))).thenReturn(userAccount);
-
-        // Deposiro
-        accountService.deposit("ES123", 75, "Ingreso de cliente");
-
-        // Then (Verificar guardado en BD y verificar que se llamó a smsService.sendNotification)
-        assertEquals(275, userAccount.getBalance());
-
-        verify(accountRepository, times(1)).findByAccountNumber("ES123");
-        verify(transactionRepository, times(1)).save(any(Transaction.class));
-        verify(accountRepository, times(1)).save(userAccount);
-        verify(smsService, times(1)).sendNotification(
-                eq(user),
-                eq(Notification.NotificationType.DEPOSIT),
-                anyString(),
-                anyString()
-        );
-
-        verifyNoInteractions(emailService);
-
-    }
-
-    // Hecho por: Raúl Tejada Merinero
-    @Test
-    @DisplayName("17. deposit_Success_NoNotif: Ingreso válido donde no entra ni en EMAIL ni en SMS")
-    void deposit_Success_NoNotifTest() {
-        // Given (Configurar User con NotificationType nulo o distinto, configurar Mocks de BD)
-        User user = new User();
-        user.setNotificationType(null); // Sin notificaciones configuradas
-        Account account = new Account("ES123", Account.AccountType.CHECKING, 100);
-        account.setUser(user);
-
-        when(accountRepository.findByAccountNumber("ES123")).thenReturn(Optional.of(account));
-        when(accountRepository.save(any(Account.class))).thenReturn(account);
-
-        // When (Llamar a accountService.deposit con cantidad válida)
-        accountService.deposit("ES123", 50, "Regalo");
-
-        // Then (Verificar guardado y usar verifyNoInteractions() con emailService y smsService)
-        assertEquals(150, account.getBalance()); // 100 + 50
-        verify(transactionRepository, times(1)).save(any(Transaction.class));
-        verifyNoInteractions(emailService); // Verifica que NO se mandó email
-        verifyNoInteractions(smsService);   // Verifica que NO se mandó SMS
-    }
-
-    // Hecho por: Raúl Tejada Merinero
-    @Test
-    @DisplayName("18. sendNotification_NullType: No hace nada si el tipo de notificación es null")
-    void sendNotification_NullTypeTest() {
-        // Given
-        User user = new User();
-        user.setNotificationType(null); // Caso null
-        Account account = new Account("ES123", Account.AccountType.CHECKING, 100);
-        account.setUser(user);
-        when(accountRepository.findByAccountNumber("ES123")).thenReturn(Optional.of(account));
-        when(accountRepository.save(any(Account.class))).thenReturn(account);
-
-        // When
-        accountService.deposit("ES123", 50);
-
-        // Then
-        // Si el test pasa sin NullPointerException y no llama a los servicios, la rama está cubierta
-        verifyNoInteractions(emailService, smsService);
-    }
-
-    // Hecho por: Gonzalo
-    @Test
-    @DisplayName("19. quickDeposit_ZeroAmount: Lanza excepción si amount == 0")
-    void quickDeposit_ZeroAmountTest() {
-        // Given (Preparar variables: amount = 0, sin descripción)
-        double amount = 0.0;
-
-        // When (Llamar al deposit rápido de accountService usando assertThrows)
-        IllegalArgumentException exception = assertThrows(IllegalArgumentException.class, () -> {
-            accountService.deposit("ES12345", amount);
-        });
-
-        // Then (Comprobar el mensaje de excepción)
-        assertEquals("Amount must be positive", exception.getMessage());
-    }
-
-    // Hecho por: Gonzalo
-    @Test
-    @DisplayName("20. quickDeposit_NegativeAmount: Lanza excepción si amount < 0")
-    void quickDeposit_NegativeAmountTest() {
-        // Given (Preparar variables: amount = -10, sin descripción)
-        double amount = -10.0;
-
-        // When (Llamar al deposit rápido de accountService usando assertThrows)
-        IllegalArgumentException exception = assertThrows(IllegalArgumentException.class, () -> {
-            accountService.deposit("ES12345", amount);
-        });
-
-        // Then (Comprobar el mensaje de excepción)
-        assertEquals("Amount must be positive", exception.getMessage());
-    }
-
-    // Hecho por: Gonzalo
-    @Test
-    @DisplayName("21. quickDeposit_Exceeds10k: Lanza excepción si amount > 10000")
-    void quickDeposit_Exceeds10kTest() {
-        // Given (Preparar variables: amount = 20000, sin descripción)
-        double amount = 20000.0;
-
-        // When (Llamar al deposit rápido de accountService usando assertThrows)
-        IllegalArgumentException exception = assertThrows(IllegalArgumentException.class, () -> {
-            accountService.deposit("ES12345", amount);
-        });
-
-        // Then (Comprobar el mensaje de excepción)
-        assertEquals("Amount exceeds maximum deposit limit", exception.getMessage());
-    }
-
-    // Hecho por: Blas
-    @Test
-    @DisplayName("22. quickDeposit_Exceeds50k: [INACCESSIBLE] Rama inalcanzable")
-    void quickDeposit_Exceeds50kTest() {
-        // Given (Comentar que esta rama es inalcanzable igual que la 12)
-        double depositAmount = 50001.0;
-
-        // When (Llamar al deposit rápido)
-        IllegalArgumentException exception = assertThrows(IllegalArgumentException.class, () -> {
-            accountService.deposit("ES12345", depositAmount);
-        });
-
-        // Then (Comprobar que falla por el límite de 10k)
-        // Dead code
-        assertEquals("Amount exceeds maximum deposit limit", exception.getMessage());
-
-    }
-
-
+    // ==========================================
+    // MOCKS DE DEPENDENCIAS EXTERNAS
+    // ==========================================
+    @Mock
+    private AccountRepository accountRepository;
+    @Mock
+    private TransactionRepository transactionRepository;
+    @Mock
+    private EmailNotificationService emailService;
+    @Mock
+    private SmsNotificationService smsService;
+    @Mock
+    private RandomService randomService;
+    @Mock
+    private UserService userService;
+
+    // INYECCIÓN DE MOCKS EN EL SERVICIO A PROBAR
+    @InjectMocks
+    private AccountService accountService;
+
+    private User adultUser(long id, User.NotificationType notificationType) {
+        User user = new User();
+        user.setId(id);
+        user.setBirthDate(LocalDate.now().minusYears(20));
+        user.setNotificationType(notificationType);
+        return user;
+    }
+
+    private User minorUser(long id, User.NotificationType notificationType) {
+        User user = new User();
+        user.setId(id);
+        user.setBirthDate(LocalDate.now().minusYears(17));
+        user.setNotificationType(notificationType);
+        return user;
+    }
+
+
+    // CRUD y CONSULTAS
+
+    // Hecho por: Adrián Villalba Cuello de Oro
+    @Test
+    @DisplayName("1. createAccount: Prueba que genera un número, se asigna al usuario y se guarda")
+    void createAccountTest() {
+        // Given (Preparar datos del User, configurar el mock de randomService y accountRepository.save)
+        User mockUser = new User("Ana", "Pass123", "USER");
+        when(randomService.nextInt(anyInt())).thenReturn(123456);
+        when(accountRepository.save(any(Account.class))).thenAnswer(invocation -> invocation.getArgument(0)); // Devuelve la cuenta que se le dio
+
+        // When (Llamar a accountService.createAccount)
+        Account newAccount = accountService.createAccount(mockUser, Account.AccountType.CHECKING);
+
+        // Then (Hacer asserts para comprobar la cuenta devuelta y usar verify para ver que se guardó)
+        assertNotNull(newAccount);
+        assertEquals("ES0000123456", newAccount.getAccountNumber());
+        assertEquals(mockUser, newAccount.getUser());
+        assertEquals(0.0, newAccount.getBalance());
+        verify(accountRepository, times(1)).save(any(Account.class));
+    }
+
+    // Hecho por: Raúl Tejada Merinero
+    @Test
+    @DisplayName("2. createAccount_Collision: Prueba que si falla 5 veces la generación, lanza excepción")
+    void createAccount_CollisionTest() {
+        // Given
+        User mockUser = new User("Ana", "Pass123", "USER");
+        // Configuramos el mock para que SIEMPRE encuentre una cuenta (colisión)
+        when(randomService.nextInt(anyInt())).thenReturn(123456);
+        when(accountRepository.findByAccountNumber(anyString())).thenReturn(Optional.of(new Account()));
+
+        // When & Then
+        assertThrows(AccountService.AccountNumberGenerationException.class, () -> {
+            accountService.createAccount(mockUser, Account.AccountType.CHECKING);
+        });
+        
+        // Verificamos que lo intentó 5 veces (el máximo configurado)
+        verify(accountRepository, times(5)).findByAccountNumber(anyString());
+    }
+
+    // Hecho por: Raúl Tejada Merinero
+    @Test
+    @DisplayName("3. getAccount_Success: Prueba que devuelve la cuenta si existe")
+    void getAccount_SuccessTest() {
+        // Given (Configurar accountRepository.findByAccountNumber para que devuelva un Optional con cuenta)
+        Account mockAccount = new Account("ES12345", Account.AccountType.SAVINGS, 100);
+        when(accountRepository.findByAccountNumber("ES12345")).thenReturn(Optional.of(mockAccount));
+
+        // When (Llamar a accountService.getAccount)
+        Account result = accountService.getAccount("ES12345");
+
+        // Then (Comprobar con assertNotNull o assertEquals que devuelve la cuenta correcta)
+        assertNotNull(result);
+        assertEquals("ES12345", result.getAccountNumber());
+        verify(accountRepository, times(1)).findByAccountNumber("ES12345");
+    }
+
+    // Hecho por: Raúl Tejada Merinero
+    @Test
+    @DisplayName("4. getAccount_NotFound: Prueba que lanza IllegalArgumentException si no existe")
+    void getAccount_NotFoundTest() {
+        // Given (Configurar accountRepository.findByAccountNumber para que devuelva Optional.empty())
+        when(accountRepository.findByAccountNumber("ES99999")).thenReturn(Optional.empty());
+
+        // When (Llamar a accountService.getAccount usando assertThrows para capturar la excepción)
+        IllegalArgumentException exception = assertThrows(IllegalArgumentException.class, () -> {
+            accountService.getAccount("ES99999");
+        });
+        
+        // Then (Comprobar que el mensaje de la excepción es "Account not found")
+        assertEquals("Account not found", exception.getMessage());
+    }
+
+    // Hecho por: Adrián Villalba Cuello de Oro
+    @Test
+    @DisplayName("5. getUserAccounts: Prueba que devuelve la lista de cuentas del usuario")
+    void getUserAccountsTest() {
+        // Given (Preparar un User y configurar accountRepository.findByUser para devolver una lista)
+        User mockUser = new User("Ana", "Pass123", "USER");
+        List <Account> listAccounts = List.of(new Account(), new Account());
+        when (accountRepository.findByUser(mockUser)).thenReturn(listAccounts);
+
+        // When (Llamar a accountService.getUserAccounts)
+        List <Account> myAccounts = accountService.getUserAccounts(mockUser);
+
+        // Then (Comprobar que la lista devuelta no está vacía y tiene el tamaño esperado)
+        assertNotNull(myAccounts);
+        assertEquals(2, myAccounts.size());
+        verify(accountRepository, times(1)).findByUser(mockUser);
+
+    }
+
+    // Hecho por: Adrián Villalba Cuello de Oro
+    @Test
+    @DisplayName("6. getBalance: Prueba que devuelve el saldo correcto")
+    void getBalanceTest() {
+        // Given (Configurar accountRepository.findByAccountNumber para devolver una cuenta con saldo X)
+        Account mockAccount = new Account();
+        mockAccount.setAccountNumber("ES0000123456");
+        mockAccount.setBalance(500.0);
+        when(accountRepository.findByAccountNumber("ES0000123456")).thenReturn(Optional.of(mockAccount));
+
+        // When (Llamar a accountService.getBalance)
+        double myBalance = accountService.getBalance("ES0000123456");
+
+        // Then (Comprobar con assertEquals que el saldo devuelto es X)
+        assertNotNull(myBalance);
+        assertEquals(500.0, myBalance, 0.001);
+        verify(accountRepository, times(1)).findByAccountNumber("ES0000123456");
+
+    }
+
+    // Hecho por: Gonzalo
+    @Test
+    @DisplayName("7. getTransactions: Prueba que devuelve la lista de transacciones ordenada")
+    void getTransactionsTest() {
+        // Given (Preparar cuenta y configurar transactionRepository.findByAccountOrderByTimestampDesc)
+        Account account = new Account("ES12345", Account.AccountType.SAVINGS, 100);
+        when(accountRepository.findByAccountNumber("ES12345")).thenReturn(Optional.of(account));
+        Transaction t1 = new Transaction(account, Transaction.TransactionType.DEPOSIT, 100, "Deposit");
+        java.util.List<Transaction> transactions = java.util.List.of(t1);
+        when(transactionRepository.findByAccountOrderByTimestampDesc(account)).thenReturn(transactions);
+
+        // When (Llamar a accountService.getTransactions)
+        java.util.List<Transaction> result = accountService.getTransactions("ES12345");
+
+        // Then (Verificar que devuelve la lista de transacciones esperada)
+        assertEquals(transactions, result);
+        verify(accountRepository, times(1)).findByAccountNumber("ES12345");
+        verify(transactionRepository, times(1)).findByAccountOrderByTimestampDesc(account);
+    }
+
+    // Hecho por: Gonzalo
+    @Test
+    @DisplayName("8. rm_Success: Prueba que elimina la cuenta si el saldo es 0")
+    void rm_SuccessTest() {
+        // Given (Configurar cuenta con saldo 0 y accountRepository.findByAccountNumber)
+        Account account = new Account("ES12345", Account.AccountType.SAVINGS, 0);
+        when(accountRepository.findByAccountNumber("ES12345")).thenReturn(Optional.of(account));
+
+        // When (Llamar a accountService.rm)
+        accountService.rm("ES12345");
+
+        // Then (Verificar con verify que se llamó a accountRepository.delete)
+        verify(accountRepository, times(1)).findByAccountNumber("ES12345");
+        verify(accountRepository, times(1)).delete(account);
+    }
+
+    // Hecho por: Adrián Villalba Cuello de Oro
+    @Test
+    @DisplayName("9. rm_HasBalance: Prueba que lanza IllegalArgumentException si el saldo != 0")
+    void rm_HasBalanceTest() {
+        // Given (Configurar cuenta con saldo mayor a 0 y accountRepository.findByAccountNumber)
+        Account mockAccount = new Account();
+        mockAccount.setAccountNumber("ES0000123456");
+        mockAccount.setBalance(500.0);
+        when(accountRepository.findByAccountNumber("ES0000123456")).thenReturn(Optional.of(mockAccount));
+
+        // When (Llamar a accountService.rm usando assertThrows)
+        IllegalArgumentException exception = assertThrows(IllegalArgumentException.class, () -> {
+            accountService.rm("ES0000123456");
+        });
+
+        // Then (Comprobar el mensaje "Cannot delete account with non-zero balance")
+        assertEquals("Cannot delete account with non-zero balance", exception.getMessage());
+
+    }
+
+
+    // FALLOS DEPOSIT
+
+    // Hecho por: Adrián Villalba Cuello de Oro
+    @Test
+    @DisplayName("10. deposit_ZeroAmount: Lanza excepción si amount == 0")
+    void deposit_ZeroAmountTest() {
+        // Given (No hacen falta mocks aquí, solo preparar variables: amount = 0)
+
+        // When (Llamar a accountService.deposit usando assertThrows)
+        IllegalArgumentException exception = assertThrows(IllegalArgumentException.class, () -> {
+            accountService.deposit("ES0000123456", 0.0, "Ingreso de prueba");
+        });
+
+        // Then (Comprobar el mensaje de excepción correspondiente)
+        assertEquals("Amount must be positive", exception.getMessage());
+
+    }
+
+    // Hecho por: Raúl Tejada Merinero
+    @Test
+    @DisplayName("11. deposit_NegativeAmount: Lanza excepción si amount < 0")
+    void deposit_NegativeAmountTest() {
+        // Given (No hacen falta mocks, preparar variables: amount = -50)
+
+        // When (Llamar a accountService.deposit usando assertThrows)
+        IllegalArgumentException exception = assertThrows(IllegalArgumentException.class, () -> {
+            accountService.deposit("ES12345", -50.0, "Ingreso nómina");
+        });
+        
+        // Then (Comprobar el mensaje de excepción correspondiente)
+        assertEquals("Amount must be positive", exception.getMessage());
+
+    }
+
+    // Hecho por: Raúl Tejada Merinero
+    @Test
+    @DisplayName("12. validateMoneyPrecision: Lanza excepción si el importe es NaN o Infinito")
+    void validateMoneyPrecision_SpecialValuesTest() {
+        // Probar con NaN
+        assertThrows(AccountService.InvalidAmountException.class, () -> {
+            accountService.deposit("ES123", Double.NaN);
+        });
+        
+        // Probar con Infinito
+        assertThrows(AccountService.InvalidAmountException.class, () -> {
+            accountService.withdraw("ES123", Double.POSITIVE_INFINITY, "test");
+        });
+    }
+
+    // Hecho por: Gonzalo
+    @Test
+    @DisplayName("13. deposit_Exceeds10k: Lanza excepción si amount > 10000")
+    void deposit_Exceeds10kTest() {
+        // Given (No hacen falta mocks, preparar variables: amount = 15000)
+        double amount = 15000.0;
+
+        // When (Llamar a accountService.deposit usando assertThrows)
+        IllegalArgumentException exception = assertThrows(IllegalArgumentException.class, () -> {
+            accountService.deposit("ES12345", amount, "Deposito grande");
+        });
+
+        // Then (Comprobar el mensaje de excepción correspondiente)
+        assertEquals("Amount exceeds maximum deposit limit", exception.getMessage());
+    }
+
+    // Hecho por: Gonzalo
+    @Test
+    @DisplayName("14. deposit_Exceeds50k: [INACCESSIBLE] La rama de > 50000 nunca se alcanza porque salta en 10000")
+    void deposit_Exceeds50kTest() {
+        // Given (Comentar que esta rama es inalcanzable, preparar amount = 60000)
+        double amount = 60000.0;
+
+        // When (Llamar a accountService.deposit usando assertThrows)
+        IllegalArgumentException exception = assertThrows(IllegalArgumentException.class, () -> {
+            accountService.deposit("ES12345", amount, "Deposito enorme");
+        });
+
+        // Then (Comprobar que falla por el límite de 10k, documentando el bad smell)
+        // Documentamos el bad smell: la condicion > 50000 es inalcanzable (dead code) ya que todo > 10000 lanza la excepción previa.
+        assertEquals("Amount exceeds maximum deposit limit", exception.getMessage());
+    }
+
+    // ÉXITOS DEPOSIT
+
+    // Hecho por: Blas
+    @Test
+    @DisplayName("15. deposit_Success_Email: Ingreso válido y notificación por EMAIL")
+    void deposit_Success_EmailTest() {
+        // Given (Configurar User con NotificationType.EMAIL, configurar Mocks de BD)
+        User user = new User();
+
+        user.setNotificationType(User.NotificationType.EMAIL);
+        Account userAccount = new Account("ES123", Account.AccountType.CHECKING, 100);
+        userAccount.setUser(user);
+
+        // When (Llamar a accountService.deposit con cantidad válida)
+        when(accountRepository.findByAccountNumber("ES123")).thenReturn(Optional.of(userAccount));
+        when(accountRepository.save(any(Account.class))).thenReturn(userAccount);
+
+        // Deposit
+        accountService.deposit("ES123", 50, "Ingreso nómina");
+
+        // Then (Verificar guardado en BD y verificar que se llamó a emailService.sendNotification)
+        assertEquals(150, userAccount.getBalance());
+
+        verify(accountRepository, times(1)).findByAccountNumber("ES123");
+        verify(accountRepository, times(1)).findByAccountNumber("ES123");
+        verify(transactionRepository, times(1)).save(any(Transaction.class));
+        verify(accountRepository, times(1)).save(userAccount);
+        verify(emailService, times(1)).sendNotification(
+            eq(user),
+            eq(Notification.NotificationType.DEPOSIT),
+            anyString(),
+            anyString()
+        );
+
+        verifyNoInteractions(smsService);
+    }
+
+    // Hecho por: Blas
+    @Test
+    @DisplayName("16. deposit_Success_Sms: Ingreso válido y notificación por SMS")
+    void deposit_Success_SmsTest() {
+        // Given (Configurar User con NotificationType.SMS, configurar Mocks de BD)
+        User user = new User();
+        user.setNotificationType(User.NotificationType.SMS);
+        Account userAccount = new Account("ES123", Account.AccountType.SAVINGS, 200);
+        userAccount.setUser(user);
+
+        // When (Llamar a accountService.deposit con cantidad válida)
+        when(accountRepository.findByAccountNumber("ES123")).thenReturn(Optional.of(userAccount));
+        when(accountRepository.save(any(Account.class))).thenReturn(userAccount);
+
+        // Deposiro
+        accountService.deposit("ES123", 75, "Ingreso de cliente");
+
+        // Then (Verificar guardado en BD y verificar que se llamó a smsService.sendNotification)
+        assertEquals(275, userAccount.getBalance());
+
+        verify(accountRepository, times(1)).findByAccountNumber("ES123");
+        verify(transactionRepository, times(1)).save(any(Transaction.class));
+        verify(accountRepository, times(1)).save(userAccount);
+        verify(smsService, times(1)).sendNotification(
+                eq(user),
+                eq(Notification.NotificationType.DEPOSIT),
+                anyString(),
+                anyString()
+        );
+
+        verifyNoInteractions(emailService);
+
+    }
+
+    // Hecho por: Raúl Tejada Merinero
+    @Test
+    @DisplayName("17. deposit_Success_NoNotif: Ingreso válido donde no entra ni en EMAIL ni en SMS")
+    void deposit_Success_NoNotifTest() {
+        // Given (Configurar User con NotificationType nulo o distinto, configurar Mocks de BD)
+        User user = new User();
+        user.setNotificationType(null); // Sin notificaciones configuradas
+        Account account = new Account("ES123", Account.AccountType.CHECKING, 100);
+        account.setUser(user);
+
+        when(accountRepository.findByAccountNumber("ES123")).thenReturn(Optional.of(account));
+        when(accountRepository.save(any(Account.class))).thenReturn(account);
+
+        // When (Llamar a accountService.deposit con cantidad válida)
+        accountService.deposit("ES123", 50, "Regalo");
+
+        // Then (Verificar guardado y usar verifyNoInteractions() con emailService y smsService)
+        assertEquals(150, account.getBalance()); // 100 + 50
+        verify(transactionRepository, times(1)).save(any(Transaction.class));
+        verifyNoInteractions(emailService); // Verifica que NO se mandó email
+        verifyNoInteractions(smsService);   // Verifica que NO se mandó SMS
+    }
+
+    // Hecho por: Raúl Tejada Merinero
+    @Test
+    @DisplayName("18. sendNotification_NullType: No hace nada si el tipo de notificación es null")
+    void sendNotification_NullTypeTest() {
+        // Given
+        User user = new User();
+        user.setNotificationType(null); // Caso null
+        Account account = new Account("ES123", Account.AccountType.CHECKING, 100);
+        account.setUser(user);
+        when(accountRepository.findByAccountNumber("ES123")).thenReturn(Optional.of(account));
+        when(accountRepository.save(any(Account.class))).thenReturn(account);
+
+        // When
+        accountService.deposit("ES123", 50);
+
+        // Then
+        // Si el test pasa sin NullPointerException y no llama a los servicios, la rama está cubierta
+        verifyNoInteractions(emailService, smsService);
+    }
+
+    // Hecho por: Gonzalo
+    @Test
+    @DisplayName("19. quickDeposit_ZeroAmount: Lanza excepción si amount == 0")
+    void quickDeposit_ZeroAmountTest() {
+        // Given (Preparar variables: amount = 0, sin descripción)
+        double amount = 0.0;
+
+        // When (Llamar al deposit rápido de accountService usando assertThrows)
+        IllegalArgumentException exception = assertThrows(IllegalArgumentException.class, () -> {
+            accountService.deposit("ES12345", amount);
+        });
+
+        // Then (Comprobar el mensaje de excepción)
+        assertEquals("Amount must be positive", exception.getMessage());
+    }
+
+    // Hecho por: Gonzalo
+    @Test
+    @DisplayName("20. quickDeposit_NegativeAmount: Lanza excepción si amount < 0")
+    void quickDeposit_NegativeAmountTest() {
+        // Given (Preparar variables: amount = -10, sin descripción)
+        double amount = -10.0;
+
+        // When (Llamar al deposit rápido de accountService usando assertThrows)
+        IllegalArgumentException exception = assertThrows(IllegalArgumentException.class, () -> {
+            accountService.deposit("ES12345", amount);
+        });
+
+        // Then (Comprobar el mensaje de excepción)
+        assertEquals("Amount must be positive", exception.getMessage());
+    }
+
+    // Hecho por: Gonzalo
+    @Test
+    @DisplayName("21. quickDeposit_Exceeds10k: Lanza excepción si amount > 10000")
+    void quickDeposit_Exceeds10kTest() {
+        // Given (Preparar variables: amount = 20000, sin descripción)
+        double amount = 20000.0;
+
+        // When (Llamar al deposit rápido de accountService usando assertThrows)
+        IllegalArgumentException exception = assertThrows(IllegalArgumentException.class, () -> {
+            accountService.deposit("ES12345", amount);
+        });
+
+        // Then (Comprobar el mensaje de excepción)
+        assertEquals("Amount exceeds maximum deposit limit", exception.getMessage());
+    }
+
+    // Hecho por: Blas
+    @Test
+    @DisplayName("22. quickDeposit_Exceeds50k: [INACCESSIBLE] Rama inalcanzable")
+    void quickDeposit_Exceeds50kTest() {
+        // Given (Comentar que esta rama es inalcanzable igual que la 12)
+        double depositAmount = 50001.0;
+
+        // When (Llamar al deposit rápido)
+        IllegalArgumentException exception = assertThrows(IllegalArgumentException.class, () -> {
+            accountService.deposit("ES12345", depositAmount);
+        });
+
+        // Then (Comprobar que falla por el límite de 10k)
+        // Dead code
+        assertEquals("Amount exceeds maximum deposit limit", exception.getMessage());
+
+    }
+
+
+    
+
+    // Hecho por: Blas
+    @Test
+    @DisplayName("23. quickDeposit_Success_Email: Ingreso rápido y notificación por EMAIL")
+    void quickDeposit_Success_EmailTest() {
+        // Given (Configurar User con EMAIL, configurar Mocks de BD)
+        User user = new User();
+
+        user.setNotificationType(User.NotificationType.EMAIL);
+        Account userAccount = new Account("ES125", Account.AccountType.CHECKING, 300);
+        userAccount.setUser(user);
+
+        when(accountRepository.findByAccountNumber("ES125")).thenReturn(Optional.of(userAccount));
+        when(accountRepository.save(any(Account.class))).thenReturn(userAccount);
+
+        // When (Llamar al deposit rápido con cantidad válida)
+        accountService.deposit("ES125", 100);
+
+        // Then (Verificar guardado en BD y llamada a emailService)
+        assertEquals(400, userAccount.getBalance());
+        verify(accountRepository, times(1)).findByAccountNumber("ES125");
+        verify(transactionRepository, times(1)).save(any(Transaction.class));
+        verify(accountRepository, times(1)).save(userAccount);
+        verify(emailService, times(1)).sendNotification(
+            eq(user),
+            eq(Notification.NotificationType.DEPOSIT),
+            anyString(),
+            anyString()
+        );
+
+        verifyNoInteractions(smsService);
+
+    }
+
+    // Hecho por: Blas
+    @Test
+    @DisplayName("24. quickDeposit_Success_Sms: Ingreso rápido y notificación por SMS")
+    void quickDeposit_Success_SmsTest() {
+        // Given (Configurar User con SMS, configurar Mocks de BD)
+        User user = new User();
+        user.setNotificationType(User.NotificationType.SMS);
+        Account userAccount = new Account("ES126", Account.AccountType.SAVINGS, 250);
+        userAccount.setUser(user);
+
+        when(accountRepository.findByAccountNumber("ES126")).thenReturn(Optional.of(userAccount));
+        when(accountRepository.save(any(Account.class))).thenReturn(userAccount);
+
+        // When (Llamar al deposit rápido con cantidad válida)
+        accountService.deposit("ES126", 150);
+
+        // Then (Verificar guardado en BD y llamada a smsService)
+        assertEquals(400, userAccount.getBalance());
+
+        verify(accountRepository, times(1)).findByAccountNumber("ES126");
+        verify(transactionRepository, times(1)).save(any(Transaction.class));
+        verify(accountRepository, times(1)).save(userAccount);
+        verify(smsService, times(1)).sendNotification(
+            eq(user),
+            eq(Notification.NotificationType.DEPOSIT),
+            anyString(),
+            anyString()
+        );
+
+        verifyNoInteractions(emailService);
+
+    }
+
+    // Hecho por: Blas
+    @Test
+    @DisplayName("25. quickDeposit_Success_NoNotif: Ingreso rápido sin notificación")
+    void quickDeposit_Success_NoNotifTest() {
+        // Given (Configurar User sin notificaciones configuradas, configurar Mocks de BD)
+        User user = new User();
+        user.setNotificationType(null); // Sin notificaciones
+        Account userAccount = new Account("ES127", Account.AccountType.SAVINGS, 150);
+        userAccount.setUser(user);
+
+        when(accountRepository.findByAccountNumber("ES127")).thenReturn(Optional.of(userAccount));
+        when(accountRepository.save(any(Account.class))).thenReturn(userAccount);
+
+        // When (Llamar al deposit rápido con cantidad válida)
+        accountService.deposit("ES127", 50);
+
+        // Then (Verificar guardado y verificar que no se llamaron servicios de notificación)
+        assertEquals(200, userAccount.getBalance());
+
+        verify(accountRepository, times(1)).findByAccountNumber("ES127");
+        verify(transactionRepository, times(1)).save(any(Transaction.class));
+        verify(accountRepository, times(1)).save(userAccount);
+
+        verifyNoInteractions(emailService, smsService);
+
+    }
+
+    // Hecho por: Adrián Varea Fernández
+    @Test
+    @DisplayName("26. quickDeposit_DefaultDescription: El ingreso rápido guarda la descripción por defecto")
+    void quickDeposit_DefaultDescriptionTest() {
+        // Given (Cuenta válida y captura de la transacción persistida)
+        User user = new User();
+        user.setNotificationType(null);
+        Account account = new Account("ES140", Account.AccountType.CHECKING, 200);
+        account.setUser(user);
+        ArgumentCaptor<Transaction> transactionCaptor = ArgumentCaptor.forClass(Transaction.class);
+
+        when(accountRepository.findByAccountNumber("ES140")).thenReturn(Optional.of(account));
+        when(accountRepository.save(any(Account.class))).thenReturn(account);
+
+        // When (Llamar al ingreso rápido, que debe usar la descripción por defecto)
+        accountService.deposit("ES140", 25);
+
+        // Then (Comprobar la descripción por defecto y el resto de efectos esperados)
+        verify(transactionRepository, times(1)).save(transactionCaptor.capture());
+        assertEquals("Quick deposit", transactionCaptor.getValue().getDescription());
+        assertEquals(Transaction.TransactionType.DEPOSIT, transactionCaptor.getValue().getType());
+        assertEquals(225, account.getBalance());
+        verifyNoInteractions(emailService, smsService);
+    }
+
+
+    // RETIROS / WITHDRAW)
+
+    // Hecho por: Adrián Villalba Cuello de Oro
+    @Test
+    @DisplayName("27. withdraw_NegativeOrZero: Lanza excepción si amount <= 0")
+    void withdraw_NegativeOrZeroTest() {
+        // Given (Preparar cantidad inválida <= 0)
+        String accountNumber = "ES0000123456";
+        double amount = -3.0;
+
+        // When (Llamar a accountService.withdraw usando assertThrows)
+        IllegalArgumentException exception = assertThrows(IllegalArgumentException.class, () -> {
+            accountService.withdraw(accountNumber, amount, "Retirada de prueba");
+        });
+
+        // Then (Comprobar mensaje de excepción)
+        assertEquals("Amount must be positive", exception.getMessage());
+
+    }
+
+    // Hecho por: Arturo Vinuesa Domínguez
+    @Test
+    @DisplayName("28. withdraw_Exceeds5k: Lanza excepción si amount > 5000")
+    void withdraw_Exceeds5kTest() {
+        // Given (Preparar cantidad inválida > 5000)
+        double amount = 6000.0;
+
+        // When (Llamar a accountService.withdraw usando assertThrows)
+        IllegalArgumentException exception = assertThrows(IllegalArgumentException.class, () -> {
+            accountService.withdraw("ES12345", amount, "Retirada grande");
+        });
+
+        // Then (Comprobar mensaje de excepción)
+        assertEquals("Amount exceeds maximum withdrawal limit", exception.getMessage());
+
+    }
+
+    // Hecho por: Raúl Tejada Merinero
+    @Test
+    @DisplayName("29. withdraw_InsufficientFunds: Lanza excepción si saldo < amount")
+    void withdraw_InsufficientFundsTest() {
+        // Given (Configurar Mock de BD para devolver cuenta con saldo menor que el retiro solicitado)
+        Account account = new Account("ES123", Account.AccountType.CHECKING, 50); // Solo tiene 50€
+        when(accountRepository.findByAccountNumber("ES123")).thenReturn(Optional.of(account));
+
+        // When (Llamar a accountService.withdraw usando assertThrows)
+        IllegalArgumentException exception = assertThrows(IllegalArgumentException.class, () -> {
+            accountService.withdraw("ES123", 100, "Compra cara"); // Intenta sacar 100€
+        });
+        
+        // Then (Comprobar mensaje de "Insufficient funds")
+        assertEquals("Insufficient funds", exception.getMessage());
+
+    }
+
+    // Hecho por: Arturo Vinuesa Domínguez
+    @Test
+    @DisplayName("30. withdraw_Success_Email: Retiro válido y notificación EMAIL")
+    void withdraw_Success_EmailTest() {
+        // Given (Configurar cuenta con fondos, User con EMAIL, Mocks de BD)
+        User user = new User();
+        user.setNotificationType(User.NotificationType.EMAIL);
+        Account userAccount = new Account("ES129", Account.AccountType.CHECKING, 500);
+        userAccount.setUser(user);
+
+        when(accountRepository.findByAccountNumber("ES129")).thenReturn(Optional.of(userAccount));
+        when(accountRepository.save(any(Account.class))).thenReturn(userAccount);
+
+        // When (Llamar a accountService.withdraw)
+        accountService.withdraw("ES129", 150, "Compra online");
+
+        // Then (Verificar resta de saldo, guardado en BD y llamada a emailService)
+        assertEquals(350, userAccount.getBalance());
+
+        verify(accountRepository, times(1)).findByAccountNumber("ES129");
+        verify(transactionRepository, times(1)).save(any(Transaction.class));
+        verify(accountRepository, times(1)).save(userAccount);
+        verify(emailService, times(1)).sendNotification(
+                eq(user),
+                eq(Notification.NotificationType.WITHDRAWAL),
+                anyString(),
+                anyString()
+        );
+
+        verifyNoInteractions(smsService);
+
+    }
+
+    // Hecho por: Blas
+    @Test
+    @DisplayName("31. withdraw_Success_Sms: Retiro válido y notificación SMS")
+    void withdraw_Success_SmsTest() {
+        // Given (Configurar cuenta con fondos, User con SMS, Mocks de BD)
+        User user = new User();
+        user.setNotificationType(User.NotificationType.SMS);
+        Account userAccount = new Account("ES128", Account.AccountType.CHECKING, 500);
+        userAccount.setUser(user);
+
+        when(accountRepository.findByAccountNumber("ES128")).thenReturn(Optional.of(userAccount));
+        when(accountRepository.save(any(Account.class))).thenReturn(userAccount);
+
+        // When (Llamar a accountService.withdraw)
+        accountService.withdraw("ES128", 150, "Compra tienda");
+
+        // Then (Verificar resta de saldo, guardado en BD y llamada a smsService)
+        assertEquals(350, userAccount.getBalance());
+
+        verify(accountRepository, times(1)).findByAccountNumber("ES128");
+        verify(transactionRepository, times(1)).save(any(Transaction.class));
+        verify(accountRepository, times(1)).save(userAccount);
+        verify(smsService, times(1)).sendNotification(
+                eq(user),
+                eq(Notification.NotificationType.WITHDRAWAL),
+                anyString(),
+                anyString()
+        );
+
+        verifyNoInteractions(emailService);
+
+    }
+
+    // Hecho por: Arturo Vinuesa Domínguez
+    @Test
+    @DisplayName("32. withdraw_Success_NoNotif: Retiro válido sin notificación")
+    void withdraw_Success_NoNotifTest() {
+        // Given (Configurar cuenta con fondos, User sin notificación, Mocks de BD)
+        User user = new User();
+        user.setNotificationType(null);
+        Account account = new Account("ES130", Account.AccountType.SAVINGS, 400);
+        account.setUser(user);
+
+        when(accountRepository.findByAccountNumber("ES130")).thenReturn(Optional.of(account));
+        when(accountRepository.save(any(Account.class))).thenReturn(account);
+
+        // When (Llamar a accountService.withdraw)
+        accountService.withdraw("ES130", 100, "Retirada cajero");
+
+        // Then (Verificar resta de saldo, guardado y cerciorarse de no llamar a notificaciones)
+        assertEquals(300, account.getBalance());
+        verify(accountRepository, times(1)).findByAccountNumber("ES130");
+        verify(transactionRepository, times(1)).save(any(Transaction.class));
+        verify(accountRepository, times(1)).save(account);
+        verifyNoInteractions(emailService, smsService);
+
+    }
+
+    // Hecho por: Adrián Varea Fernández
+    @Test
+    @DisplayName("33. withdraw_ExactBalance: retirar el saldo exacto deja la cuenta a 0")
+    void withdraw_ExactBalanceTest() {
+        // Given (Cuenta con fondos exactos y sin notificaciones)
+        User user = new User();
+        user.setNotificationType(null);
+        Account account = new Account("ES141", Account.AccountType.SAVINGS, 400);
+        account.setUser(user);
+
+        when(accountRepository.findByAccountNumber("ES141")).thenReturn(Optional.of(account));
+        when(accountRepository.save(any(Account.class))).thenReturn(account);
+
+        // When (Retirar exactamente todo el saldo disponible)
+        accountService.withdraw("ES141", 400, "Vaciar cuenta");
+
+        // Then (La operación se permite, guarda cambios y deja saldo a 0)
+        assertEquals(0, account.getBalance());
+        verify(accountRepository, times(1)).findByAccountNumber("ES141");
+        verify(transactionRepository, times(1)).save(any(Transaction.class));
+        verify(accountRepository, times(1)).save(account);
+        verifyNoInteractions(emailService, smsService);
+    }
+
+    // Hecho por: Blas Vita Ramos
+    @Test
+    @DisplayName("33.1 withdraw_DailyLimitNotExceeded: Permite retiro si no se supera el límite diario de 5000")
+    void withdraw_DailyLimitNotExceeded() {
+        User user = new User();
+        user.setNotificationType(null);
+        Account account = new Account("ES999", Account.AccountType.CHECKING, 10000);
+        account.setUser(user);
+        
+        Transaction t1 = new Transaction(account, Transaction.TransactionType.WITHDRAWAL, 3000, "Retiro previo");
+        t1.setTimestamp(LocalDateTime.now().minusHours(2));
+        account.setTransactions(List.of(t1));
+
+        when(accountRepository.findByAccountNumber("ES999")).thenReturn(Optional.of(account));
+        when(accountRepository.save(any(Account.class))).thenReturn(account);
+
+        accountService.withdraw("ES999", 1000, "Retiro valido");
+
+        assertEquals(9000, account.getBalance());
+        verify(transactionRepository, times(1)).save(any(Transaction.class));
+    }
+
+    @Test
+    @DisplayName("33.2 withdraw_DailyLimitExceeded: Lanza excepción si se supera el límite diario de 5000")
+    void withdraw_DailyLimitExceeded() {
+        Account account = new Account("ES999", Account.AccountType.CHECKING, 10000);
+        Transaction t1 = new Transaction(account, Transaction.TransactionType.WITHDRAWAL, 4500, "retiro previo");
+        t1.setTimestamp(LocalDateTime.now().minusHours(10));
+        account.setTransactions(List.of(t1));
+
+        when(accountRepository.findByAccountNumber("ES999")).thenReturn(Optional.of(account));
+
+        assertThrows(DailyWithdrawalLimitExceededException.class, () -> {
+            accountService.withdraw("ES999", 1000, "Retiro que excede");
+        });
+    }
+
+    @Test
+    @DisplayName("33.3 withdraw_DailyLimitWithOldTransactions: Retiros de más de 24h no cuentan para el límite")
+    void withdraw_DailyLimitWithOldTransactions() {
+        User user = new User();
+        user.setNotificationType(null);
+        Account account = new Account("ES999", Account.AccountType.CHECKING, 10000);
+        account.setUser(user);
+        
+        Transaction t1 = new Transaction(account, Transaction.TransactionType.WITHDRAWAL, 6000, "Retiro antiguo");
+        t1.setTimestamp(LocalDateTime.now().minusHours(48));
+        account.setTransactions(List.of(t1));
+
+        when(accountRepository.findByAccountNumber("ES999")).thenReturn(Optional.of(account));
+        when(accountRepository.save(any(Account.class))).thenReturn(account);
+
+        accountService.withdraw("ES999", 4000, "Retiro válido");
+
+        assertEquals(6000, account.getBalance());
+        verify(transactionRepository, times(1)).save(any(Transaction.class));
+    }
+
+
+    // FALLOS TRANSFER
+
+    // Hecho por: Adrián Villalba Cuello de Oro
+    @Test
+    @DisplayName("34. transfer_NegativeOrZero: Lanza excepción si amount <= 0")
+    void transfer_NegativeOrZeroTest() {
+        // Given (Preparar amount <= 0)
+        String fromAccountNumber = "ES0000123456";
+        String toAccountNumber = "ES0000654321";
+        double amount = -3.0;
+        Account source = new Account(fromAccountNumber, Account.AccountType.CHECKING, 500);
+        source.setUser(adultUser(1L, null));
+        when(accountRepository.findByAccountNumber(fromAccountNumber)).thenReturn(Optional.of(source));
+        when(userService.isMinor(1L)).thenReturn(false);
+
+        // When (Llamar a accountService.transfer usando assertThrows)
+        IllegalArgumentException exception = assertThrows(IllegalArgumentException.class, () -> {
+            accountService.transfer(fromAccountNumber, toAccountNumber, amount);
+        });
+
+        // Then (Comprobar mensaje de excepción)
+        assertEquals("Amount must be positive", exception.getMessage());
+
+    }
+
+    // Hecho por: Arturo Vinuesa Domínguez
+    @Test
+    @DisplayName("35. transfer_Exceeds20k: Lanza excepción si amount > 20000")
+    void transfer_Exceeds20kTest() {
+        // Given (Preparar amount > 20000)
+        double amount = 25000.0;
+        Account source = new Account("ES131", Account.AccountType.CHECKING, 500);
+        source.setUser(adultUser(2L, null));
+        when(accountRepository.findByAccountNumber("ES131")).thenReturn(Optional.of(source));
+        when(userService.isMinor(2L)).thenReturn(false);
+
+        // When (Llamar a accountService.transfer usando assertThrows)
+        IllegalArgumentException exception = assertThrows(IllegalArgumentException.class, () -> {
+            accountService.transfer("ES131", "ES132", amount);
+        });
+
+        // Then (Comprobar mensaje de excepción)
+        assertEquals("Amount exceeds maximum transfer limit", exception.getMessage());
+
+    }
+
+    // Hecho por: Raúl Tejada Merinero
+    @Test
+    @DisplayName("36. transfer_SameAccount: Lanza excepción si origen y destino son la misma cuenta")
+    void transfer_SameAccountTest() {
+        // Given (Mock BD devuelve la misma instancia de cuenta para origen y destino)
+        Account account = new Account("ES123", Account.AccountType.CHECKING, 500);
+        account.setUser(adultUser(3L, null));
+        // Cuando busque el origen y el destino, devolvemos la MISMA cuenta
+        when(accountRepository.findByAccountNumber("ES123")).thenReturn(Optional.of(account));
+        when(userService.isMinor(3L)).thenReturn(false);
+
+        // When (Llamar a accountService.transfer usando assertThrows)
+        IllegalArgumentException exception = assertThrows(IllegalArgumentException.class, () -> {
+            accountService.transfer("ES123", "ES123", 50);
+        });
+
+        // Then (Comprobar mensaje "Cannot transfer to same account")
+        assertEquals("Cannot transfer to same account", exception.getMessage());
+
+    }
+
+    // Hecho por: Arturo Vinuesa Domínguez
+    @Test
+    @DisplayName("37. transfer_InsufficientFunds: Lanza excepción si saldo origen < amount")
+    void transfer_InsufficientFundsTest() {
+        // Given (Mock BD devuelve cuenta origen sin fondos y cuenta destino normal)
+        User user = adultUser(4L, null);
+        Account source = new Account("ES133", Account.AccountType.CHECKING, 50);
+        Account destination = new Account("ES134", Account.AccountType.SAVINGS, 100);
+        source.setUser(user);
+        destination.setUser(user);
+
+        when(accountRepository.findByAccountNumber("ES133")).thenReturn(Optional.of(source));
+        when(accountRepository.findByAccountNumber("ES134")).thenReturn(Optional.of(destination));
+        when(userService.isMinor(4L)).thenReturn(false);
+
+        // When (Llamar a accountService.transfer usando assertThrows)
+        IllegalArgumentException exception = assertThrows(IllegalArgumentException.class, () -> {
+            accountService.transfer("ES133", "ES134", 100);
+        });
+
+        // Then (Comprobar mensaje "Insufficient funds")
+        assertEquals("Insufficient funds", exception.getMessage());
+
+    }
+
+    // ÉXITOS TRANSFER
+
+    // Hecho por: Arturo Vinuesa Domínguez
+    @Test
+    @DisplayName("38. transfer_Success_Emails: Transferencia válida. Remitente EMAIL, Destinatario EMAIL")
+    void transfer_Success_EmailsTest() {
+        // Given (Mock BD devuelve cuentas válidas con User en EMAIL)
+        User sourceUser = adultUser(5L, User.NotificationType.EMAIL);
+        User destinationUser = adultUser(6L, User.NotificationType.EMAIL);
+        Account source = new Account("ES135", Account.AccountType.CHECKING, 500);
+        Account destination = new Account("ES136", Account.AccountType.SAVINGS, 100);
+        source.setUser(sourceUser);
+        destination.setUser(destinationUser);
+
+        when(accountRepository.findByAccountNumber("ES135")).thenReturn(Optional.of(source));
+        when(accountRepository.findByAccountNumber("ES136")).thenReturn(Optional.of(destination));
+        when(userService.isMinor(5L)).thenReturn(false);
+
+        // When (Llamar a accountService.transfer)
+        accountService.transfer("ES135", "ES136", 200);
+
+        // Then (Verificar intercambio de saldos, guardado de transacciones y llamadas a emailService)
+        assertEquals(300, source.getBalance());
+        assertEquals(300, destination.getBalance());
+
+        verify(transactionRepository, times(2)).save(any(Transaction.class));
+        verify(accountRepository, times(1)).save(source);
+        verify(accountRepository, times(1)).save(destination);
+        verify(emailService, times(1)).sendNotification(
+                eq(sourceUser),
+                eq(Notification.NotificationType.TRANSFER),
+                eq("Transfer Sent"),
+                anyString()
+        );
+        verify(emailService, times(1)).sendNotification(
+                eq(destinationUser),
+                eq(Notification.NotificationType.TRANSFER),
+                eq("Transfer Received"),
+                anyString()
+        );
+        verifyNoInteractions(smsService);
+
+    }
+
+    // Hecho por: Arturo Vinuesa Domínguez
+    @Test
+    @DisplayName("39. transfer_Success_Sms: Transferencia válida. Remitente SMS, Destinatario SMS")
+    void transfer_Success_SmsTest() {
+        // Given (Mock BD devuelve cuentas válidas con User en SMS)
+        User sourceUser = adultUser(7L, User.NotificationType.SMS);
+        User destinationUser = adultUser(8L, User.NotificationType.SMS);
+        Account source = new Account("ES137", Account.AccountType.CHECKING, 700);
+        Account destination = new Account("ES138", Account.AccountType.SAVINGS, 200);
+        source.setUser(sourceUser);
+        destination.setUser(destinationUser);
+
+        when(accountRepository.findByAccountNumber("ES137")).thenReturn(Optional.of(source));
+        when(accountRepository.findByAccountNumber("ES138")).thenReturn(Optional.of(destination));
+        when(userService.isMinor(7L)).thenReturn(false);
+
+        // When (Llamar a accountService.transfer)
+        accountService.transfer("ES137", "ES138", 300);
+
+        // Then (Verificar intercambio de saldos, guardado de transacciones y llamadas a smsService)
+        assertEquals(400, source.getBalance());
+        assertEquals(500, destination.getBalance());
+
+        verify(transactionRepository, times(2)).save(any(Transaction.class));
+        verify(accountRepository, times(1)).save(source);
+        verify(accountRepository, times(1)).save(destination);
+        verify(smsService, times(1)).sendNotification(
+                eq(sourceUser),
+                eq(Notification.NotificationType.TRANSFER),
+                eq("Transfer Sent"),
+                anyString()
+        );
+        verify(smsService, times(1)).sendNotification(
+                eq(destinationUser),
+                eq(Notification.NotificationType.TRANSFER),
+                eq("Transfer Received"),
+                anyString()
+        );
+        verifyNoInteractions(emailService);
+    }
+
+    // Hecho por: Raúl Tejada Merinero
+    @Test
+    @DisplayName("40. transfer_Success_NoNotifs: Transferencia válida sin notificaciones configuradas")
+    void transfer_Success_NoNotifsTest() {
+        // Given (Mock BD devuelve cuentas válidas con User sin notificaciones)
+        User user = adultUser(9L, null);
+        Account origen = new Account("ES1", Account.AccountType.CHECKING, 500);
+        Account destino = new Account("ES2", Account.AccountType.SAVINGS, 100);
+        origen.setUser(user);
+        destino.setUser(user);
+
+        when(accountRepository.findByAccountNumber("ES1")).thenReturn(Optional.of(origen));
+        when(accountRepository.findByAccountNumber("ES2")).thenReturn(Optional.of(destino));
+        when(userService.isMinor(9L)).thenReturn(false);
+
+        // When (Llamar a accountService.transfer)
+        accountService.transfer("ES1", "ES2", 200);
+
+        // Then (Verificar transferencia completa usando verifyNoInteractions() en notificaciones)
+        assertEquals(300, origen.getBalance());
+        assertEquals(300, destino.getBalance());
+        verify(transactionRepository, times(2)).save(any(Transaction.class)); // 2 transacciones creadas
+        verifyNoInteractions(emailService, smsService);
+    }
+
+    @Test
+    @DisplayName("43. transfer_MinorUser: Lanza excepción si el usuario es menor de edad")
+    void transfer_MinorUserTest() {
+        User user = minorUser(10L, null);
+        Account source = new Account("ES200", Account.AccountType.CHECKING, 500);
+        source.setUser(user);
+
+        when(accountRepository.findByAccountNumber("ES200")).thenReturn(Optional.of(source));
+        when(userService.isMinor(10L)).thenReturn(true);
+
+        IllegalArgumentException exception = assertThrows(IllegalArgumentException.class, () -> {
+            accountService.transfer("ES200", "ES201", 50);
+        });
+
+        assertEquals("Minors cannot make transfers", exception.getMessage());
+        verifyNoInteractions(transactionRepository, emailService, smsService);
+    }
+
+    @Test
+    @DisplayName("44. transfer_NullBirthDate: Lanza excepción si el perfil no tiene fecha de nacimiento")
+    void transfer_NullBirthDateTest() {
+        User user = new User();
+        user.setId(12L);
+        user.setBirthDate(null);
+        Account source = new Account("ES210", Account.AccountType.CHECKING, 500);
+        source.setUser(user);
+
+        when(accountRepository.findByAccountNumber("ES210")).thenReturn(Optional.of(source));
+
+        IllegalArgumentException exception = assertThrows(IllegalArgumentException.class, () -> {
+            accountService.transfer("ES210", "ES211", 50);
+        });
+
+        assertEquals("Minors cannot make transfers", exception.getMessage());
+        verifyNoInteractions(userService, transactionRepository, emailService, smsService);
+    }
+
+
+    // USUARIO BANEADO
+
+    // Hecho por: Adrián Varea Fernández
+    @Test
+    @DisplayName("45. banned_DefaultValue: isBanned() devuelve false por defecto")
+    void banned_DefaultValueTest() {
+        // Given
+        User user = new User();
+
+        // Then
+        assertFalse(user.isBanned());
+    }
+
+    // Hecho por: Adrián Varea Fernández
+    @Test
+    @DisplayName("46. banned_SetTrue: setBanned(true) hace que isBanned() devuelva true")
+    void banned_SetTrueTest() {
+        // Given
+        User user = new User();
+
+        // When
+        user.setBanned(true);
+
+        // Then
+        assertTrue(user.isBanned());
+    }
+
+    // Hecho por: Adrián Varea Fernández
+    @Test
+    @DisplayName("47. banned_SetFalse: setBanned(false) revierte el ban")
+    void banned_SetFalseTest() {
+        // Given
+        User user = new User();
+        user.setBanned(true);
+
+        // When
+        assertTrue(user.isBanned()); // Verificamos que el usuario está baneado antes de revertirlo
+        user.setBanned(false);
+
+        // Then
+        assertFalse(user.isBanned());
+    }
+
+    // Hecho por: Adrián Varea Fernández
+    @Test
+    @DisplayName("48. deposit_BannedUser: Lanza IllegalStateException si el usuario está baneado")
+    void deposit_BannedUserTest() {
+        // Given
+        User bannedUser = new User();
+        bannedUser.setBanned(true);
+        Account account = new Account("ES200", Account.AccountType.CHECKING, 100);
+        account.setUser(bannedUser);
+        when(accountRepository.findByAccountNumber("ES200")).thenReturn(Optional.of(account));
+
+        // When
+        IllegalStateException exception = assertThrows(IllegalStateException.class, () -> {
+            accountService.deposit("ES200", 50, "Ingreso bloqueado");
+        });
+
+        // Then
+        assertEquals("El usuario está baneado y no puede depositar dinero.", exception.getMessage());
+        verify(transactionRepository, times(0)).save(any(Transaction.class));
+        verify(accountRepository, times(0)).save(any(Account.class));
+        verifyNoInteractions(emailService, smsService);
+    }
+
+    // Hecho por: Adrián Varea Fernández
+    @Test
+    @DisplayName("49. withdraw_BannedUser: Lanza IllegalStateException si el usuario está baneado")
+    void withdraw_BannedUserTest() {
+        // Given
+        User bannedUser = new User();
+        bannedUser.setBanned(true);
+        Account account = new Account("ES201", Account.AccountType.CHECKING, 500);
+        account.setUser(bannedUser);
+        when(accountRepository.findByAccountNumber("ES201")).thenReturn(Optional.of(account));
+
+        // When
+        IllegalStateException exception = assertThrows(IllegalStateException.class, () -> {
+            accountService.withdraw("ES201", 100, "Retirada bloqueada");
+        });
+
+        // Then
+        assertEquals("El usuario está baneado y no puede retirar dinero.", exception.getMessage());
+        verify(transactionRepository, times(0)).save(any(Transaction.class));
+        verify(accountRepository, times(0)).save(any(Account.class));
+        verifyNoInteractions(emailService, smsService);
+    }
     
-
-    // Hecho por: Blas
-    @Test
-    @DisplayName("23. quickDeposit_Success_Email: Ingreso rápido y notificación por EMAIL")
-    void quickDeposit_Success_EmailTest() {
-        // Given (Configurar User con EMAIL, configurar Mocks de BD)
-        User user = new User();
-
-        user.setNotificationType(User.NotificationType.EMAIL);
-        Account userAccount = new Account("ES125", Account.AccountType.CHECKING, 300);
-        userAccount.setUser(user);
-
-        when(accountRepository.findByAccountNumber("ES125")).thenReturn(Optional.of(userAccount));
-        when(accountRepository.save(any(Account.class))).thenReturn(userAccount);
-
-        // When (Llamar al deposit rápido con cantidad válida)
-        accountService.deposit("ES125", 100);
-
-        // Then (Verificar guardado en BD y llamada a emailService)
-        assertEquals(400, userAccount.getBalance());
-        verify(accountRepository, times(1)).findByAccountNumber("ES125");
-        verify(transactionRepository, times(1)).save(any(Transaction.class));
-        verify(accountRepository, times(1)).save(userAccount);
-        verify(emailService, times(1)).sendNotification(
-            eq(user),
-            eq(Notification.NotificationType.DEPOSIT),
-            anyString(),
-            anyString()
-        );
-
-        verifyNoInteractions(smsService);
-
-    }
-
-    // Hecho por: Blas
-    @Test
-    @DisplayName("24. quickDeposit_Success_Sms: Ingreso rápido y notificación por SMS")
-    void quickDeposit_Success_SmsTest() {
-        // Given (Configurar User con SMS, configurar Mocks de BD)
-        User user = new User();
-        user.setNotificationType(User.NotificationType.SMS);
-        Account userAccount = new Account("ES126", Account.AccountType.SAVINGS, 250);
-        userAccount.setUser(user);
-
-        when(accountRepository.findByAccountNumber("ES126")).thenReturn(Optional.of(userAccount));
-        when(accountRepository.save(any(Account.class))).thenReturn(userAccount);
-
-        // When (Llamar al deposit rápido con cantidad válida)
-        accountService.deposit("ES126", 150);
-
-        // Then (Verificar guardado en BD y llamada a smsService)
-        assertEquals(400, userAccount.getBalance());
-
-        verify(accountRepository, times(1)).findByAccountNumber("ES126");
-        verify(transactionRepository, times(1)).save(any(Transaction.class));
-        verify(accountRepository, times(1)).save(userAccount);
-        verify(smsService, times(1)).sendNotification(
-            eq(user),
-            eq(Notification.NotificationType.DEPOSIT),
-            anyString(),
-            anyString()
-        );
-
-        verifyNoInteractions(emailService);
-
-    }
-
-    // Hecho por: Blas
-    @Test
-    @DisplayName("25. quickDeposit_Success_NoNotif: Ingreso rápido sin notificación")
-    void quickDeposit_Success_NoNotifTest() {
-        // Given (Configurar User sin notificaciones configuradas, configurar Mocks de BD)
-        User user = new User();
-        user.setNotificationType(null); // Sin notificaciones
-        Account userAccount = new Account("ES127", Account.AccountType.SAVINGS, 150);
-        userAccount.setUser(user);
-
-        when(accountRepository.findByAccountNumber("ES127")).thenReturn(Optional.of(userAccount));
-        when(accountRepository.save(any(Account.class))).thenReturn(userAccount);
-
-        // When (Llamar al deposit rápido con cantidad válida)
-        accountService.deposit("ES127", 50);
-
-        // Then (Verificar guardado y verificar que no se llamaron servicios de notificación)
-        assertEquals(200, userAccount.getBalance());
-
-        verify(accountRepository, times(1)).findByAccountNumber("ES127");
-        verify(transactionRepository, times(1)).save(any(Transaction.class));
-        verify(accountRepository, times(1)).save(userAccount);
-
-        verifyNoInteractions(emailService, smsService);
-
-    }
-
-    // Hecho por: Adrián Varea Fernández
-    @Test
-    @DisplayName("26. quickDeposit_DefaultDescription: El ingreso rápido guarda la descripción por defecto")
-    void quickDeposit_DefaultDescriptionTest() {
-        // Given (Cuenta válida y captura de la transacción persistida)
-        User user = new User();
-        user.setNotificationType(null);
-        Account account = new Account("ES140", Account.AccountType.CHECKING, 200);
-        account.setUser(user);
-        ArgumentCaptor<Transaction> transactionCaptor = ArgumentCaptor.forClass(Transaction.class);
-
-        when(accountRepository.findByAccountNumber("ES140")).thenReturn(Optional.of(account));
-        when(accountRepository.save(any(Account.class))).thenReturn(account);
-
-        // When (Llamar al ingreso rápido, que debe usar la descripción por defecto)
-        accountService.deposit("ES140", 25);
-
-        // Then (Comprobar la descripción por defecto y el resto de efectos esperados)
-        verify(transactionRepository, times(1)).save(transactionCaptor.capture());
-        assertEquals("Quick deposit", transactionCaptor.getValue().getDescription());
-        assertEquals(Transaction.TransactionType.DEPOSIT, transactionCaptor.getValue().getType());
-        assertEquals(225, account.getBalance());
-        verifyNoInteractions(emailService, smsService);
-    }
-
-
-    // RETIROS / WITHDRAW)
-
-    // Hecho por: Adrián Villalba Cuello de Oro
-    @Test
-    @DisplayName("27. withdraw_NegativeOrZero: Lanza excepción si amount <= 0")
-    void withdraw_NegativeOrZeroTest() {
-        // Given (Preparar cantidad inválida <= 0)
-        String accountNumber = "ES0000123456";
-        double amount = -3.0;
-
-        // When (Llamar a accountService.withdraw usando assertThrows)
-        IllegalArgumentException exception = assertThrows(IllegalArgumentException.class, () -> {
-            accountService.withdraw(accountNumber, amount, "Retirada de prueba");
-        });
-
-        // Then (Comprobar mensaje de excepción)
-        assertEquals("Amount must be positive", exception.getMessage());
-
-    }
-
-    // Hecho por: Arturo Vinuesa Domínguez
-    @Test
-    @DisplayName("28. withdraw_Exceeds5k: Lanza excepción si amount > 5000")
-    void withdraw_Exceeds5kTest() {
-        // Given (Preparar cantidad inválida > 5000)
-        double amount = 6000.0;
-
-        // When (Llamar a accountService.withdraw usando assertThrows)
-        IllegalArgumentException exception = assertThrows(IllegalArgumentException.class, () -> {
-            accountService.withdraw("ES12345", amount, "Retirada grande");
-        });
-
-        // Then (Comprobar mensaje de excepción)
-        assertEquals("Amount exceeds maximum withdrawal limit", exception.getMessage());
-
-    }
-
-    // Hecho por: Raúl Tejada Merinero
-    @Test
-    @DisplayName("29. withdraw_InsufficientFunds: Lanza excepción si saldo < amount")
-    void withdraw_InsufficientFundsTest() {
-        // Given (Configurar Mock de BD para devolver cuenta con saldo menor que el retiro solicitado)
-        Account account = new Account("ES123", Account.AccountType.CHECKING, 50); // Solo tiene 50€
-        when(accountRepository.findByAccountNumber("ES123")).thenReturn(Optional.of(account));
-
-        // When (Llamar a accountService.withdraw usando assertThrows)
-        IllegalArgumentException exception = assertThrows(IllegalArgumentException.class, () -> {
-            accountService.withdraw("ES123", 100, "Compra cara"); // Intenta sacar 100€
-        });
-        
-        // Then (Comprobar mensaje de "Insufficient funds")
-        assertEquals("Insufficient funds", exception.getMessage());
-
-    }
-
-    // Hecho por: Arturo Vinuesa Domínguez
-    @Test
-    @DisplayName("30. withdraw_Success_Email: Retiro válido y notificación EMAIL")
-    void withdraw_Success_EmailTest() {
-        // Given (Configurar cuenta con fondos, User con EMAIL, Mocks de BD)
-        User user = new User();
-        user.setNotificationType(User.NotificationType.EMAIL);
-        Account userAccount = new Account("ES129", Account.AccountType.CHECKING, 500);
-        userAccount.setUser(user);
-
-        when(accountRepository.findByAccountNumber("ES129")).thenReturn(Optional.of(userAccount));
-        when(accountRepository.save(any(Account.class))).thenReturn(userAccount);
-
-        // When (Llamar a accountService.withdraw)
-        accountService.withdraw("ES129", 150, "Compra online");
-
-        // Then (Verificar resta de saldo, guardado en BD y llamada a emailService)
-        assertEquals(350, userAccount.getBalance());
-
-        verify(accountRepository, times(1)).findByAccountNumber("ES129");
-        verify(transactionRepository, times(1)).save(any(Transaction.class));
-        verify(accountRepository, times(1)).save(userAccount);
-        verify(emailService, times(1)).sendNotification(
-                eq(user),
-                eq(Notification.NotificationType.WITHDRAWAL),
-                anyString(),
-                anyString()
-        );
-
-        verifyNoInteractions(smsService);
-
-    }
-
-    // Hecho por: Blas
-    @Test
-    @DisplayName("31. withdraw_Success_Sms: Retiro válido y notificación SMS")
-    void withdraw_Success_SmsTest() {
-        // Given (Configurar cuenta con fondos, User con SMS, Mocks de BD)
-        User user = new User();
-        user.setNotificationType(User.NotificationType.SMS);
-        Account userAccount = new Account("ES128", Account.AccountType.CHECKING, 500);
-        userAccount.setUser(user);
-
-        when(accountRepository.findByAccountNumber("ES128")).thenReturn(Optional.of(userAccount));
-        when(accountRepository.save(any(Account.class))).thenReturn(userAccount);
-
-        // When (Llamar a accountService.withdraw)
-        accountService.withdraw("ES128", 150, "Compra tienda");
-
-        // Then (Verificar resta de saldo, guardado en BD y llamada a smsService)
-        assertEquals(350, userAccount.getBalance());
-
-        verify(accountRepository, times(1)).findByAccountNumber("ES128");
-        verify(transactionRepository, times(1)).save(any(Transaction.class));
-        verify(accountRepository, times(1)).save(userAccount);
-        verify(smsService, times(1)).sendNotification(
-                eq(user),
-                eq(Notification.NotificationType.WITHDRAWAL),
-                anyString(),
-                anyString()
-        );
-
-        verifyNoInteractions(emailService);
-
-    }
-
-    // Hecho por: Arturo Vinuesa Domínguez
-    @Test
-    @DisplayName("32. withdraw_Success_NoNotif: Retiro válido sin notificación")
-    void withdraw_Success_NoNotifTest() {
-        // Given (Configurar cuenta con fondos, User sin notificación, Mocks de BD)
-        User user = new User();
-        user.setNotificationType(null);
-        Account account = new Account("ES130", Account.AccountType.SAVINGS, 400);
-        account.setUser(user);
-
-        when(accountRepository.findByAccountNumber("ES130")).thenReturn(Optional.of(account));
-        when(accountRepository.save(any(Account.class))).thenReturn(account);
-
-        // When (Llamar a accountService.withdraw)
-        accountService.withdraw("ES130", 100, "Retirada cajero");
-
-        // Then (Verificar resta de saldo, guardado y cerciorarse de no llamar a notificaciones)
-        assertEquals(300, account.getBalance());
-        verify(accountRepository, times(1)).findByAccountNumber("ES130");
-        verify(transactionRepository, times(1)).save(any(Transaction.class));
-        verify(accountRepository, times(1)).save(account);
-        verifyNoInteractions(emailService, smsService);
-
-    }
-
-    // Hecho por: Adrián Varea Fernández
-    @Test
-    @DisplayName("33. withdraw_ExactBalance: retirar el saldo exacto deja la cuenta a 0")
-    void withdraw_ExactBalanceTest() {
-        // Given (Cuenta con fondos exactos y sin notificaciones)
-        User user = new User();
-        user.setNotificationType(null);
-        Account account = new Account("ES141", Account.AccountType.SAVINGS, 400);
-        account.setUser(user);
-
-        when(accountRepository.findByAccountNumber("ES141")).thenReturn(Optional.of(account));
-        when(accountRepository.save(any(Account.class))).thenReturn(account);
-
-        // When (Retirar exactamente todo el saldo disponible)
-        accountService.withdraw("ES141", 400, "Vaciar cuenta");
-
-        // Then (La operación se permite, guarda cambios y deja saldo a 0)
-        assertEquals(0, account.getBalance());
-        verify(accountRepository, times(1)).findByAccountNumber("ES141");
-        verify(transactionRepository, times(1)).save(any(Transaction.class));
-        verify(accountRepository, times(1)).save(account);
-        verifyNoInteractions(emailService, smsService);
-    }
-
-    // Hecho por: Blas Vita Ramos
-    @Test
-    @DisplayName("33.1 withdraw_DailyLimitNotExceeded: Permite retiro si no se supera el límite diario de 5000")
-    void withdraw_DailyLimitNotExceeded() {
-        User user = new User();
-        user.setNotificationType(null);
-        Account account = new Account("ES999", Account.AccountType.CHECKING, 10000);
-        account.setUser(user);
-        
-        Transaction t1 = new Transaction(account, Transaction.TransactionType.WITHDRAWAL, 3000, "Retiro previo");
-        t1.setTimestamp(LocalDateTime.now().minusHours(2));
-        account.setTransactions(List.of(t1));
-
-        when(accountRepository.findByAccountNumber("ES999")).thenReturn(Optional.of(account));
-        when(accountRepository.save(any(Account.class))).thenReturn(account);
-
-        accountService.withdraw("ES999", 1000, "Retiro valido");
-
-        assertEquals(9000, account.getBalance());
-        verify(transactionRepository, times(1)).save(any(Transaction.class));
-    }
-
-    @Test
-    @DisplayName("33.2 withdraw_DailyLimitExceeded: Lanza excepción si se supera el límite diario de 5000")
-    void withdraw_DailyLimitExceeded() {
-        Account account = new Account("ES999", Account.AccountType.CHECKING, 10000);
-        Transaction t1 = new Transaction(account, Transaction.TransactionType.WITHDRAWAL, 4500, "retiro previo");
-        t1.setTimestamp(LocalDateTime.now().minusHours(10));
-        account.setTransactions(List.of(t1));
-
-        when(accountRepository.findByAccountNumber("ES999")).thenReturn(Optional.of(account));
-
-        assertThrows(DailyWithdrawalLimitExceededException.class, () -> {
-            accountService.withdraw("ES999", 1000, "Retiro que excede");
-        });
-    }
-
-    @Test
-    @DisplayName("33.3 withdraw_DailyLimitWithOldTransactions: Retiros de más de 24h no cuentan para el límite")
-    void withdraw_DailyLimitWithOldTransactions() {
-        User user = new User();
-        user.setNotificationType(null);
-        Account account = new Account("ES999", Account.AccountType.CHECKING, 10000);
-        account.setUser(user);
-        
-        Transaction t1 = new Transaction(account, Transaction.TransactionType.WITHDRAWAL, 6000, "Retiro antiguo");
-        t1.setTimestamp(LocalDateTime.now().minusHours(48));
-        account.setTransactions(List.of(t1));
-
-        when(accountRepository.findByAccountNumber("ES999")).thenReturn(Optional.of(account));
-        when(accountRepository.save(any(Account.class))).thenReturn(account);
-
-        accountService.withdraw("ES999", 4000, "Retiro válido");
-
-        assertEquals(6000, account.getBalance());
-        verify(transactionRepository, times(1)).save(any(Transaction.class));
-    }
-
-
-    // FALLOS TRANSFER
-
-    // Hecho por: Adrián Villalba Cuello de Oro
-    @Test
-    @DisplayName("34. transfer_NegativeOrZero: Lanza excepción si amount <= 0")
-    void transfer_NegativeOrZeroTest() {
-        // Given (Preparar amount <= 0)
-        String fromAccountNumber = "ES0000123456";
-        String toAccountNumber = "ES0000654321";
-        double amount = -3.0;
-        Account source = new Account(fromAccountNumber, Account.AccountType.CHECKING, 500);
-        source.setUser(adultUser(1L, null));
-        when(accountRepository.findByAccountNumber(fromAccountNumber)).thenReturn(Optional.of(source));
-        when(userService.isMinor(1L)).thenReturn(false);
-
-        // When (Llamar a accountService.transfer usando assertThrows)
-        IllegalArgumentException exception = assertThrows(IllegalArgumentException.class, () -> {
-            accountService.transfer(fromAccountNumber, toAccountNumber, amount);
-        });
-
-        // Then (Comprobar mensaje de excepción)
-        assertEquals("Amount must be positive", exception.getMessage());
-
-    }
-
-    // Hecho por: Arturo Vinuesa Domínguez
-    @Test
-    @DisplayName("35. transfer_Exceeds20k: Lanza excepción si amount > 20000")
-    void transfer_Exceeds20kTest() {
-        // Given (Preparar amount > 20000)
-        double amount = 25000.0;
-        Account source = new Account("ES131", Account.AccountType.CHECKING, 500);
-        source.setUser(adultUser(2L, null));
-        when(accountRepository.findByAccountNumber("ES131")).thenReturn(Optional.of(source));
-        when(userService.isMinor(2L)).thenReturn(false);
-
-        // When (Llamar a accountService.transfer usando assertThrows)
-        IllegalArgumentException exception = assertThrows(IllegalArgumentException.class, () -> {
-            accountService.transfer("ES131", "ES132", amount);
-        });
-
-        // Then (Comprobar mensaje de excepción)
-        assertEquals("Amount exceeds maximum transfer limit", exception.getMessage());
-
-    }
-
-    // Hecho por: Raúl Tejada Merinero
-    @Test
-    @DisplayName("36. transfer_SameAccount: Lanza excepción si origen y destino son la misma cuenta")
-    void transfer_SameAccountTest() {
-        // Given (Mock BD devuelve la misma instancia de cuenta para origen y destino)
-        Account account = new Account("ES123", Account.AccountType.CHECKING, 500);
-        account.setUser(adultUser(3L, null));
-        // Cuando busque el origen y el destino, devolvemos la MISMA cuenta
-        when(accountRepository.findByAccountNumber("ES123")).thenReturn(Optional.of(account));
-        when(userService.isMinor(3L)).thenReturn(false);
-
-        // When (Llamar a accountService.transfer usando assertThrows)
-        IllegalArgumentException exception = assertThrows(IllegalArgumentException.class, () -> {
-            accountService.transfer("ES123", "ES123", 50);
-        });
-
-        // Then (Comprobar mensaje "Cannot transfer to same account")
-        assertEquals("Cannot transfer to same account", exception.getMessage());
-
-    }
-
-    // Hecho por: Arturo Vinuesa Domínguez
-    @Test
-    @DisplayName("37. transfer_InsufficientFunds: Lanza excepción si saldo origen < amount")
-    void transfer_InsufficientFundsTest() {
-        // Given (Mock BD devuelve cuenta origen sin fondos y cuenta destino normal)
-        User user = adultUser(4L, null);
-        Account source = new Account("ES133", Account.AccountType.CHECKING, 50);
-        Account destination = new Account("ES134", Account.AccountType.SAVINGS, 100);
-        source.setUser(user);
-        destination.setUser(user);
-
-        when(accountRepository.findByAccountNumber("ES133")).thenReturn(Optional.of(source));
-        when(accountRepository.findByAccountNumber("ES134")).thenReturn(Optional.of(destination));
-        when(userService.isMinor(4L)).thenReturn(false);
-
-        // When (Llamar a accountService.transfer usando assertThrows)
-        IllegalArgumentException exception = assertThrows(IllegalArgumentException.class, () -> {
-            accountService.transfer("ES133", "ES134", 100);
-        });
-
-        // Then (Comprobar mensaje "Insufficient funds")
-        assertEquals("Insufficient funds", exception.getMessage());
-
-    }
-
-    // ÉXITOS TRANSFER
-
-    // Hecho por: Arturo Vinuesa Domínguez
-    @Test
-    @DisplayName("38. transfer_Success_Emails: Transferencia válida. Remitente EMAIL, Destinatario EMAIL")
-    void transfer_Success_EmailsTest() {
-        // Given (Mock BD devuelve cuentas válidas con User en EMAIL)
-        User sourceUser = adultUser(5L, User.NotificationType.EMAIL);
-        User destinationUser = adultUser(6L, User.NotificationType.EMAIL);
-        Account source = new Account("ES135", Account.AccountType.CHECKING, 500);
-        Account destination = new Account("ES136", Account.AccountType.SAVINGS, 100);
-        source.setUser(sourceUser);
-        destination.setUser(destinationUser);
-
-        when(accountRepository.findByAccountNumber("ES135")).thenReturn(Optional.of(source));
-        when(accountRepository.findByAccountNumber("ES136")).thenReturn(Optional.of(destination));
-        when(userService.isMinor(5L)).thenReturn(false);
-
-        // When (Llamar a accountService.transfer)
-        accountService.transfer("ES135", "ES136", 200);
-
-        // Then (Verificar intercambio de saldos, guardado de transacciones y llamadas a emailService)
-        assertEquals(300, source.getBalance());
-        assertEquals(300, destination.getBalance());
-
-        verify(transactionRepository, times(2)).save(any(Transaction.class));
-        verify(accountRepository, times(1)).save(source);
-        verify(accountRepository, times(1)).save(destination);
-        verify(emailService, times(1)).sendNotification(
-                eq(sourceUser),
-                eq(Notification.NotificationType.TRANSFER),
-                eq("Transfer Sent"),
-                anyString()
-        );
-        verify(emailService, times(1)).sendNotification(
-                eq(destinationUser),
-                eq(Notification.NotificationType.TRANSFER),
-                eq("Transfer Received"),
-                anyString()
-        );
-        verifyNoInteractions(smsService);
-
-    }
-
-    // Hecho por: Arturo Vinuesa Domínguez
-    @Test
-    @DisplayName("39. transfer_Success_Sms: Transferencia válida. Remitente SMS, Destinatario SMS")
-    void transfer_Success_SmsTest() {
-        // Given (Mock BD devuelve cuentas válidas con User en SMS)
-        User sourceUser = adultUser(7L, User.NotificationType.SMS);
-        User destinationUser = adultUser(8L, User.NotificationType.SMS);
-        Account source = new Account("ES137", Account.AccountType.CHECKING, 700);
-        Account destination = new Account("ES138", Account.AccountType.SAVINGS, 200);
-        source.setUser(sourceUser);
-        destination.setUser(destinationUser);
-
-        when(accountRepository.findByAccountNumber("ES137")).thenReturn(Optional.of(source));
-        when(accountRepository.findByAccountNumber("ES138")).thenReturn(Optional.of(destination));
-        when(userService.isMinor(7L)).thenReturn(false);
-
-        // When (Llamar a accountService.transfer)
-        accountService.transfer("ES137", "ES138", 300);
-
-        // Then (Verificar intercambio de saldos, guardado de transacciones y llamadas a smsService)
-        assertEquals(400, source.getBalance());
-        assertEquals(500, destination.getBalance());
-
-        verify(transactionRepository, times(2)).save(any(Transaction.class));
-        verify(accountRepository, times(1)).save(source);
-        verify(accountRepository, times(1)).save(destination);
-        verify(smsService, times(1)).sendNotification(
-                eq(sourceUser),
-                eq(Notification.NotificationType.TRANSFER),
-                eq("Transfer Sent"),
-                anyString()
-        );
-        verify(smsService, times(1)).sendNotification(
-                eq(destinationUser),
-                eq(Notification.NotificationType.TRANSFER),
-                eq("Transfer Received"),
-                anyString()
-        );
-        verifyNoInteractions(emailService);
-    }
-
-    // Hecho por: Raúl Tejada Merinero
-    @Test
-    @DisplayName("40. transfer_Success_NoNotifs: Transferencia válida sin notificaciones configuradas")
-    void transfer_Success_NoNotifsTest() {
-        // Given (Mock BD devuelve cuentas válidas con User sin notificaciones)
-        User user = adultUser(9L, null);
-        Account origen = new Account("ES1", Account.AccountType.CHECKING, 500);
-        Account destino = new Account("ES2", Account.AccountType.SAVINGS, 100);
-        origen.setUser(user);
-        destino.setUser(user);
-
-        when(accountRepository.findByAccountNumber("ES1")).thenReturn(Optional.of(origen));
-        when(accountRepository.findByAccountNumber("ES2")).thenReturn(Optional.of(destino));
-        when(userService.isMinor(9L)).thenReturn(false);
-
-        // When (Llamar a accountService.transfer)
-        accountService.transfer("ES1", "ES2", 200);
-
-        // Then (Verificar transferencia completa usando verifyNoInteractions() en notificaciones)
-        assertEquals(300, origen.getBalance());
-        assertEquals(300, destino.getBalance());
-        verify(transactionRepository, times(2)).save(any(Transaction.class)); // 2 transacciones creadas
-        verifyNoInteractions(emailService, smsService);
-    }
-
-    @Test
-    @DisplayName("41. transfer_MinorUser: Lanza excepción si el usuario es menor de edad")
-    void transfer_MinorUserTest() {
-        User user = minorUser(10L, null);
-        Account source = new Account("ES200", Account.AccountType.CHECKING, 500);
-        source.setUser(user);
-
-        when(accountRepository.findByAccountNumber("ES200")).thenReturn(Optional.of(source));
-        when(userService.isMinor(10L)).thenReturn(true);
-
-        IllegalArgumentException exception = assertThrows(IllegalArgumentException.class, () -> {
-            accountService.transfer("ES200", "ES201", 50);
-        });
-
-        assertEquals("Minors cannot make transfers", exception.getMessage());
-        verifyNoInteractions(transactionRepository, emailService, smsService);
-    }
-
-    @Test
-    @DisplayName("42. transfer_NullBirthDate: Lanza excepción si el perfil no tiene fecha de nacimiento")
-    void transfer_NullBirthDateTest() {
-        User user = new User();
-        user.setId(12L);
-        user.setBirthDate(null);
-        Account source = new Account("ES210", Account.AccountType.CHECKING, 500);
-        source.setUser(user);
-
-        when(accountRepository.findByAccountNumber("ES210")).thenReturn(Optional.of(source));
-
-        IllegalArgumentException exception = assertThrows(IllegalArgumentException.class, () -> {
-            accountService.transfer("ES210", "ES211", 50);
-        });
-
-        assertEquals("Minors cannot make transfers", exception.getMessage());
-        verifyNoInteractions(userService, transactionRepository, emailService, smsService);
-    }
-
-
-    // USUARIO BANEADO
-
-    // Hecho por: Adrián Varea Fernández
-    @Test
-    @DisplayName("45. banned_DefaultValue: isBanned() devuelve false por defecto")
-    void banned_DefaultValueTest() {
-        // Given
-        User user = new User();
-
-        // Then
-        assertFalse(user.isBanned());
-    }
-
-    // Hecho por: Adrián Varea Fernández
-    @Test
-    @DisplayName("46. banned_SetTrue: setBanned(true) hace que isBanned() devuelva true")
-    void banned_SetTrueTest() {
-        // Given
-        User user = new User();
-
-        // When
-        user.setBanned(true);
-
-        // Then
-        assertTrue(user.isBanned());
-    }
-
-    // Hecho por: Adrián Varea Fernández
-    @Test
-    @DisplayName("47. banned_SetFalse: setBanned(false) revierte el ban")
-    void banned_SetFalseTest() {
-        // Given
-        User user = new User();
-        user.setBanned(true);
-
-        // When
-        assertTrue(user.isBanned()); // Verificamos que el usuario está baneado antes de revertirlo
-        user.setBanned(false);
-
-        // Then
-        assertFalse(user.isBanned());
-    }
-
-    // Hecho por: Adrián Varea Fernández
-    @Test
-    @DisplayName("48. deposit_BannedUser: Lanza IllegalStateException si el usuario está baneado")
-    void deposit_BannedUserTest() {
-        // Given
-        User bannedUser = new User();
-        bannedUser.setBanned(true);
-        Account account = new Account("ES200", Account.AccountType.CHECKING, 100);
-        account.setUser(bannedUser);
-        when(accountRepository.findByAccountNumber("ES200")).thenReturn(Optional.of(account));
-
-        // When
-        IllegalStateException exception = assertThrows(IllegalStateException.class, () -> {
-            accountService.deposit("ES200", 50, "Ingreso bloqueado");
-        });
-
-        // Then
-        assertEquals("El usuario está baneado y no puede depositar dinero.", exception.getMessage());
-        verify(transactionRepository, times(0)).save(any(Transaction.class));
-        verify(accountRepository, times(0)).save(any(Account.class));
-        verifyNoInteractions(emailService, smsService);
-    }
-
-    // Hecho por: Adrián Varea Fernández
-    @Test
-    @DisplayName("49. withdraw_BannedUser: Lanza IllegalStateException si el usuario está baneado")
-    void withdraw_BannedUserTest() {
-        // Given
-        User bannedUser = new User();
-        bannedUser.setBanned(true);
-        Account account = new Account("ES201", Account.AccountType.CHECKING, 500);
-        account.setUser(bannedUser);
-        when(accountRepository.findByAccountNumber("ES201")).thenReturn(Optional.of(account));
-
-        // When
-        IllegalStateException exception = assertThrows(IllegalStateException.class, () -> {
-            accountService.withdraw("ES201", 100, "Retirada bloqueada");
-        });
-
-        // Then
-        assertEquals("El usuario está baneado y no puede retirar dinero.", exception.getMessage());
-        verify(transactionRepository, times(0)).save(any(Transaction.class));
-        verify(accountRepository, times(0)).save(any(Account.class));
-        verifyNoInteractions(emailService, smsService);
-    }
-
     // Hecho por: Adrián Varea Fernández
     @Test
     @DisplayName("50. transfer_BannedSender: Lanza IllegalStateException si el emisor está baneado")
     void transfer_BannedSenderTest() {
-        // Given
         User bannedUser = new User();
         bannedUser.setBanned(true);
         User normalUser = new User();
@@ -1260,47 +1261,46 @@ public class AccountServiceTest {
         Account destination = new Account("ES203", Account.AccountType.SAVINGS, 100);
         source.setUser(bannedUser);
         destination.setUser(normalUser);
+        
         when(accountRepository.findByAccountNumber("ES202")).thenReturn(Optional.of(source));
         when(accountRepository.findByAccountNumber("ES203")).thenReturn(Optional.of(destination));
+        when(userService.isMinor(anyLong())).thenReturn(false); 
 
-        // When
         IllegalStateException exception = assertThrows(IllegalStateException.class, () -> {
             accountService.transfer("ES202", "ES203", 100);
         });
 
-        // Then
         assertEquals("Operación rechazada: El emisor o receptor se encuentra baneado.", exception.getMessage());
-        verify(transactionRepository, times(0)).save(any(Transaction.class));
-        verify(accountRepository, times(0)).save(any(Account.class));
-        verifyNoInteractions(emailService, smsService);
+        verifyNoInteractions(transactionRepository, emailService, smsService);
     }
+    // Hecho por: Adrián Varea Fernández
+    @Test
+    @DisplayName("51. transfer_BannedReceiver: Lanza IllegalStateException si el receptor está baneado")
+    void transfer_BannedReceiverTest() {
+        // Given
+        User normalUser = new User();
+        normalUser.setBanned(false);
+        User bannedUser = new User();
+        bannedUser.setBanned(true);
+        Account source = new Account("ES204", Account.AccountType.CHECKING, 500);
+        Account destination = new Account("ES205", Account.AccountType.SAVINGS, 100);
+        source.setUser(normalUser);
+        destination.setUser(bannedUser);
+        
+        when(accountRepository.findByAccountNumber("ES204")).thenReturn(Optional.of(source));
+        when(accountRepository.findByAccountNumber("ES205")).thenReturn(Optional.of(destination));
+        // Mantenemos:
+        when(userService.isMinor(anyLong())).thenReturn(false); 
 
-    // Hecho por: Adrián Varea Fernández
-    @Test
-    @DisplayName("51. transfer_BannedReceiver: Lanza IllegalStateException si el receptor está baneado")
-    void transfer_BannedReceiverTest() {
-        // Given
-        User normalUser = new User();
-        normalUser.setBanned(false);
-        User bannedUser = new User();
-        bannedUser.setBanned(true);
-        Account source = new Account("ES204", Account.AccountType.CHECKING, 500);
-        Account destination = new Account("ES205", Account.AccountType.SAVINGS, 100);
-        source.setUser(normalUser);
-        destination.setUser(bannedUser);
-        when(accountRepository.findByAccountNumber("ES204")).thenReturn(Optional.of(source));
-        when(accountRepository.findByAccountNumber("ES205")).thenReturn(Optional.of(destination));
+        // When
+        IllegalStateException exception = assertThrows(IllegalStateException.class, () -> {
+            accountService.transfer("ES204", "ES205", 100);
+        });
 
-        // When
-        IllegalStateException exception = assertThrows(IllegalStateException.class, () -> {
-            accountService.transfer("ES204", "ES205", 100);
-        });
-
-        // Then
-        assertEquals("Operación rechazada: El emisor o receptor se encuentra baneado.", exception.getMessage());
-        verify(transactionRepository, times(0)).save(any(Transaction.class));
-        verify(accountRepository, times(0)).save(any(Account.class));
-        verifyNoInteractions(emailService, smsService);
-    }
-
+        // Then
+        assertEquals("Operación rechazada: El emisor o receptor se encuentra baneado.", exception.getMessage());
+        verify(transactionRepository, times(0)).save(any(Transaction.class));
+        verify(accountRepository, times(0)).save(any(Account.class));
+        verifyNoInteractions(emailService, smsService);
+    }
 }

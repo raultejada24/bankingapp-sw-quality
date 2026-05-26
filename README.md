@@ -206,21 +206,21 @@ Se implementaron y configuraron una serie de flujos de trabajo automatizados con
  
 - **Workflow 1: Por cada commit en una rama que no sea main**
   - **Qué hace:** Se encarga de aislar el código en desarrollo y ejecutar las pruebas unitarias del sistema de manera automática en runners `ubuntu-latest`.
-  - [Enlace a ejecución del Workflow 1]([https://github.com/AdrianVillalba26/cs-2026-grupo-7/actions/runs/26468228026])
+  - [Enlace a ejecución del Workflow 1](https://github.com/AdrianVillalba26/cs-2026-grupo-7/actions/runs/26468228026)
 - **Workflow 2: Cada vez que se termine una feature y antes de integrarse en la rama de producción (main)**
   - **Qué hace:** Al abrir un Pull Request, ejecuta de forma exhaustiva tanto la suite de pruebas unitarias como las pruebas de sistema E2E implementadas en la práctica anterior para asegurar la estabilidad física de la rama.
-  - [Enlace a ejecución del Workflow 2]([https://github.com/AdrianVillalba26/cs-2026-grupo-7/actions/runs/26468426013])
+  - [Enlace a ejecución del Workflow 2](https://github.com/AdrianVillalba26/cs-2026-grupo-7/actions/runs/26468426013)
 - **Workflow 3: Al integrar con la rama de producción (main)**
   - **Qué hace:** Consta de dos jobs principales ejecutados de manera secuencial:
     - **build:** Construye el artefacto Docker (`banking-app`) sin ejecutar tests, recuperando el tag numérico del `pom.xml`. Lanza el contenedor en segundo plano dentro del runner, ejecuta una prueba de humo (SmokeTest con Selenium) para comprobar que levanta en el puerto local y publica la imagen verificada en DockerHub.
     - **deploy:** Actualiza de forma automática el servicio en la nube de Azure (`banking-app-production`) y ejecuta una prueba de humo final comprobando la consistencia de la versión en la URL pública.
-  - [Enlace a ejecución del Workflow 3]([https://github.com/AdrianVillalba26/cs-2026-grupo-7/actions/runs/26468528861/job/77935307486])
+  - [Enlace a ejecución del Workflow 3](https://github.com/AdrianVillalba26/cs-2026-grupo-7/actions/runs/26468528861/job/77935307486)
   - [Imagen de producción en DockerHub](https://hub.docker.com/layers/blasetvrtumi/banking-app/latest/images/sha256-f0afc91a90a685bcab98f31509bc34650cb26e58e46eca2b12a9e7d835f1fb41)
 - **Workflow 4: Al llegar las 2 de la madrugada**
   - **Qué hace:** Consta de varios jobs de testeo en diferentes plataformas y navegadores:
     - **system-tests (SO, navegador):** Ejecuta pruebas E2E con Selenium en diferentes sistemas operativos y navegadores.
     - **build-nightly:** Construye el artefacto Docker (`banking-app`) sin ejecutar tests, recuperando el tag numérico del `pom.xml` y construye y publica la imagen nightly en DockerHub.
-  - [Enlace a ejecución del Workflow 4]([AÑADIR_URL_CON_FORMATO_MARKDOWN])
+  - [Enlace a ejecución del Workflow 4](https://github.com/AdrianVillalba26/cs-2026-grupo-7/actions/runs/26466699894)
   - [Imagen nightly en DockerHub](https://hub.docker.com/layers/blasetvrtumi/banking-app/nightly-20260526/images/sha256-f0afc91a90a685bcab98f31509bc34650cb26e58e46eca2b12a9e7d835f1fb41)
  
 > **Nota sobre el despliegue automático en Azure (Workflow 3):**

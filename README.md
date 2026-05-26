@@ -289,13 +289,13 @@ git push origin feature-1
 ```
  
 #### 2. Feature 2: Atributo Banned (Trabajo en Pareja)
- 
+
 **Alumnos asignados:** Adrián Villalba Cuello de Oro (Desarrollo) y Adrián Varea Fernández (Testing).
- 
-**Pasos seguidos (Desarrollo - Adrián Villalba):** 
+
+**Pasos seguidos (Desarrollo - Adrián Villalba):**
 
 - Se creó la rama colaborativa `feature-2` partiendo del código base actualizado de `main`.
-- Se modificó la entidad `User.java` para incorporar el atributo `banned` (de tipo booleano inicializado en `false`) junto con sus respectivos métodos getter(`isBanned`) y setter (`setBanned`) para permitir la consulta y modificación del estado de baneo.
+- Se modificó la entidad `User.java` para incorporar el atributo `banned` (de tipo booleano inicializado a `false`) junto con sus respectivos métodos getter(`isBanned`) y setter (`setBanned`) para permitir la consulta y modificación del estado de baneo.
 - Se modificó `AccountService.java` para actualizar los métodos `deposit`, `withdraw` y `transfer`, añadiendo controles o condiciones que comprueben el estado del usuario antes de realizar cualquier operación.
 - En las actualizaciones de los métodos anteriores, se lanza una excepción de tipo `IllegalStateException` con un mensaje descriptivo si el usuario se encuentra en estado baneado, abortando la operación que se iba a realizar.
 
@@ -307,6 +307,7 @@ git add src/main/java/es/codeurjc/model/User.java src/main/java/es/codeurjc/serv
 git commit -m "feat: Añadir atributo banned a User y restringir operaciones en AccountService"
 git push origin feature-2
 ```
+
 
 **Pasos seguidos (Testing, Versionado y PR - Adrián Varea):**
  

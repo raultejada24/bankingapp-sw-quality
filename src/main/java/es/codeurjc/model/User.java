@@ -36,6 +36,7 @@ public class User {
     private String phone;
     private LocalDate registrationDate;
     private double monthlyIncome;
+    private LocalDate birthDate;
     
     @Enumerated(EnumType.STRING)
     private NotificationType notificationType = NotificationType.EMAIL;
@@ -195,5 +196,12 @@ public class User {
     
     public boolean hasMultipleProducts() {
         return accounts != null && accounts.size() > 1;
+    }
+    public LocalDate getBirthDate() {
+        return birthDate;
+    }
+
+    public void setBirthDate(LocalDate birthDate) {
+        this.birthDate = birthDate;
     }
 }

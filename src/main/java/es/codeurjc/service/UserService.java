@@ -5,6 +5,8 @@ import es.codeurjc.repository.UserRepository;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.time.LocalDate;
+import java.time.Period;
 import java.util.List;
 
 /**
@@ -12,6 +14,8 @@ import java.util.List;
  */
 @Service
 public class UserService {
+    
+    public static final int AGE_OF_MAJORITY = 18;
     
     private final UserRepository userRepository;
     
@@ -78,5 +82,16 @@ public class UserService {
      */
     public boolean isEmailRegistered(String email) {
         return userRepository.existsByEmail(email);
+    }
+
+    /**
+     * Check if a user is of legal age (adult)
+     */
+    public boolean isMinor(Long userId) {
+        User user = getUserById(userId);
+        if (user.getBirthDate() == null) {
+            return false;
+        }
+        return Period.between(user.getBirthDate(), LocalDate.now()).getYears() < AGE_OF_MAJORITY;
     }
 }

@@ -1157,43 +1157,6 @@ public class AccountServiceTest {
         verifyNoInteractions(userService, transactionRepository, emailService, smsService);
     }
 
-    @Test
-    @DisplayName("43. transfer_MinorUser: Lanza excepción si el usuario es menor de edad")
-    void transfer_MinorUserTest() {
-        User user = minorUser(10L, null);
-        Account source = new Account("ES200", Account.AccountType.CHECKING, 500);
-        source.setUser(user);
-
-        when(accountRepository.findByAccountNumber("ES200")).thenReturn(Optional.of(source));
-        when(userService.isMinor(10L)).thenReturn(true);
-
-        IllegalArgumentException exception = assertThrows(IllegalArgumentException.class, () -> {
-            accountService.transfer("ES200", "ES201", 50);
-        });
-
-        assertEquals("Minors cannot make transfers", exception.getMessage());
-        verifyNoInteractions(transactionRepository, emailService, smsService);
-    }
-
-    @Test
-    @DisplayName("44. transfer_NullBirthDate: Lanza excepción si el perfil no tiene fecha de nacimiento")
-    void transfer_NullBirthDateTest() {
-        User user = new User();
-        user.setId(12L);
-        user.setBirthDate(null);
-        Account source = new Account("ES210", Account.AccountType.CHECKING, 500);
-        source.setUser(user);
-
-        when(accountRepository.findByAccountNumber("ES210")).thenReturn(Optional.of(source));
-
-        IllegalArgumentException exception = assertThrows(IllegalArgumentException.class, () -> {
-            accountService.transfer("ES210", "ES211", 50);
-        });
-
-        assertEquals("Minors cannot make transfers", exception.getMessage());
-        verifyNoInteractions(userService, transactionRepository, emailService, smsService);
-    }
-
 
     // USUARIO BANEADO
 

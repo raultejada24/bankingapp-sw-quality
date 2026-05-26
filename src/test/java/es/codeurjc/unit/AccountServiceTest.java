@@ -2,6 +2,7 @@ package es.codeurjc.unit;
 
 import java.util.List;
 import java.util.Optional;
+import java.time.LocalDateTime;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
@@ -31,6 +32,7 @@ import es.codeurjc.model.User;
 import es.codeurjc.repository.AccountRepository;
 import es.codeurjc.repository.TransactionRepository;
 import es.codeurjc.service.AccountService;
+import es.codeurjc.service.DailyWithdrawalLimitExceededException;
 import es.codeurjc.service.RandomService;
 import es.codeurjc.service.notifications.EmailNotificationService;
 import es.codeurjc.service.notifications.SmsNotificationService;
@@ -837,6 +839,63 @@ public class AccountServiceTest {
         verifyNoInteractions(emailService, smsService);
     }
 
+    // Hecho por: Blas Vita Ramos
+    @Test
+    @DisplayName("33.1 withdraw_DailyLimitNotExceeded: Permite retiro si no se supera el límite diario de 5000")
+    void withdraw_DailyLimitNotExceeded() {
+        User user = new User();
+        user.setNotificationType(null);
+        Account account = new Account("ES999", Account.AccountType.CHECKING, 10000);
+        account.setUser(user);
+        
+        Transaction t1 = new Transaction(account, Transaction.TransactionType.WITHDRAWAL, 3000, "Retiro previo");
+        t1.setTimestamp(LocalDateTime.now().minusHours(2));
+        account.setTransactions(List.of(t1));
+
+        when(accountRepository.findByAccountNumber("ES999")).thenReturn(Optional.of(account));
+        when(accountRepository.save(any(Account.class))).thenReturn(account);
+
+        accountService.withdraw("ES999", 1000, "Retiro valido");
+
+        assertEquals(9000, account.getBalance());
+        verify(transactionRepository, times(1)).save(any(Transaction.class));
+    }
+
+    @Test
+    @DisplayName("33.2 withdraw_DailyLimitExceeded: Lanza excepción si se supera el límite diario de 5000")
+    void withdraw_DailyLimitExceeded() {
+        Account account = new Account("ES999", Account.AccountType.CHECKING, 10000);
+        Transaction t1 = new Transaction(account, Transaction.TransactionType.WITHDRAWAL, 4500, "retiro previo");
+        t1.setTimestamp(LocalDateTime.now().minusHours(10));
+        account.setTransactions(List.of(t1));
+
+        when(accountRepository.findByAccountNumber("ES999")).thenReturn(Optional.of(account));
+
+        assertThrows(DailyWithdrawalLimitExceededException.class, () -> {
+            accountService.withdraw("ES999", 1000, "Retiro que excede");
+        });
+    }
+
+    @Test
+    @DisplayName("33.3 withdraw_DailyLimitWithOldTransactions: Retiros de más de 24h no cuentan para el límite")
+    void withdraw_DailyLimitWithOldTransactions() {
+        User user = new User();
+        user.setNotificationType(null);
+        Account account = new Account("ES999", Account.AccountType.CHECKING, 10000);
+        account.setUser(user);
+        
+        Transaction t1 = new Transaction(account, Transaction.TransactionType.WITHDRAWAL, 6000, "Retiro antiguo");
+        t1.setTimestamp(LocalDateTime.now().minusHours(48));
+        account.setTransactions(List.of(t1));
+
+        when(accountRepository.findByAccountNumber("ES999")).thenReturn(Optional.of(account));
+        when(accountRepository.save(any(Account.class))).thenReturn(account);
+
+        accountService.withdraw("ES999", 4000, "Retiro válido");
+
+        assertEquals(6000, account.getBalance());
+        verify(transactionRepository, times(1)).save(any(Transaction.class));
+    }
 
 
     // FALLOS TRANSFER

@@ -59,12 +59,14 @@ public class AccountService {
             TransactionRepository transactionRepository,
             EmailNotificationService emailService,
             SmsNotificationService smsService,
-            RandomService randomService) {
+            RandomService randomService,
+            UserService userService) {
         this.accountRepository = accountRepository;
         this.transactionRepository = transactionRepository;
         this.emailService = emailService;
         this.smsService = smsService;
         this.randomService = randomService;
+        this.userService = userService;
     }
 
     /**
@@ -277,6 +279,9 @@ public class AccountService {
     @Transactional
     public void transfer(String fromAccountNumber, String toAccountNumber, double amount) {
         Account sourceAccount = getAccount(fromAccountNumber);
+        if (sourceAccount.getUser() == null || sourceAccount.getUser().getBirthDate() == null) {
+            throw new MinorTransferException(MINOR_TRANSFER_ERROR);
+        }
         if (userService.isMinor(sourceAccount.getUser().getId())) {
             throw new MinorTransferException(MINOR_TRANSFER_ERROR);
         }

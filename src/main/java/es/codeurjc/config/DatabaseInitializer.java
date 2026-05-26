@@ -55,6 +55,7 @@ public class DatabaseInitializer {
         user1.setDni("12345678A");
         user1.setEmail("juan.garcia@email.com");
         user1.setPhone("+34600111222");
+        user1.setBirthDate(LocalDate.now().minusYears(35));
         user1.setRegistrationDate(LocalDate.now().minusYears(5));
         user1.setMonthlyIncome(2500.0);
         user1 = userRepository.save(user1);
@@ -68,6 +69,7 @@ public class DatabaseInitializer {
         user2.setDni("87654321B");
         user2.setEmail("maria.lopez@email.com");
         user2.setPhone("+34600333444");
+        user2.setBirthDate(LocalDate.now().minusYears(16));
         user2.setRegistrationDate(LocalDate.now().minusYears(3));
         user2.setMonthlyIncome(3200.0);
         user2 = userRepository.save(user2);
@@ -81,6 +83,7 @@ public class DatabaseInitializer {
         user3.setDni("11223344C");
         user3.setEmail("pedro.martinez@email.com");
         user3.setPhone("+34600555666");
+        user3.setBirthDate(LocalDate.now().minusYears(42));
         user3.setRegistrationDate(LocalDate.now().minusYears(1));
         user3.setMonthlyIncome(1800.0);
         user3 = userRepository.save(user3);

@@ -205,23 +205,22 @@ Se implementaron y configuraron una serie de flujos de trabajo automatizados con
  
 - **Workflow 1: Por cada commit en una rama que no sea main**
   - **Qué hace:** Se encarga de aislar el código en desarrollo y ejecutar las pruebas unitarias del sistema de manera automática en runners `ubuntu-latest`.
-  - [Enlace a ejecución del Workflow 1]([AÑADIR_URL_CON_FORMATO_MARKDOWN])
+  - [Enlace a ejecución del Workflow 1](https://github.com/AdrianVillalba26/cs-2026-grupo-7/actions/runs/26468228026)
 - **Workflow 2: Cada vez que se termine una feature y antes de integrarse en la rama de producción (main)**
   - **Qué hace:** Al abrir un Pull Request, ejecuta de forma exhaustiva tanto la suite de pruebas unitarias como las pruebas de sistema E2E implementadas en la práctica anterior para asegurar la estabilidad física de la rama.
-  - [Enlace a ejecución del Workflow 2]([AÑADIR_URL_CON_FORMATO_MARKDOWN])
+  - [Enlace a ejecución del Workflow 2](https://github.com/AdrianVillalba26/cs-2026-grupo-7/actions/runs/26468426013)
 - **Workflow 3: Al integrar con la rama de producción (main)**
   - **Qué hace:** Consta de dos jobs principales ejecutados de manera secuencial:
     - **build:** Construye el artefacto Docker (`banking-app`) sin ejecutar tests, recuperando el tag numérico del `pom.xml`. Lanza el contenedor en segundo plano dentro del runner, ejecuta una prueba de humo (SmokeTest con Selenium) para comprobar que levanta en el puerto local y publica la imagen verificada en DockerHub.
     - **deploy:** Actualiza de forma automática el servicio en la nube de Azure (`banking-app-production`) y ejecuta una prueba de humo final comprobando la consistencia de la versión en la URL pública.
-  - [Enlace a ejecución del Workflow 3]([AÑADIR_URL_CON_FORMATO_MARKDOWN])
+  - [Enlace a ejecución del Workflow 3](https://github.com/AdrianVillalba26/cs-2026-grupo-7/actions/runs/26468528861/job/77935307486)
   - [Imagen de producción en DockerHub](https://hub.docker.com/layers/blasetvrtumi/banking-app/latest/images/sha256-f0afc91a90a685bcab98f31509bc34650cb26e58e46eca2b12a9e7d835f1fb41)
 - **Workflow 4: Al llegar las 2 de la madrugada**
   - **Qué hace:** Consta de varios jobs de testeo en diferentes plataformas y navegadores:
     - **system-tests (SO, navegador):** Ejecuta pruebas E2E con Selenium en diferentes sistemas operativos y navegadores.
     - **build-nightly:** Construye el artefacto Docker (`banking-app`) sin ejecutar tests, recuperando el tag numérico del `pom.xml` y construye y publica la imagen nightly en DockerHub.
-  - [Enlace a ejecución del Workflow 4]([AÑADIR_URL_CON_FORMATO_MARKDOWN])
+  - [Enlace a ejecución del Workflow 4](https://github.com/AdrianVillalba26/cs-2026-grupo-7/actions/runs/26466699894)
   - [Imagen nightly en DockerHub](https://hub.docker.com/layers/blasetvrtumi/banking-app/nightly-20260526/images/sha256-f0afc91a90a685bcab98f31509bc34650cb26e58e46eca2b12a9e7d835f1fb41)
----
  
 > **Nota sobre el despliegue automático en Azure (Workflow 3):**
 > El pipeline de despliegue continuo (Workflow 3) ha sido configurado correctamente a nivel de código siguiendo el modelo de credenciales federadas (OIDC) sin contraseñas. Sin embargo, la ejecución final del job `deploy` falla en el entorno real debido a las fuertes restricciones de permisos en el *tenant* (Directorio) de la Universidad. 
@@ -397,19 +396,7 @@ git push origin refactoring-raul
 ```
 
 ---
- 
-## Workflow 4 (Nightly)
- 
-Todos los días a las 02:00 AM UTC se ejecuta de forma programada el pipeline de comprobación multiplataforma nocturna:
- 
-- Utiliza una matriz de ejecución (`strategy: matrix`) para lanzar de forma paralela la suite de pruebas de sistema (E2E) simulando transferencias entre cuentas propias en entornos cruzados: Chrome y Firefox (bajo Linux, Windows y MacOS) y Edge (en Windows), reduciendo la duplicación de código en la infraestructura de la pipeline.
-- Si la totalidad de los jobs de la matriz finalizan con éxito, se desencadena un job secundario encargado de empaquetar la aplicación web en una imagen Docker.
-- El flujo calcula la fecha en tiempo de ejecución para estampar un tag dinámico bajo el patrón `nightly-YYYYMMDD` (por ejemplo, `nightly-20260522`).
-- Sube el artefacto empaquetado directamente al registro público de DockerHub.
-[Enlace a la última ejecución del Workflow Nightly]
- 
----
- 
+
 ## Tarea 4: Realización de la Memoria
  
 La presente documentación ha sido redactada de forma directa sobre la rama main por los miembros del equipo. Con el objetivo de garantizar una correcta optimización de los recursos de computación y evitar el consumo innecesario de minutos gratuitos dentro de las cuotas de GitHub Actions, se ha configurado la instrucción de exclusión `paths-ignore` en los ficheros YAML. Esto asegura que las modificaciones exclusivas sobre archivos de documentación o Markdown (`*.md`, `README.md`) no activen los disparadores automáticos de las pipelines.

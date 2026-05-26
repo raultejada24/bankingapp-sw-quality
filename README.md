@@ -108,9 +108,9 @@ A lo largo de esta práctica, he contribuido principalmente en la mejora de la c
 
 | Nº  | Commits                                                                                                                                                                                            |
 | :-: | :------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-|  1  | [refactor: replace magic numbers and generic exceptions in AccountService (issues 8,9,12,17)](https://github.com/AdrianVillalba26/cs-2026-grupo-7/commit/ddb0f751880f08cb52d28a7edb782c380ec5de72) |
-|  2  | [test: add E2E Selenium suite for bank transfer functionality validation](https://github.com/AdrianVillalba26/cs-2026-grupo-7/commit/871a33fbc89f98f262912105eacd77082c2f3963)                     |
-|  3  | [test: bad test implementation](https://github.com/AdrianVillalba26/cs-2026-grupo-7/commit/f87c2394aa9f77192ffe0e342e3dcb66c870cb22)                                                               |
+|  1  | [Block transactions to minors](https://github.com/AdrianVillalba26/cs-2026-grupo-7/pull/5/changes/540e4468fb65a9cde1c57a43708561c592f2b9d4) |
+|  2  | [Merge pull request #5 from AdrianVillalba26/block-transactions-to-minors](https://github.com/AdrianVillalba26/cs-2026-grupo-7/commit/d0266eaf8bc4ec66cc7a7f05e4745b11bb2e6de4)                     |
+                                                          |
 
 ---
 
@@ -335,10 +335,43 @@ git push origin feature-2
  
 #### 3. Feature 3: Restricción a Menores de 18 Años (Trabajo en Pareja)
  
-**Alumnos asignados:** Arturo Vinuesa Domínguez (Desarrollo) y Gonzalo Andrés Zurdo Patino (Testing).
+**Alumnos asignados:** Gonzalo Andrés Zurdo Patino (Desarrollo) y Arturo Vinuesa Domínguez (Testing).
  
-**Pasos seguidos:** [AÑADIR BREVE EXPLICACIÓN DE PASOS Y COMANDOS DE GIT UTILIZADOS]
+**Pasos seguidos (Desarrollo y PR - Gonzalo Zurdo):**
+- Se creó la rama colaborativa `feature-3` partiendo del código base actualizado de `main`.
+- Se modificó la entidad `User.java` para incorporar el atributo `birthDate` (de tipo LocalDate) junto con sus respectivos métodos getter(`getBirthDate`)  y setter (`setBirthDate`) para su consulta y modificación.
+- Se modificó `UserService.java` para añadir la función `isMinor` y la constante `AGE_OF_MAJORITY = 18` con las cuales validamos si el usuario es mayor o menor de edad.
+- Se modificó `AccountService.java` para actualizar el método `transfer` al que se le añade al comienzo una validación para comprobar si el usuario que esta realizando la transacción es mayor de edad. A parte se creo un IllegalArgumentException llamado `MinorTransferException` con el cual gestionamos el error.
+```bash
+git checkout -b feature-3
+git push -u origin HEAD
+git add .
+git commit -m "feat: add block transfers for minor users"
+```
+- Posteriormente, tras la implementación de los tests de Arturo, hice el commit de los cambios en la rama.
+```bash
+git checkout feature-3
+git pull origin main
+git add .
+git commit -m "Merge branch 'main' into feature-3"
+git push origin block-transactions-to-minors
+git checkout main
+git pull origin main
+```
+**Pasos seguidos (Testing y Versionado- Arturo Vinuesa):**
  
+- Se añadieron pruebas a `AccountServiceTest.java` sobre el uso del nuevo atributo en la función `transfer`, validando que no permitía la realización de transacciones en cuentas de menores o cuentas sin `birthDate`.
+- Se implementaron también en `UserServiceTest.java` las comprobaciones básicas de `User` sobre el estado de `birthDate` y el correcto funcionamiento de `isMinor`.
+- Se actualizó `pom.xml` con la versión `1.3.0`.
+```bash
+git checkout feature-3
+git pull 
+git add .
+git commit -m "feat: implement minor transfer restrictions and add user service tests"
+git add .
+git commit -m "fix: update birth date for user2 in database initializer"
+```
+
 #### 4. Refactorización de Código (Tarea Individual - Raúl Tejada)
  
 **Pasos seguidos:**
@@ -357,6 +390,7 @@ git add pom.xml
 git commit -m "chore: Bump version to 1.0.1 for refactoring"
 git push origin refactoring-raul
 ```
+
 ---
  
 ## Workflow 4 (Nightly)

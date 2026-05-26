@@ -370,11 +370,11 @@ public class TransferE2ETest {
         String invalidAmount = String.valueOf(initialSourceBalance + 1);
         fillAndSubmitTransferForm(MARIA_ACCOUNT_1, MARIA_ACCOUNT_2, invalidAmount);
 
-        // Then (Comprobar error y que no hubo trasnferencia)
+        // Then (Comprobar error adaptado a la Feature 1)
         String errorText = waitForErrorAlertText();
         assertTrue(
-                errorText.contains("Insufficient funds"),
-                "El texto del error debe corresponder a saldo insuficiente. Obtenido: " + errorText);
+                errorText.contains("Insufficient funds") || errorText.contains("Daily withdrawal limit"),
+                "El texto del error debe corresponder a saldo insuficiente o límite diario superado. Obtenido: " + errorText);
 
         double finalSourceBalance = getAccountBalance(MARIA_ACCOUNT_1);
         double finalDestinationBalance = getAccountBalance(MARIA_ACCOUNT_2);
@@ -387,6 +387,7 @@ public class TransferE2ETest {
         logout();
     }
 
+    
     /**
      * Hecho por: Blas Vita Ramos
      * Caso 5: No se puede transferir cantidad negativa
@@ -426,13 +427,10 @@ public class TransferE2ETest {
 
     /**
      * Hecho por: Adrián Villalba Cuello de Oro
-     * Caso 6: No se puede transferir cantidad que supera €20.000
-     * Given: Usuario admin autenticado
-     * When: Intenta transferir más de €20.000
-     * Then: Aparece mensaje de error sobre límite de transferencia
+     * Caso 6: No se puede transferir cantidad que supera el límite (Actualizado a Feature 1)
      */
     @Test
-    @DisplayName("6. transferExceedsLimit_Fail: No se puede transferir > €20.000")
+    @DisplayName("6. transferExceedsLimit_Fail: No se puede transferir cantidad superior al límite")
     void transferExceedsLimit_FailTest() {
         // Given
         login(MARIA_USERNAME, MARIA_PASSWORD);
@@ -441,12 +439,12 @@ public class TransferE2ETest {
 
         navigateToTransferPage();
 
-        // When (Intentar transferir más del límite)
+        // When (Intentar transferir más del límite diario/absoluto)
         fillAndSubmitTransferForm(MARIA_ACCOUNT_1, MARIA_ACCOUNT_2, "20050");
 
-        // Then (Comprobar error)
+        // Then (Comprobar error adaptado a la Feature 1)
         String errorText = waitForErrorAlertText();
-        assertTrue(errorText.contains("Amount exceeds maximum transfer limit") || errorText.contains("20000"),
+        assertTrue(errorText.contains("Amount exceeds maximum transfer limit") || errorText.contains("Daily withdrawal limit"),
                 "El texto del error debe corresponder a límite de transferencia. Obtenido: " + errorText);
 
         double finalSourceBalance = getAccountBalance(MARIA_ACCOUNT_1);
@@ -527,13 +525,10 @@ public class TransferE2ETest {
 
     /**
      * Hecho por: Adrián Varea Fernández
-     * Caso 9: Se permite transferir exactamente el límite máximo (€20.000)
-     * Given: Usuario maria autenticado con saldo suficiente
-     * When: Realiza una transferencia de exactamente €20.000
-     * Then: La transferencia se completa y ambos saldos se actualizan correctamente
+     * Caso 9: Se permite transferir exactamente el NUEVO límite máximo (€5.000)
      */
     @Test
-    @DisplayName("9. transferAtExactLimit_Success: Se permite transferir exactamente €20.000")
+    @DisplayName("9. transferAtExactLimit_Success: Se permite transferir exactamente el nuevo límite de €5.000")
     void transferAtExactLimit_SuccessTest() {
         // Given
         login(MARIA_USERNAME, MARIA_PASSWORD);
@@ -542,8 +537,8 @@ public class TransferE2ETest {
 
         navigateToTransferPage();
 
-        // When (De la 2 a la 1)
-        fillAndSubmitTransferForm(MARIA_ACCOUNT_2, MARIA_ACCOUNT_1, "20000");
+        // When (De la 2 a la 1 - el límite ahora son 5000)
+        fillAndSubmitTransferForm(MARIA_ACCOUNT_2, MARIA_ACCOUNT_1, "5000");
 
         // Then
         String message = waitForMessage();
@@ -553,10 +548,10 @@ public class TransferE2ETest {
 
         double finalSourceBalance = getAccountBalance(MARIA_ACCOUNT_2);
         double finalDestinationBalance = getAccountBalance(MARIA_ACCOUNT_1);
-        assertEquals(initialSourceBalance - 20000, finalSourceBalance, 0.01,
-                "El saldo de origen debe disminuir exactamente €20.000");
-        assertEquals(initialDestinationBalance + 20000, finalDestinationBalance, 0.01,
-                "El saldo de destino debe aumentar exactamente €20.000");
+        assertEquals(initialSourceBalance - 5000, finalSourceBalance, 0.01,
+                "El saldo de origen debe disminuir exactamente €5000");
+        assertEquals(initialDestinationBalance + 5000, finalDestinationBalance, 0.01,
+                "El saldo de destino debe aumentar exactamente €5000");
 
         logout();
     }

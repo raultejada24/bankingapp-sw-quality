@@ -215,7 +215,13 @@ Se implementaron y configuraron una serie de flujos de trabajo automatizados con
     - **build:** Construye el artefacto Docker (`banking-app`) sin ejecutar tests, recuperando el tag numérico del `pom.xml`. Lanza el contenedor en segundo plano dentro del runner, ejecuta una prueba de humo (SmokeTest con Selenium) para comprobar que levanta en el puerto local y publica la imagen verificada en DockerHub.
     - **deploy:** Actualiza de forma automática el servicio en la nube de Azure (`banking-app-production`) y ejecuta una prueba de humo final comprobando la consistencia de la versión en la URL pública.
   - [Enlace a ejecución del Workflow 3]([AÑADIR_URL_CON_FORMATO_MARKDOWN])
-  - [Imagen de producción en DockerHub]([AÑADIR_URL_DOCKERHUB])
+  - [Imagen de producción en DockerHub](https://hub.docker.com/layers/blasetvrtumi/banking-app/latest/images/sha256-f0afc91a90a685bcab98f31509bc34650cb26e58e46eca2b12a9e7d835f1fb41)
+- **Workflow 4: Al llegar las 2 de la madrugada**
+  - **Qué hace:** Consta de varios jobs de testeo en diferentes plataformas y navegadores:
+    - **system-tests (SO, navegador):** Ejecuta pruebas E2E con Selenium en diferentes sistemas operativos y navegadores.
+    - **build-nightly:** Construye el artefacto Docker (`banking-app`) sin ejecutar tests, recuperando el tag numérico del `pom.xml` y construye y publica la imagen nightly en DockerHub.
+  - [Enlace a ejecución del Workflow 4]([AÑADIR_URL_CON_FORMATO_MARKDOWN])
+  - [Imagen nightly en DockerHub](https://hub.docker.com/layers/blasetvrtumi/banking-app/nightly-20260526/images/sha256-f0afc91a90a685bcab98f31509bc34650cb26e58e46eca2b12a9e7d835f1fb41)
 ---
  
 > **Nota sobre el despliegue automático en Azure (Workflow 3):**
@@ -232,7 +238,7 @@ Se implementaron y configuraron una serie de flujos de trabajo automatizados con
  
 | Tarea | Alumno/es asignado/s | Commits asociados |
 | :--- | :--- | :--- |
-| **feature-1** | Raúl Tejada Merinero, Blas Vita Ramos | [Commit Funcionalidad](https://github.com/AdrianVillalba26/cs-2026-grupo-7/commit/fa18349), [Commit Pruebas]([AÑADIR_URL_COMMIT_BLAS]) |
+| **feature-1** | Raúl Tejada Merinero, Blas Vita Ramos | [Commit Funcionalidad](https://github.com/AdrianVillalba26/cs-2026-grupo-7/commit/fa18349), [Commit Pruebas](https://github.com/AdrianVillalba26/cs-2026-grupo-7/commit/3b53e12a8e8eaf48a48398eb7bd60156565fee92) |
 | **feature-2** | Adrián Villalba Cuello de Oro, Adrián Varea Fernández | [Commit Funcionalidad](https://github.com/AdrianVillalba26/cs-2026-grupo-7/commit/ced107a5d64e64e22f4c5f133d73f7b6dd029fc6), [Commit Pruebas](https://github.com/AdrianVillalba26/cs-2026-grupo-7/commit/8d9698c9295c71d05675438b1c020d7e346255f0) |
 | **feature-3** | Arturo Vinuesa Domínguez, Gonzalo Andrés Zurdo Patino | [Commit Funcionalidad]([AÑADIR_URL]), [Commit Pruebas]([AÑADIR_URL]) |
 | **refactoring-1** | Raúl Tejada Merinero | [Commit CS1](https://github.com/AdrianVillalba26/cs-2026-grupo-7/commit/8b1e213) ... [Commit Bump v1.0.1](https://github.com/AdrianVillalba26/cs-2026-grupo-7/commit/d056918) |

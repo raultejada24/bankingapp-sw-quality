@@ -238,7 +238,7 @@ Se implementaron y configuraron una serie de flujos de trabajo automatizados con
 | :--- | :--- | :--- |
 | **feature-1** | Raúl Tejada Merinero, Blas Vita Ramos | [Commit Funcionalidad](https://github.com/AdrianVillalba26/cs-2026-grupo-7/commit/fa18349), [Commit Pruebas](https://github.com/AdrianVillalba26/cs-2026-grupo-7/commit/3b53e12a8e8eaf48a48398eb7bd60156565fee92) |
 | **feature-2** | Adrián Villalba Cuello de Oro, Adrián Varea Fernández | [Commit Funcionalidad](https://github.com/AdrianVillalba26/cs-2026-grupo-7/commit/ced107a5d64e64e22f4c5f133d73f7b6dd029fc6), [Commit Pruebas](https://github.com/AdrianVillalba26/cs-2026-grupo-7/commit/8d9698c9295c71d05675438b1c020d7e346255f0) |
-| **feature-3** | Arturo Vinuesa Domínguez, Gonzalo Andrés Zurdo Patino | [Commit Funcionalidad]([https://github.com/AdrianVillalba26/cs-2026-grupo-7/pull/5/changes/540e4468fb65a9cde1c57a43708561c592f2b9d4]), [Commit Pruebas]([https://github.com/AdrianVillalba26/cs-2026-grupo-7/pull/5/changes/f468dd82428f539c0ceaead0ba05092fbf5c9c04]) |
+| **feature-3** | Arturo Vinuesa Domínguez, Gonzalo Andrés Zurdo Patino | [Commit Funcionalidad](https://github.com/AdrianVillalba26/cs-2026-grupo-7/pull/5/changes/540e4468fb65a9cde1c57a43708561c592f2b9d4), [Commit Pruebas](https://github.com/AdrianVillalba26/cs-2026-grupo-7/pull/5/changes/f468dd82428f539c0ceaead0ba05092fbf5c9c04) |
 | **refactoring-1** | Raúl Tejada Merinero | [Commit CS1](https://github.com/AdrianVillalba26/cs-2026-grupo-7/commit/8b1e213) ... [Commit Bump v1.0.1](https://github.com/AdrianVillalba26/cs-2026-grupo-7/commit/d056918) |
  
 ### Pasos seguidos (Flujo de Trabajo General con Git)

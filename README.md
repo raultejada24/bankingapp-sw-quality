@@ -183,9 +183,8 @@ Mi participación se ha basado en completar en cada fase los test y refactorizac
 # Práctica 4 - Implementación de pipelines de CI-CD y desarrollo colaborativo
  
 ### Captura de la aplicación desplegada en Azure
-> Inserta aquí una captura de la aplicación desplegada. Debe aparecer la URL de la aplicación desplegada y el número de versión desplegada (pantalla de login)
  
-![Captura Aplicación en Azure]([AÑADIR_URL_CAPTURA_LOGIN_CON_VERSION])
+![Captura Aplicación en Azure](img/capturas/appAzure.png)
  
 ### Captura del dashboard de Azure con la última versión desplegada 
 ![Captura Aplicación en Azure](img/capturas/dashboardAzure.png)

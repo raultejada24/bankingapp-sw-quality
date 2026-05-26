@@ -69,7 +69,7 @@ public class DatabaseInitializer {
         user2.setDni("87654321B");
         user2.setEmail("maria.lopez@email.com");
         user2.setPhone("+34600333444");
-        user2.setBirthDate(LocalDate.now().minusYears(16));
+        user2.setBirthDate(LocalDate.now().minusYears(32));
         user2.setRegistrationDate(LocalDate.now().minusYears(3));
         user2.setMonthlyIncome(3200.0);
         user2 = userRepository.save(user2);

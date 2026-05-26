@@ -358,7 +358,7 @@ git checkout feature-3
 git pull origin main
 git add .
 git commit -m "Merge branch 'main' into feature-3"
-git push origin block-transactions-to-minors
+git push origin feature-3
 git checkout main
 git pull origin main
 ```

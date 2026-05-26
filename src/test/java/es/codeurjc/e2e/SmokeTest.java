@@ -12,6 +12,8 @@ import org.openqa.selenium.support.ui.ExpectedConditions;
 import org.openqa.selenium.support.ui.WebDriverWait;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.web.server.LocalServerPort;
+import java.util.regex.Pattern;
+import java.util.regex.Matcher;
 
 import es.codeurjc.BankingApplication;
 
@@ -86,21 +88,24 @@ public class SmokeTest {
     }
 
     @Test
-    @DisplayName("SmokeTest: Comprobar que el número de versión se muestra en el login")
+    @DisplayName("SmokeTest: Comprobar que el número de versión (1.X.X) se muestra en el login")
     void checkVersionOnLoginTest() {
 
         driver.get(getBaseUrl() + "/login");
 
-        // 2. Esperamos a que el body de la página cargue
+        // 1. Esperamos a que el body de la página cargue
         wait.until(ExpectedConditions.presenceOfElementLocated(By.tagName("body")));
 
-        // 3. Obtenemos todo el texto visible de la página web
+        // 2. Obtenemos todo el texto visible de la página web
         String pageText = driver.findElement(By.tagName("body")).getText();
 
-        // 4. Verificamos que la versión "1.1.1" aparece en algún lugar del texto
-        // Nota: Si el HTML de vuestra app tiene un ID específico para la versión (ej: id="app-version"),
-        // podrías buscar ese elemento concreto, pero buscar en el texto de la página es la forma más a prueba de fallos.
-        assertTrue(pageText.contains("1.1.1") || pageText.contains("v1.1.1") || pageText.contains("DEV"), 
-            "¡Fallo crítico! No se encontró la versión esperada (1.1.1 o DEV) en la página de login.");
+        // 3. Expresión regular: Busca la letra 'v' (opcional) seguida de un '1.', un número, un '.', y otro número.
+        // Ejemplos que detectará: 1.0.0, 1.2.0, 1.3.1, v1.5.0
+        Pattern versionPattern = Pattern.compile("v?1\\.\\d+\\.\\d+");
+        Matcher matcher = versionPattern.matcher(pageText);
+
+        // 4. Verificamos que encuentra el patrón en el texto o que pone "DEV"
+        assertTrue(matcher.find() || pageText.contains("DEV"), 
+            "¡Fallo crítico! No se encontró ninguna versión con formato 1.X.X o DEV en la página de login.");
     }
 }

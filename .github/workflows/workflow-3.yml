@@ -39,7 +39,7 @@ jobs:
         run: sleep 15
         
       - name: Run SmokeTest on Runner
-        run: mvn test -Dtest="es.codeurjc.e2e.SmokeTest" -Dapp.url="http://localhost:8080"
+        run: mvn test -Dtest="es.codeurjc.e2e.SmokeTest"
         
       - name: Stop and remove container
         run: docker rm -f banking-container

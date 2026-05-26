@@ -6,8 +6,10 @@ import java.time.LocalDate;
 import java.time.LocalDateTime;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -83,6 +85,14 @@ import es.codeurjc.service.notifications.SmsNotificationService;
  * 38. transfer_Success_Emails: Transferencia válida. Remitente EMAIL, Destinatario EMAIL.
  * 39. transfer_Success_Sms: Transferencia válida. Remitente SMS, Destinatario SMS.
  * 40. transfer_Success_NoNotifs: Transferencia válida sin notificaciones configuradas.
+ * --- Usuario Baneado ---
+ * 41. banned_DefaultValue: isBanned() devuelve false por defecto.
+ * 42. banned_SetTrue: setBanned(true) hace que isBanned() devuelva true.
+ * 43. banned_SetFalse: setBanned(false) revierte el ban.
+ * 44. deposit_BannedUser: Lanza IllegalStateException si el usuario está baneado al depositar.
+ * 45. withdraw_BannedUser: Lanza IllegalStateException si el usuario está baneado al retirar.
+ * 46. transfer_BannedSender: Lanza IllegalStateException si el emisor está baneado.
+ * 47. transfer_BannedReceiver: Lanza IllegalStateException si el receptor está baneado.
  */
 
 @ExtendWith(MockitoExtension.class)
@@ -1147,5 +1157,187 @@ public class AccountServiceTest {
         verifyNoInteractions(userService, transactionRepository, emailService, smsService);
     }
 
-    
+    @Test
+    @DisplayName("43. transfer_MinorUser: Lanza excepción si el usuario es menor de edad")
+    void transfer_MinorUserTest() {
+        User user = minorUser(10L, null);
+        Account source = new Account("ES200", Account.AccountType.CHECKING, 500);
+        source.setUser(user);
+
+        when(accountRepository.findByAccountNumber("ES200")).thenReturn(Optional.of(source));
+        when(userService.isMinor(10L)).thenReturn(true);
+
+        IllegalArgumentException exception = assertThrows(IllegalArgumentException.class, () -> {
+            accountService.transfer("ES200", "ES201", 50);
+        });
+
+        assertEquals("Minors cannot make transfers", exception.getMessage());
+        verifyNoInteractions(transactionRepository, emailService, smsService);
+    }
+
+    @Test
+    @DisplayName("44. transfer_NullBirthDate: Lanza excepción si el perfil no tiene fecha de nacimiento")
+    void transfer_NullBirthDateTest() {
+        User user = new User();
+        user.setId(12L);
+        user.setBirthDate(null);
+        Account source = new Account("ES210", Account.AccountType.CHECKING, 500);
+        source.setUser(user);
+
+        when(accountRepository.findByAccountNumber("ES210")).thenReturn(Optional.of(source));
+
+        IllegalArgumentException exception = assertThrows(IllegalArgumentException.class, () -> {
+            accountService.transfer("ES210", "ES211", 50);
+        });
+
+        assertEquals("Minors cannot make transfers", exception.getMessage());
+        verifyNoInteractions(userService, transactionRepository, emailService, smsService);
+    }
+
+
+    // USUARIO BANEADO
+
+    // Hecho por: Adrián Varea Fernández
+    @Test
+    @DisplayName("45. banned_DefaultValue: isBanned() devuelve false por defecto")
+    void banned_DefaultValueTest() {
+        // Given
+        User user = new User();
+
+        // Then
+        assertFalse(user.isBanned());
+    }
+
+    // Hecho por: Adrián Varea Fernández
+    @Test
+    @DisplayName("46. banned_SetTrue: setBanned(true) hace que isBanned() devuelva true")
+    void banned_SetTrueTest() {
+        // Given
+        User user = new User();
+
+        // When
+        user.setBanned(true);
+
+        // Then
+        assertTrue(user.isBanned());
+    }
+
+    // Hecho por: Adrián Varea Fernández
+    @Test
+    @DisplayName("47. banned_SetFalse: setBanned(false) revierte el ban")
+    void banned_SetFalseTest() {
+        // Given
+        User user = new User();
+        user.setBanned(true);
+
+        // When
+        assertTrue(user.isBanned()); // Verificamos que el usuario está baneado antes de revertirlo
+        user.setBanned(false);
+
+        // Then
+        assertFalse(user.isBanned());
+    }
+
+    // Hecho por: Adrián Varea Fernández
+    @Test
+    @DisplayName("48. deposit_BannedUser: Lanza IllegalStateException si el usuario está baneado")
+    void deposit_BannedUserTest() {
+        // Given
+        User bannedUser = new User();
+        bannedUser.setBanned(true);
+        Account account = new Account("ES200", Account.AccountType.CHECKING, 100);
+        account.setUser(bannedUser);
+        when(accountRepository.findByAccountNumber("ES200")).thenReturn(Optional.of(account));
+
+        // When
+        IllegalStateException exception = assertThrows(IllegalStateException.class, () -> {
+            accountService.deposit("ES200", 50, "Ingreso bloqueado");
+        });
+
+        // Then
+        assertEquals("El usuario está baneado y no puede depositar dinero.", exception.getMessage());
+        verify(transactionRepository, times(0)).save(any(Transaction.class));
+        verify(accountRepository, times(0)).save(any(Account.class));
+        verifyNoInteractions(emailService, smsService);
+    }
+
+    // Hecho por: Adrián Varea Fernández
+    @Test
+    @DisplayName("49. withdraw_BannedUser: Lanza IllegalStateException si el usuario está baneado")
+    void withdraw_BannedUserTest() {
+        // Given
+        User bannedUser = new User();
+        bannedUser.setBanned(true);
+        Account account = new Account("ES201", Account.AccountType.CHECKING, 500);
+        account.setUser(bannedUser);
+        when(accountRepository.findByAccountNumber("ES201")).thenReturn(Optional.of(account));
+
+        // When
+        IllegalStateException exception = assertThrows(IllegalStateException.class, () -> {
+            accountService.withdraw("ES201", 100, "Retirada bloqueada");
+        });
+
+        // Then
+        assertEquals("El usuario está baneado y no puede retirar dinero.", exception.getMessage());
+        verify(transactionRepository, times(0)).save(any(Transaction.class));
+        verify(accountRepository, times(0)).save(any(Account.class));
+        verifyNoInteractions(emailService, smsService);
+    }
+
+    // Hecho por: Adrián Varea Fernández
+    @Test
+    @DisplayName("50. transfer_BannedSender: Lanza IllegalStateException si el emisor está baneado")
+    void transfer_BannedSenderTest() {
+        // Given
+        User bannedUser = new User();
+        bannedUser.setBanned(true);
+        User normalUser = new User();
+        normalUser.setBanned(false);
+        Account source = new Account("ES202", Account.AccountType.CHECKING, 500);
+        Account destination = new Account("ES203", Account.AccountType.SAVINGS, 100);
+        source.setUser(bannedUser);
+        destination.setUser(normalUser);
+        when(accountRepository.findByAccountNumber("ES202")).thenReturn(Optional.of(source));
+        when(accountRepository.findByAccountNumber("ES203")).thenReturn(Optional.of(destination));
+
+        // When
+        IllegalStateException exception = assertThrows(IllegalStateException.class, () -> {
+            accountService.transfer("ES202", "ES203", 100);
+        });
+
+        // Then
+        assertEquals("Operación rechazada: El emisor o receptor se encuentra baneado.", exception.getMessage());
+        verify(transactionRepository, times(0)).save(any(Transaction.class));
+        verify(accountRepository, times(0)).save(any(Account.class));
+        verifyNoInteractions(emailService, smsService);
+    }
+
+    // Hecho por: Adrián Varea Fernández
+    @Test
+    @DisplayName("51. transfer_BannedReceiver: Lanza IllegalStateException si el receptor está baneado")
+    void transfer_BannedReceiverTest() {
+        // Given
+        User normalUser = new User();
+        normalUser.setBanned(false);
+        User bannedUser = new User();
+        bannedUser.setBanned(true);
+        Account source = new Account("ES204", Account.AccountType.CHECKING, 500);
+        Account destination = new Account("ES205", Account.AccountType.SAVINGS, 100);
+        source.setUser(normalUser);
+        destination.setUser(bannedUser);
+        when(accountRepository.findByAccountNumber("ES204")).thenReturn(Optional.of(source));
+        when(accountRepository.findByAccountNumber("ES205")).thenReturn(Optional.of(destination));
+
+        // When
+        IllegalStateException exception = assertThrows(IllegalStateException.class, () -> {
+            accountService.transfer("ES204", "ES205", 100);
+        });
+
+        // Then
+        assertEquals("Operación rechazada: El emisor o receptor se encuentra baneado.", exception.getMessage());
+        verify(transactionRepository, times(0)).save(any(Transaction.class));
+        verify(accountRepository, times(0)).save(any(Account.class));
+        verifyNoInteractions(emailService, smsService);
+    }
+
 }

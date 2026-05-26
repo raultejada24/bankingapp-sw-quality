@@ -36,6 +36,7 @@ public class User {
     private String phone;
     private LocalDate registrationDate;
     private double monthlyIncome;
+    private boolean banned = false;
     private LocalDate birthDate;
     
     @Enumerated(EnumType.STRING)
@@ -197,6 +198,15 @@ public class User {
     public boolean hasMultipleProducts() {
         return accounts != null && accounts.size() > 1;
     }
+
+    public boolean isBanned() {
+        return banned;
+    }
+
+    public void setBanned(boolean banned) {
+        this.banned = banned;
+    }
+
     public LocalDate getBirthDate() {
         return birthDate;
     }

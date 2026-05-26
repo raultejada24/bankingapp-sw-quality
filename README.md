@@ -226,7 +226,7 @@ Se implementaron y configuraron una serie de flujos de trabajo automatizados con
 | Tarea | Alumno/es asignado/s | Commits asociados |
 | :--- | :--- | :--- |
 | **feature-1** | Raúl Tejada Merinero, Blas Vita Ramos | [Commit Funcionalidad](https://github.com/AdrianVillalba26/cs-2026-grupo-7/commit/fa18349), [Commit Pruebas]([AÑADIR_URL_COMMIT_BLAS]) |
-| **feature-2** | Adrián Villalba Cuello de Oro, Adrián Varea Fernández | [Commit Funcionalidad]([https://github.com/AdrianVillalba26/cs-2026-grupo-7/commit/ced107a5d64e64e22f4c5f133d73f7b6dd029fc6]), [Commit Pruebas]([AÑADIR_URL]) |
+| **feature-2** | Adrián Villalba Cuello de Oro, Adrián Varea Fernández | [Commit Funcionalidad]([https://github.com/AdrianVillalba26/cs-2026-grupo-7/commit/ced107a5d64e64e22f4c5f133d73f7b6dd029fc6]), [Commit Pruebas]([https://github.com/AdrianVillalba26/cs-2026-grupo-7/commit/8d9698c9295c71d05675438b1c020d7e346255f0]) |
 | **feature-3** | Arturo Vinuesa Domínguez, Gonzalo Andrés Zurdo Patino | [Commit Funcionalidad]([AÑADIR_URL]), [Commit Pruebas]([AÑADIR_URL]) |
 | **refactoring-1** | Raúl Tejada Merinero | [Commit CS1](https://github.com/AdrianVillalba26/cs-2026-grupo-7/commit/8b1e213) ... [Commit Bump v1.0.1](https://github.com/AdrianVillalba26/cs-2026-grupo-7/commit/d056918) |
  
@@ -310,8 +310,21 @@ git push origin feature-2
 
 **Pasos seguidos (Testing, Versionado y PR - Adrián Varea):**
  
-[AÑADIR PASOS DE ADRIÁN, SU COMMIT DE TESTS UNITARIOS, EL BUMP DE VERSIÓN A 1.2.0 EN EL POM Y SUS COMANDOS GIT]
-
+- Se añadieron pruebas a `AccountServiceTest.java` del atributo `banned` y de las restricciones en `deposit`, `withdraw` y `transfer` (emisor y receptor baneado).
+- Se implementaron también en `AccountServiceTest.java` las comprobaciones básicas de `User` sobre el estado de baneo.
+- Se actualizó `pom.xml` con la versión `1.2.0`.
+- Se creó una Pull Request con los commits de funcionalidad, testing y versionado.
+- Se resolvieron conflictos y se integró la rama en `main`.
+```bash
+git checkout feature-2
+git pull origin feature-2
+git add src/test/java/es/codeurjc/unit/AccountServiceTest.java
+git commit -m "test: añadir pruebas de banned en User y AccountService"
+git add pom.xml
+git commit -m "changed version to 1.2.0"
+git push origin feature-2
+```
+ 
 #### 3. Feature 3: Restricción a Menores de 18 Años (Trabajo en Pareja)
  
 **Alumnos asignados:** Arturo Vinuesa Domínguez (Desarrollo) y Gonzalo Andrés Zurdo Patino (Testing).

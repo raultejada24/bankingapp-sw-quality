@@ -226,7 +226,7 @@ Se implementaron y configuraron una serie de flujos de trabajo automatizados con
 | Tarea | Alumno/es asignado/s | Commits asociados |
 | :--- | :--- | :--- |
 | **feature-1** | Raúl Tejada Merinero, Blas Vita Ramos | [Commit Funcionalidad](https://github.com/AdrianVillalba26/cs-2026-grupo-7/commit/fa18349), [Commit Pruebas]([AÑADIR_URL_COMMIT_BLAS]) |
-| **feature-2** | Adrián Villalba Cuello de Oro, Adrián Varea Fernández | [Commit Funcionalidad]([https://github.com/AdrianVillalba26/cs-2026-grupo-7/commit/ced107a5d64e64e22f4c5f133d73f7b6dd029fc6]), [Commit Pruebas]([https://github.com/AdrianVillalba26/cs-2026-grupo-7/commit/8d9698c9295c71d05675438b1c020d7e346255f0]) |
+| **feature-2** | Adrián Villalba Cuello de Oro, Adrián Varea Fernández | [Commit Funcionalidad](https://github.com/AdrianVillalba26/cs-2026-grupo-7/commit/ced107a5d64e64e22f4c5f133d73f7b6dd029fc6), [Commit Pruebas](https://github.com/AdrianVillalba26/cs-2026-grupo-7/commit/8d9698c9295c71d05675438b1c020d7e346255f0) |
 | **feature-3** | Arturo Vinuesa Domínguez, Gonzalo Andrés Zurdo Patino | [Commit Funcionalidad]([AÑADIR_URL]), [Commit Pruebas]([AÑADIR_URL]) |
 | **refactoring-1** | Raúl Tejada Merinero | [Commit CS1](https://github.com/AdrianVillalba26/cs-2026-grupo-7/commit/8b1e213) ... [Commit Bump v1.0.1](https://github.com/AdrianVillalba26/cs-2026-grupo-7/commit/d056918) |
  

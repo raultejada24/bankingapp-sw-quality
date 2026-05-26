@@ -911,7 +911,7 @@ public class AccountServiceTest {
             accountService.deposit("ES200", 50, "Ingreso bloqueado");
         });
 
-        assertEquals("El usuario esta baneado y no puede depositar dinero.", exception.getMessage());
+        assertEquals("El usuario está baneado y no puede depositar dinero.", exception.getMessage());
         verify(transactionRepository, times(0)).save(any(Transaction.class));
         verify(accountRepository, times(0)).save(any(Account.class));
         verifyNoInteractions(emailService, smsService);
@@ -930,7 +930,7 @@ public class AccountServiceTest {
             accountService.withdraw("ES201", 100, "Retirada bloqueada");
         });
 
-        assertEquals("El usuario esta baneado y no puede retirar dinero.", exception.getMessage());
+        assertEquals("El usuario está baneado y no puede retirar dinero.", exception.getMessage());
         verify(transactionRepository, times(0)).save(any(Transaction.class));
         verify(accountRepository, times(0)).save(any(Account.class));
         verifyNoInteractions(emailService, smsService);
@@ -939,9 +939,9 @@ public class AccountServiceTest {
     @Test
     @DisplayName("50. transfer_BannedSender: Lanza excepcion si emisor baneado")
     void transfer_BannedSenderTest() {
-        User bannedUser = new User();
+        User bannedUser = adultUser(1L, User.NotificationType.EMAIL);
         bannedUser.setBanned(true);
-        User normalUser = new User();
+        User normalUser = adultUser(2L, User.NotificationType.EMAIL);
         normalUser.setBanned(false);
         Account source = new Account("ES202", Account.AccountType.CHECKING, 500);
         Account destination = new Account("ES203", Account.AccountType.SAVINGS, 100);
@@ -956,16 +956,16 @@ public class AccountServiceTest {
             accountService.transfer("ES202", "ES203", 100);
         });
 
-        assertEquals("Operacion rechazada: El emisor o receptor se encuentra baneado.", exception.getMessage());
+        assertEquals("Operación rechazada: El emisor o receptor se encuentra baneado.", exception.getMessage());
         verifyNoInteractions(transactionRepository, emailService, smsService);
     }
 
     @Test
     @DisplayName("51. transfer_BannedReceiver: Lanza excepcion si receptor baneado")
     void transfer_BannedReceiverTest() {
-        User normalUser = new User();
+        User normalUser = adultUser(3L, User.NotificationType.EMAIL);
         normalUser.setBanned(false);
-        User bannedUser = new User();
+        User bannedUser = adultUser(4L, User.NotificationType.EMAIL);
         bannedUser.setBanned(true);
         Account source = new Account("ES204", Account.AccountType.CHECKING, 500);
         Account destination = new Account("ES205", Account.AccountType.SAVINGS, 100);
@@ -980,7 +980,7 @@ public class AccountServiceTest {
             accountService.transfer("ES204", "ES205", 100);
         });
 
-        assertEquals("Operacion rechazada: El emisor o receptor se encuentra baneado.", exception.getMessage());
+        assertEquals("Operación rechazada: El emisor o receptor se encuentra baneado.", exception.getMessage());
         verify(transactionRepository, times(0)).save(any(Transaction.class));
         verify(accountRepository, times(0)).save(any(Account.class));
         verifyNoInteractions(emailService, smsService);

@@ -46,23 +46,27 @@ public class AccountService {
     private static final String TRANSFER_RECEIVED_SUBJECT = "Transfer Received";
     private static final String TRANSFER_SENT_MESSAGE = "Transfer of %.2f EUR to %s. New balance: %.2f EUR";
     private static final String TRANSFER_RECEIVED_MESSAGE = "Transfer of %.2f EUR from %s. New balance: %.2f EUR";
+    private static final String MINOR_TRANSFER_ERROR = "Minors cannot make transfers";
 
     private final AccountRepository accountRepository;
     private final TransactionRepository transactionRepository;
     private final EmailNotificationService emailService;
     private final SmsNotificationService smsService;
     private final RandomService randomService;
+    private final UserService userService;
 
     public AccountService(AccountRepository accountRepository,
             TransactionRepository transactionRepository,
             EmailNotificationService emailService,
             SmsNotificationService smsService,
-            RandomService randomService) {
+            RandomService randomService,
+            UserService userService) {
         this.accountRepository = accountRepository;
         this.transactionRepository = transactionRepository;
         this.emailService = emailService;
         this.smsService = smsService;
         this.randomService = randomService;
+        this.userService = userService;
     }
 
     /**
@@ -289,7 +293,13 @@ public class AccountService {
      */
     @Transactional
     public void transfer(String fromAccountNumber, String toAccountNumber, double amount) {
-
+        Account sourceAccount = getAccount(fromAccountNumber);
+        if (sourceAccount.getUser() == null || sourceAccount.getUser().getBirthDate() == null) {
+            throw new MinorTransferException(MINOR_TRANSFER_ERROR);
+        }
+        if (userService.isMinor(sourceAccount.getUser().getId())) {
+            throw new MinorTransferException(MINOR_TRANSFER_ERROR);
+        }
         validateMoneyPrecision(amount);
         if (amount <= 0) {
         throw new InvalidAmountException(ERROR_AMOUNT_MUST_BE_POSITIVE);
@@ -298,7 +308,6 @@ public class AccountService {
         throw new LimitExceededException(ERROR_MAX_TRANSFER_EXCEEDED);
         }
 
-        Account sourceAccount = getAccount(fromAccountNumber);
         Account destinationAccount = getAccount(toAccountNumber);
 
 
@@ -442,6 +451,11 @@ public class AccountService {
 
     public static class AccountNumberGenerationException extends IllegalStateException {
         public AccountNumberGenerationException(String message) {
+            super(message);
+        }
+    }
+    public static class MinorTransferException extends IllegalArgumentException {
+        public MinorTransferException(String message) {
             super(message);
         }
     }

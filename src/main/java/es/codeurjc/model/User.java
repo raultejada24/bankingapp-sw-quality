@@ -37,6 +37,7 @@ public class User {
     private LocalDate registrationDate;
     private double monthlyIncome;
     private boolean banned = false;
+    private LocalDate birthDate;
     
     @Enumerated(EnumType.STRING)
     private NotificationType notificationType = NotificationType.EMAIL;
@@ -198,13 +199,19 @@ public class User {
         return accounts != null && accounts.size() > 1;
     }
 
-
-
     public boolean isBanned() {
         return banned;
     }
 
     public void setBanned(boolean banned) {
         this.banned = banned;
+    }
+
+    public LocalDate getBirthDate() {
+        return birthDate;
+    }
+
+    public void setBirthDate(LocalDate birthDate) {
+        this.birthDate = birthDate;
     }
 }

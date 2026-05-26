@@ -2,6 +2,7 @@ package es.codeurjc.unit;
 
 import java.util.List;
 import java.util.Optional;
+import java.time.LocalDate;
 import java.time.LocalDateTime;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
@@ -34,6 +35,7 @@ import es.codeurjc.repository.TransactionRepository;
 import es.codeurjc.service.AccountService;
 import es.codeurjc.service.DailyWithdrawalLimitExceededException;
 import es.codeurjc.service.RandomService;
+import es.codeurjc.service.UserService;
 import es.codeurjc.service.notifications.EmailNotificationService;
 import es.codeurjc.service.notifications.SmsNotificationService;
 
@@ -109,10 +111,28 @@ public class AccountServiceTest {
     private SmsNotificationService smsService;
     @Mock
     private RandomService randomService;
+    @Mock
+    private UserService userService;
 
     // INYECCIÓN DE MOCKS EN EL SERVICIO A PROBAR
     @InjectMocks
     private AccountService accountService;
+
+    private User adultUser(long id, User.NotificationType notificationType) {
+        User user = new User();
+        user.setId(id);
+        user.setBirthDate(LocalDate.now().minusYears(20));
+        user.setNotificationType(notificationType);
+        return user;
+    }
+
+    private User minorUser(long id, User.NotificationType notificationType) {
+        User user = new User();
+        user.setId(id);
+        user.setBirthDate(LocalDate.now().minusYears(17));
+        user.setNotificationType(notificationType);
+        return user;
+    }
 
 
     // CRUD y CONSULTAS
@@ -908,6 +928,10 @@ public class AccountServiceTest {
         String fromAccountNumber = "ES0000123456";
         String toAccountNumber = "ES0000654321";
         double amount = -3.0;
+        Account source = new Account(fromAccountNumber, Account.AccountType.CHECKING, 500);
+        source.setUser(adultUser(1L, null));
+        when(accountRepository.findByAccountNumber(fromAccountNumber)).thenReturn(Optional.of(source));
+        when(userService.isMinor(1L)).thenReturn(false);
 
         // When (Llamar a accountService.transfer usando assertThrows)
         IllegalArgumentException exception = assertThrows(IllegalArgumentException.class, () -> {
@@ -925,6 +949,10 @@ public class AccountServiceTest {
     void transfer_Exceeds20kTest() {
         // Given (Preparar amount > 20000)
         double amount = 25000.0;
+        Account source = new Account("ES131", Account.AccountType.CHECKING, 500);
+        source.setUser(adultUser(2L, null));
+        when(accountRepository.findByAccountNumber("ES131")).thenReturn(Optional.of(source));
+        when(userService.isMinor(2L)).thenReturn(false);
 
         // When (Llamar a accountService.transfer usando assertThrows)
         IllegalArgumentException exception = assertThrows(IllegalArgumentException.class, () -> {
@@ -942,8 +970,10 @@ public class AccountServiceTest {
     void transfer_SameAccountTest() {
         // Given (Mock BD devuelve la misma instancia de cuenta para origen y destino)
         Account account = new Account("ES123", Account.AccountType.CHECKING, 500);
+        account.setUser(adultUser(3L, null));
         // Cuando busque el origen y el destino, devolvemos la MISMA cuenta
         when(accountRepository.findByAccountNumber("ES123")).thenReturn(Optional.of(account));
+        when(userService.isMinor(3L)).thenReturn(false);
 
         // When (Llamar a accountService.transfer usando assertThrows)
         IllegalArgumentException exception = assertThrows(IllegalArgumentException.class, () -> {
@@ -960,8 +990,7 @@ public class AccountServiceTest {
     @DisplayName("37. transfer_InsufficientFunds: Lanza excepción si saldo origen < amount")
     void transfer_InsufficientFundsTest() {
         // Given (Mock BD devuelve cuenta origen sin fondos y cuenta destino normal)
-        User user = new User();
-        user.setNotificationType(null);
+        User user = adultUser(4L, null);
         Account source = new Account("ES133", Account.AccountType.CHECKING, 50);
         Account destination = new Account("ES134", Account.AccountType.SAVINGS, 100);
         source.setUser(user);
@@ -969,6 +998,7 @@ public class AccountServiceTest {
 
         when(accountRepository.findByAccountNumber("ES133")).thenReturn(Optional.of(source));
         when(accountRepository.findByAccountNumber("ES134")).thenReturn(Optional.of(destination));
+        when(userService.isMinor(4L)).thenReturn(false);
 
         // When (Llamar a accountService.transfer usando assertThrows)
         IllegalArgumentException exception = assertThrows(IllegalArgumentException.class, () -> {
@@ -987,10 +1017,8 @@ public class AccountServiceTest {
     @DisplayName("38. transfer_Success_Emails: Transferencia válida. Remitente EMAIL, Destinatario EMAIL")
     void transfer_Success_EmailsTest() {
         // Given (Mock BD devuelve cuentas válidas con User en EMAIL)
-        User sourceUser = new User();
-        sourceUser.setNotificationType(User.NotificationType.EMAIL);
-        User destinationUser = new User();
-        destinationUser.setNotificationType(User.NotificationType.EMAIL);
+        User sourceUser = adultUser(5L, User.NotificationType.EMAIL);
+        User destinationUser = adultUser(6L, User.NotificationType.EMAIL);
         Account source = new Account("ES135", Account.AccountType.CHECKING, 500);
         Account destination = new Account("ES136", Account.AccountType.SAVINGS, 100);
         source.setUser(sourceUser);
@@ -998,6 +1026,7 @@ public class AccountServiceTest {
 
         when(accountRepository.findByAccountNumber("ES135")).thenReturn(Optional.of(source));
         when(accountRepository.findByAccountNumber("ES136")).thenReturn(Optional.of(destination));
+        when(userService.isMinor(5L)).thenReturn(false);
 
         // When (Llamar a accountService.transfer)
         accountService.transfer("ES135", "ES136", 200);
@@ -1030,10 +1059,8 @@ public class AccountServiceTest {
     @DisplayName("39. transfer_Success_Sms: Transferencia válida. Remitente SMS, Destinatario SMS")
     void transfer_Success_SmsTest() {
         // Given (Mock BD devuelve cuentas válidas con User en SMS)
-        User sourceUser = new User();
-        sourceUser.setNotificationType(User.NotificationType.SMS);
-        User destinationUser = new User();
-        destinationUser.setNotificationType(User.NotificationType.SMS);
+        User sourceUser = adultUser(7L, User.NotificationType.SMS);
+        User destinationUser = adultUser(8L, User.NotificationType.SMS);
         Account source = new Account("ES137", Account.AccountType.CHECKING, 700);
         Account destination = new Account("ES138", Account.AccountType.SAVINGS, 200);
         source.setUser(sourceUser);
@@ -1041,6 +1068,7 @@ public class AccountServiceTest {
 
         when(accountRepository.findByAccountNumber("ES137")).thenReturn(Optional.of(source));
         when(accountRepository.findByAccountNumber("ES138")).thenReturn(Optional.of(destination));
+        when(userService.isMinor(7L)).thenReturn(false);
 
         // When (Llamar a accountService.transfer)
         accountService.transfer("ES137", "ES138", 300);
@@ -1072,8 +1100,7 @@ public class AccountServiceTest {
     @DisplayName("40. transfer_Success_NoNotifs: Transferencia válida sin notificaciones configuradas")
     void transfer_Success_NoNotifsTest() {
         // Given (Mock BD devuelve cuentas válidas con User sin notificaciones)
-        User user = new User();
-        user.setNotificationType(null); // Sin notificaciones
+        User user = adultUser(9L, null);
         Account origen = new Account("ES1", Account.AccountType.CHECKING, 500);
         Account destino = new Account("ES2", Account.AccountType.SAVINGS, 100);
         origen.setUser(user);
@@ -1081,6 +1108,7 @@ public class AccountServiceTest {
 
         when(accountRepository.findByAccountNumber("ES1")).thenReturn(Optional.of(origen));
         when(accountRepository.findByAccountNumber("ES2")).thenReturn(Optional.of(destino));
+        when(userService.isMinor(9L)).thenReturn(false);
 
         // When (Llamar a accountService.transfer)
         accountService.transfer("ES1", "ES2", 200);
@@ -1092,12 +1120,86 @@ public class AccountServiceTest {
         verifyNoInteractions(emailService, smsService);
     }
 
+    @Test
+    @DisplayName("41. transfer_MinorUser: Lanza excepción si el usuario es menor de edad")
+    void transfer_MinorUserTest() {
+        User user = minorUser(10L, null);
+        Account source = new Account("ES200", Account.AccountType.CHECKING, 500);
+        source.setUser(user);
+
+        when(accountRepository.findByAccountNumber("ES200")).thenReturn(Optional.of(source));
+        when(userService.isMinor(10L)).thenReturn(true);
+
+        IllegalArgumentException exception = assertThrows(IllegalArgumentException.class, () -> {
+            accountService.transfer("ES200", "ES201", 50);
+        });
+
+        assertEquals("Minors cannot make transfers", exception.getMessage());
+        verifyNoInteractions(transactionRepository, emailService, smsService);
+    }
+
+    @Test
+    @DisplayName("42. transfer_NullBirthDate: Lanza excepción si el perfil no tiene fecha de nacimiento")
+    void transfer_NullBirthDateTest() {
+        User user = new User();
+        user.setId(12L);
+        user.setBirthDate(null);
+        Account source = new Account("ES210", Account.AccountType.CHECKING, 500);
+        source.setUser(user);
+
+        when(accountRepository.findByAccountNumber("ES210")).thenReturn(Optional.of(source));
+
+        IllegalArgumentException exception = assertThrows(IllegalArgumentException.class, () -> {
+            accountService.transfer("ES210", "ES211", 50);
+        });
+
+        assertEquals("Minors cannot make transfers", exception.getMessage());
+        verifyNoInteractions(userService, transactionRepository, emailService, smsService);
+    }
+
+    @Test
+    @DisplayName("43. transfer_MinorUser: Lanza excepción si el usuario es menor de edad")
+    void transfer_MinorUserTest() {
+        User user = minorUser(10L, null);
+        Account source = new Account("ES200", Account.AccountType.CHECKING, 500);
+        source.setUser(user);
+
+        when(accountRepository.findByAccountNumber("ES200")).thenReturn(Optional.of(source));
+        when(userService.isMinor(10L)).thenReturn(true);
+
+        IllegalArgumentException exception = assertThrows(IllegalArgumentException.class, () -> {
+            accountService.transfer("ES200", "ES201", 50);
+        });
+
+        assertEquals("Minors cannot make transfers", exception.getMessage());
+        verifyNoInteractions(transactionRepository, emailService, smsService);
+    }
+
+    @Test
+    @DisplayName("44. transfer_NullBirthDate: Lanza excepción si el perfil no tiene fecha de nacimiento")
+    void transfer_NullBirthDateTest() {
+        User user = new User();
+        user.setId(12L);
+        user.setBirthDate(null);
+        Account source = new Account("ES210", Account.AccountType.CHECKING, 500);
+        source.setUser(user);
+
+        when(accountRepository.findByAccountNumber("ES210")).thenReturn(Optional.of(source));
+
+        IllegalArgumentException exception = assertThrows(IllegalArgumentException.class, () -> {
+            accountService.transfer("ES210", "ES211", 50);
+        });
+
+        assertEquals("Minors cannot make transfers", exception.getMessage());
+        verifyNoInteractions(userService, transactionRepository, emailService, smsService);
+    }
+
 
     // USUARIO BANEADO
 
     // Hecho por: Adrián Varea Fernández
     @Test
-    @DisplayName("41. banned_DefaultValue: isBanned() devuelve false por defecto")
+    @DisplayName("45. banned_DefaultValue: isBanned() devuelve false por defecto")
     void banned_DefaultValueTest() {
         // Given
         User user = new User();
@@ -1108,7 +1210,7 @@ public class AccountServiceTest {
 
     // Hecho por: Adrián Varea Fernández
     @Test
-    @DisplayName("42. banned_SetTrue: setBanned(true) hace que isBanned() devuelva true")
+    @DisplayName("46. banned_SetTrue: setBanned(true) hace que isBanned() devuelva true")
     void banned_SetTrueTest() {
         // Given
         User user = new User();
@@ -1122,7 +1224,7 @@ public class AccountServiceTest {
 
     // Hecho por: Adrián Varea Fernández
     @Test
-    @DisplayName("43. banned_SetFalse: setBanned(false) revierte el ban")
+    @DisplayName("47. banned_SetFalse: setBanned(false) revierte el ban")
     void banned_SetFalseTest() {
         // Given
         User user = new User();
@@ -1138,7 +1240,7 @@ public class AccountServiceTest {
 
     // Hecho por: Adrián Varea Fernández
     @Test
-    @DisplayName("44. deposit_BannedUser: Lanza IllegalStateException si el usuario está baneado")
+    @DisplayName("48. deposit_BannedUser: Lanza IllegalStateException si el usuario está baneado")
     void deposit_BannedUserTest() {
         // Given
         User bannedUser = new User();
@@ -1161,7 +1263,7 @@ public class AccountServiceTest {
 
     // Hecho por: Adrián Varea Fernández
     @Test
-    @DisplayName("45. withdraw_BannedUser: Lanza IllegalStateException si el usuario está baneado")
+    @DisplayName("49. withdraw_BannedUser: Lanza IllegalStateException si el usuario está baneado")
     void withdraw_BannedUserTest() {
         // Given
         User bannedUser = new User();
@@ -1184,7 +1286,7 @@ public class AccountServiceTest {
 
     // Hecho por: Adrián Varea Fernández
     @Test
-    @DisplayName("46. transfer_BannedSender: Lanza IllegalStateException si el emisor está baneado")
+    @DisplayName("50. transfer_BannedSender: Lanza IllegalStateException si el emisor está baneado")
     void transfer_BannedSenderTest() {
         // Given
         User bannedUser = new User();
@@ -1212,7 +1314,7 @@ public class AccountServiceTest {
 
     // Hecho por: Adrián Varea Fernández
     @Test
-    @DisplayName("47. transfer_BannedReceiver: Lanza IllegalStateException si el receptor está baneado")
+    @DisplayName("51. transfer_BannedReceiver: Lanza IllegalStateException si el receptor está baneado")
     void transfer_BannedReceiverTest() {
         // Given
         User normalUser = new User();

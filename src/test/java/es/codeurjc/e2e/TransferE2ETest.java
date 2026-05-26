@@ -110,8 +110,14 @@ public class TransferE2ETest {
                 driver = new ChromeDriver(chromeOptions);
                 break;
         }
-
-        driver.manage().deleteAllCookies();
+                
+        try {
+            driver.manage().deleteAllCookies();
+        } catch (Exception e) {
+            // Safari falla al intentar borrar cookies sin haber navegado a una URL primero. Lo ignoramos.
+            System.out.println("Omitiendo borrado de cookies inicial para " + browser);
+        }
+        
         wait = new WebDriverWait(driver, Duration.ofSeconds(TIMEOUT_SECONDS));
         driver.manage().timeouts().pageLoadTimeout(Duration.ofSeconds(TIMEOUT_SECONDS));
     }

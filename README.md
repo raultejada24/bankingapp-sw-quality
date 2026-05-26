@@ -108,10 +108,9 @@ A lo largo de esta práctica, he contribuido principalmente en la mejora de la c
 
 | Nº  | Commits                                                                                                                                                                                            |
 | :-: | :------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-|  1  | [Block transactions to minors](https://github.com/AdrianVillalba26/cs-2026-grupo-7/pull/5/changes/540e4468fb65a9cde1c57a43708561c592f2b9d4) |
-|  2  | [Merge pull request #5 from AdrianVillalba26/block-transactions-to-minors](https://github.com/AdrianVillalba26/cs-2026-grupo-7/commit/d0266eaf8bc4ec66cc7a7f05e4745b11bb2e6de4)                     |
-                                                          |
-
+|  1  | [refactor: replace magic numbers and generic exceptions in AccountService (issues 8,9,12,17)](https://github.com/AdrianVillalba26/cs-2026-grupo-7/commit/ddb0f751880f08cb52d28a7edb782c380ec5de72) |
+|  2  | [test: add E2E Selenium suite for bank transfer functionality validation](https://github.com/AdrianVillalba26/cs-2026-grupo-7/commit/871a33fbc89f98f262912105eacd77082c2f3963)                     |
+|  3  | [test: bad test implementation](https://github.com/AdrianVillalba26/cs-2026-grupo-7/commit/f87c2394aa9f77192ffe0e342e3dcb66c870cb22)                                                               |
 ---
 
 ### **Alumno 2 - Raúl Tejada Merinero**
@@ -240,7 +239,7 @@ Se implementaron y configuraron una serie de flujos de trabajo automatizados con
 | :--- | :--- | :--- |
 | **feature-1** | Raúl Tejada Merinero, Blas Vita Ramos | [Commit Funcionalidad](https://github.com/AdrianVillalba26/cs-2026-grupo-7/commit/fa18349), [Commit Pruebas](https://github.com/AdrianVillalba26/cs-2026-grupo-7/commit/3b53e12a8e8eaf48a48398eb7bd60156565fee92) |
 | **feature-2** | Adrián Villalba Cuello de Oro, Adrián Varea Fernández | [Commit Funcionalidad](https://github.com/AdrianVillalba26/cs-2026-grupo-7/commit/ced107a5d64e64e22f4c5f133d73f7b6dd029fc6), [Commit Pruebas](https://github.com/AdrianVillalba26/cs-2026-grupo-7/commit/8d9698c9295c71d05675438b1c020d7e346255f0) |
-| **feature-3** | Arturo Vinuesa Domínguez, Gonzalo Andrés Zurdo Patino | [Commit Funcionalidad]([AÑADIR_URL]), [Commit Pruebas]([AÑADIR_URL]) |
+| **feature-3** | Arturo Vinuesa Domínguez, Gonzalo Andrés Zurdo Patino | [Commit Funcionalidad]([https://github.com/AdrianVillalba26/cs-2026-grupo-7/pull/5/changes/540e4468fb65a9cde1c57a43708561c592f2b9d4]), [Commit Pruebas]([https://github.com/AdrianVillalba26/cs-2026-grupo-7/pull/5/changes/f468dd82428f539c0ceaead0ba05092fbf5c9c04]) |
 | **refactoring-1** | Raúl Tejada Merinero | [Commit CS1](https://github.com/AdrianVillalba26/cs-2026-grupo-7/commit/8b1e213) ... [Commit Bump v1.0.1](https://github.com/AdrianVillalba26/cs-2026-grupo-7/commit/d056918) |
  
 ### Pasos seguidos (Flujo de Trabajo General con Git)

@@ -164,6 +164,14 @@ public class AccountService {
         }
 
         Account account = getAccount(accountNumber);
+
+
+        //Check if user is banned or not
+        if (account.getUser() != null && account.getUser().isBanned()) {
+            throw new IllegalStateException("El usuario está baneado y no puede depositar dinero.");
+        }
+
+
         account.deposit(amount);
 
         // Record transaction
@@ -243,6 +251,13 @@ public class AccountService {
 
         Account account = getAccount(accountNumber);
 
+
+        //Check if user is banned or not
+        if (account.getUser() != null && account.getUser().isBanned()) {
+            throw new IllegalStateException("El usuario está baneado y no puede retirar dinero.");
+        }
+
+
         // Check balance
         ensureSufficientBalance(account, amount);
 
@@ -285,6 +300,13 @@ public class AccountService {
 
         Account sourceAccount = getAccount(fromAccountNumber);
         Account destinationAccount = getAccount(toAccountNumber);
+
+
+        //Check if user is banned or not
+        if ((sourceAccount.getUser() != null && sourceAccount.getUser().isBanned()) || (destinationAccount.getUser() != null && destinationAccount.getUser().isBanned())) {
+            throw new IllegalStateException("Operación rechazada: El emisor o receptor se encuentra baneado.");
+        }
+
 
         validateTransfer(sourceAccount, destinationAccount, amount);
         recordTransfer(sourceAccount, destinationAccount, fromAccountNumber, toAccountNumber, amount);

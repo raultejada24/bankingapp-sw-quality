@@ -1,8 +1,8 @@
 name: Workflow 4 - Nightly
 
 on:
-  schedule:
-    - cron: "0 2 * * *" # Ejecución a las 2 AM UTC
+  #schedule:
+  #  - cron: "0 2 * * *" # Ejecución a las 2 AM UTC
   workflow_dispatch:
 
 jobs:
